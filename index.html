@@ -356,7 +356,7 @@
     <!-- ================================================================== -->
     <script>
         // --- CONFIGURATION ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxQGc2CsynNNA88D7LZHEjAD4TdWrWabmOPrB6LDObvCA10Dw0_-J9Z42ZWkqr2zWIcvw/exec';
+        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxoBls5QVUcXfOkmWfY--GJ_1RSVC8Ao9M5ahJkmiCVXX-y-YiV2KbnDho61VMxqyqjHQ/exec';
         const ADMIN_SESSION_KEY = 'abm_admin_session';
 
         // --- ROUTEUR PRINCIPAL ---
@@ -410,6 +410,7 @@
             const classeId = params.get('classe');
             const universityId = params.get('university');
 
+            if (!universityId) {
                 renderConfirmationPage('Erreur', 'Lien d\'inscription invalide. ID de l\'université manquant.', 'error');
                 return;
             }
@@ -420,7 +421,7 @@
             // NOUVEAU: Charger les filières et classes
             setLoading(true, true);
             try {
-                const result = await callApi('get_registration_data', { universityId });
+                const result = await callApi('get_registration_data', { universityId: universityId });
                 const { filieres, classes } = result.data;
 
                 const filiereSelect = document.getElementById('filiereId');
@@ -436,9 +437,9 @@
                     classeSelect.disabled = false;
                     classeSelect.classList.remove('bg-gray-100');
                 });
-                
-                filieres.forEach(f => { filiereSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`; });
 
+                filieres.forEach(f => { filiereSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`; });
+                
                 if (classeId) {
                     const targetClass = classes.find(c => c.id === classeId);
                     if (targetClass) {
@@ -505,6 +506,8 @@
                     const targetContent = document.getElementById(tab.dataset.target);
                     if (targetContent) targetContent.classList.remove('hidden');
                     const entityType = tab.dataset.target.split('-')[0];
+                    loadAndRenderEntities(entityType);
+                });
             });
 
             // Activer le premier onglet par défaut
@@ -516,7 +519,7 @@
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
         }
 
-         try { function setupEntityForm(entityType, options) {
+        function setupEntityForm(entityType, options) {
             const form = document.getElementById(`add-${entityType}-form`);
             if (!form) return;
 
@@ -628,27 +631,6 @@
             }
         }
 
-        async function handleSchoolLoginSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = { 
-                email: form.adminEmail.value,
-                password: form.adminPassword.value
-            };
-            setLoading(true);
-            try {
-                const result = await callApi('login_school', data);
-                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token); // Stocke l'ID de l'université
-                renderPage('admin-panel-template', new URLSearchParams()); // Redirige vers le panneau admin
-            } catch (error) {
-                // Pour une erreur de login, on affiche juste le message dans le formulaire
-                displayMessageInForm(error.message, 'error');
-                sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            } finally {
-                setLoading(false); // Cache le spinner du bouton
-            }
-        }
-
         async function loadAndRenderEntities(entityType) {
             const listElement = document.getElementById(`${entityType}-list`);
             if (!listElement) return;
@@ -680,10 +662,13 @@
                     return `
                         <li class="p-3 bg-white border rounded-md flex justify-between items-center">
                             <span>${entity[nameKey]}</span>
-                            <span class="text-xs text-gray-400 font-mo
+                            <span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span>
+                        </li>
+                    `;
                 }).join('');
 
-            } catch (error) {ed-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
+            } catch (error) {
+                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
             }
         }
         // --- FONCTIONS UTILITAIRES ---
