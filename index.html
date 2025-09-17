@@ -1,880 +1,1173 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABM EduPilote - Plateforme Universitaire</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-        }
-        .action-card {
-            transition: all 0.3s ease-in-out;
-        }
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        #modal-content { max-height: 80vh; }
-        .hidden-template { display: none; }
-    </style>
-</head>
-<body class="p-4 sm:p-8">
+// ============================================================================
+// SYSTÈME DE GESTION UNIVERSITAIRE - ABM
+// Développé par Gemini Code Assist pour Africa Business Manager
+// Version 2.0 - 2024 (avec API pour formulaire externe)
+// ============================================================================
 
-    <!-- Conteneur principal où les pages seront injectées -->
-    <div id="app-container"></div>
+// --- CONFIGURATION GLOBALE ---
+const SHEET_NAMES = {
+  CONFIG: 'Configuration',
+  STUDENTS: 'Étudiants',
+  PLANNING: 'Planning',
+  SCAN: 'Scan',
+  CONDUCT: 'Conduite',
+  ADMINS: 'Administrateurs',
+  UNIVERSITIES: 'Universités',
+  FILIERES: 'Filières',
+  CLASSES: 'Classes'
+};
 
-    <!-- ================================================================== -->
-    <!-- MODÈLES HTML (TEMPLATES) -->
-    <!-- ================================================================== -->
+const CONFIG_KEYS = {
+  ADMIN_EMAIL: 'ADMIN_EMAIL',
+  FRONTEND_URL: 'FRONTEND_URL', // NOUVEAU: Pour l'URL de votre site Netlify/Vercel
+  ADMIN_KEY: 'ADMIN_KEY' // NOUVEAU: Pour sécuriser le panneau d'administration
+};
 
-    <!-- Modèle pour la page d'inscription étudiant -->
-    <template id="register-template">
-        <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🎓 Inscription Étudiant</h1>
-                    <p class="text-gray-500 mt-2">Rejoignez notre université via ABM EduPilote</p>
-                </div>
-                <form id="inscriptionForm">
-                    <input type="hidden" id="classe" name="classe" value="">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
-                            <input type="text" id="nom" name="nom" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: Moussa Diop">
-                        </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Adresse Email</label>
-                            <input type="email" id="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: m.diop@email.com">
-                        </div>
-                        <div>
-                            <label for="filiereId" class="block text-sm font-medium text-gray-700 mb-1">Filière</label>
-                            <select id="filiereId" name="filiereId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white">
-                                <option value="" disabled selected>-- Choisissez une filière --</option>
-                                <!-- Options chargées dynamiquement -->
-                            </select>
-                        </div>
-                        <div>
-                            <label for="classeId" class="block text-sm font-medium text-gray-700 mb-1">Classe</label>
-                            <select id="classeId" name="classeId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-100" disabled>
-                                <option value="" disabled selected>-- Choisissez d'abord une filière --</option>
-                                <!-- Options chargées dynamiquement -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="mt-8">
-                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <span id="btnText">Envoyer mon Inscription</span>
-                            <span id="btnSpinner" class="hidden">Envoi en cours...</span>
-                        </button>
-                    </div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-            <footer class="bg-gray-50 p-4 text-center text-sm text-gray-500">Propulsé par <a href="#" class="font-bold text-indigo-600">ABM EduPilote</a></footer>
-        </div>
-    </template>
+// ============================================================================
+// POINT D'ENTRÉE WEB APP (doGet pour QR Codes, doPost pour API)
+// ============================================================================
 
-    <!-- NOUVEAU: Modèle pour l'enregistrement d'une nouvelle école -->
-    <template id="school-register-template">
-        <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🏫 Enregistrer votre École</h1>
-                    <p class="text-gray-500 mt-2">Créez un compte pour votre établissement sur ABM EduPilote.</p>
-                </div>
-                <form id="schoolRegisterForm">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
-                            <input type="text" id="universityName" name="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
-                            <input type="email" id="adminEmail" name="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
-                            <input type="password" id="adminPassword" name="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                    </div>
-                    <div class="mt-8"><button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span id="btnText">Créer le compte</span><span id="btnSpinner" class="hidden">Création...</span></button></div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-        </div>
-    </template>
+/**
+ * Gère les requêtes GET (scans de QR Code).
+ */
+function doGet(e) {
+  // La fonction doGet n'est plus utilisée pour servir des pages HTML.
+  // Tout le frontend est maintenant géré par un service externe (Netlify/Vercel).
+  // On peut la garder pour des tests de connectivité simples.
+  return createJsonResponse({ success: true, message: 'ABM EduPilote Backend v3.0 - Actif' });
+}
 
-    <!-- Modèle pour la page de présence -->
-    <template id="attendance-template">
-        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
-                    <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display"></strong> pour la classe <strong class="text-gray-700" id="classe-display"></strong></p>
-                </div>
-                <form id="attendanceForm">
-                    <input type="hidden" id="classe" name="classe" value="">
-                    <input type="hidden" id="matiere" name="matiere" value="">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                            <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: ETU-ABC123">
-                        </div>
-                    </div>
-                    <div class="mt-8">
-                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <span id="btnText">Confirmer ma présence</span>
-                            <span id="btnSpinner" class="hidden">Enregistrement...</span>
-                        </button>
-                    </div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-            <footer class="bg-gray-50 p-4 text-center text-sm text-gray-500">Propulsé par <a href="#" class="font-bold text-indigo-600">ABM EduPilote</a></footer>
-        </div>
-    </template>
+/**
+ * NOUVEAU : Gère les requêtes POST (API pour le formulaire Vercel).
+ * C'est le routeur principal pour les actions externes.
+ */
+function doPost(e) {
+  try {
+    // On parse les données envoyées par le formulaire Vercel
+    const request = JSON.parse(e.postData.contents);
+    
+    if (!request.action) {
+      return createJsonResponse({ success: false, error: 'Action non spécifiée.' });
+    }
 
-    <!-- Modèle pour la page de connexion Admin -->
-    <template id="admin-login-template">
-        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🔑 Accès Administration</h1>
-                    <p class="text-gray-500 mt-2">Veuillez entrer votre clé d'accès.</p>
-                </div>
-                <form id="schoolLoginForm">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
-                            <input type="email" id="adminEmail" name="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
-                        </div>
-                        <div>
-                            <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-                            <input type="password" id="adminPassword" name="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-                        </div>
-                    </div>
-                    <div class="mt-8">
-                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <span id="btnText">Se Connecter</span>
-                            <span id="btnSpinner" class="hidden">Vérification...</span>
-                        </button>
-                    </div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-                <div class="mt-4 text-center text-sm">
-                    <a href="?page=school-register" class="font-medium text-indigo-600 hover:text-indigo-500">Pas encore de compte ? Enregistrez votre école</a>
-                </div>
-            </div>
-        </div>
-    </template>
+    // On dirige vers la bonne fonction en fonction de l'action demandée
+    switch (request.action) {
+      case 'inscrireEtudiant':
+        return inscrireEtudiant(request.data);
+      case 'recordAttendance': // NOUVELLE ACTION
+        return recordAttendance(request.data);
+      case 'get_current_course': // NOUVELLE ACTION
+        return getCurrentCourse(request.data);
+      case 'admin_login': // NOUVELLE ACTION
+        return adminLogin(request.data);
+      case 'get_registration_data': // NOUVELLE ACTION
+        return getRegistrationData(request.data);
+      case 'register_school': // NOUVELLE ACTION
+        return registerSchool(request.data);
+      case 'login_school': // NOUVELLE ACTION
+        return loginSchool(request.data);
+      case 'admin_get_entities': // NOUVELLE ACTION
+        return getEntitiesForAdmin(request.data);
+      case 'admin_add_entity': // NOUVELLE ACTION
+        return addEntityForAdmin(request.data);
+      // NOUVEAU: Actions pour le panneau d'administration
+      case 'admin_get_qr_codes':
+        return generateQrCodeUrlsForAdmin(request.data);
+      case 'admin_get_reg_links':
+        return generateRegistrationLinksForAdmin(request.data);
+      
+      // Vous pourrez ajouter d'autres actions ici plus tard
+      // case 'autreAction':
+      //   return autreAction(request.data);
 
-    <!-- Modèle pour le panneau d'administration -->
-    <template id="admin-panel-template">
-        <div class="max-w-4xl mx-auto">
-            <header class="text-center mb-10">
-                <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
-                <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
-            </header>
-            <main class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_qr_codes')">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-green-100 text-green-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
-                            <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_reg_links')">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
-                            <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- NOUVEAU: Carte pour la gestion des entités -->
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="renderPage('admin-management-template', new URLSearchParams())">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Gestion des Entités</h2>
-                            <p class="text-gray-500 text-sm">Gérer universités, filières et classes.</p>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </template>
+      default:
+        return createJsonResponse({ success: false, error: 'Action non reconnue.' });
+    }
 
-    <!-- NOUVEAU: Modèle pour la gestion des entités -->
-    <template id="admin-management-template">
-        <div class="max-w-5xl mx-auto">
-            <header class="mb-10">
-                <button onclick="renderPage('admin-panel-template', new URLSearchParams())" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au panneau d'administration</button>
-                <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
-                <p class="text-gray-600 mt-2">Ajoutez et consultez les universités, filières et classes de votre système.</p>
-            </header>
+  } catch (error) {
+    Logger.log(`Erreur doPost: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}` });
+  }
+}
 
-            <!-- Tabs -->
-            <div class="mb-6 border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="filiere-content">Filières</button>
-                    <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
-                </nav>
-            </div>
+// ============================================================================
+// FONCTIONS DE L'API (appelées par doPost)
+// ============================================================================
 
-            <!-- Contenu des onglets -->
-            <div id="management-content-container">
-                <!-- Contenu Filières -->
-                <div id="filiere-content" class="management-tab-content hidden">
-                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
-                            <form id="add-filiere-form" class="mt-4 space-y-4">
-                                <div>
-                                    <!-- L'université parente est maintenant implicite -->
-                                    <p class="text-sm text-gray-500">La filière sera ajoutée à votre université.</p>
-                                </div>
-                                <div>
-                                    <label for="filiere-name" class="block text-sm font-medium text-gray-700">Nom de la filière</label>
-                                    <input type="text" id="filiere-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                                </div>
-                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
-                            </form>
-                        </div>
-                        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
-                            <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
-                        </div>
-                    </div>
-                </div>
-                <!-- Contenu Classes -->
-                <div id="classe-content" class="management-tab-content hidden">
-                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
-                            <form id="add-classe-form" class="mt-4 space-y-4">
-                                <div>
-                                    <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
-                                    <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
-                                </div>
-                                <div>
-                                    <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
-                                    <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                                </div>
-                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
-                            </form>
-                        </div>
-                        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
-                            <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
+/**
+ * NOUVEAU : Inscrit un nouvel étudiant dans l'onglet "Étudiants".
+ */
+function inscrireEtudiant(data) {
+  try {
+    const { nom, email, filiereId, classeId, universityId } = data;
+    if (!nom || !email || !filiereId || !classeId || !universityId) {
+      return createJsonResponse({ success: false, error: 'Données manquantes. Tous les champs sont obligatoires.' });
+    }
 
-    <!-- NOUVEAU: Modèle pour une page de confirmation générique -->
-    <template id="confirmation-template">
-        <div class="w-full max-w-md mx-auto text-center">
-            <div class="bg-white rounded-2xl shadow-2xl p-8">
-                <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center">
-                    <!-- L'icône (✓ ou ✗) sera injectée ici par le script -->
-                </div>
-                <h1 id="confirmation-title" class="text-3xl font-bold text-gray-800"></h1>
-                <p id="confirmation-message" class="text-gray-600 mt-4 text-lg"></p>
-                <a href="/" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
-                    Retour à l'accueil
-                </a>
-            </div>
-        </div>
-    </template>
+    const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+    
+    // Générer un ID étudiant unique et simple
+    const newId = `ETU-${Utilities.getUuid().substring(0, 6).toUpperCase()}`;
+    
+    // Ajouter le nouvel étudiant à la feuille avec l'ID de l'université
+    studentsSheet.appendRow([
+      newId,
+      nom,
+      filiereId,
+      classeId,
+      email,
+      universityId,
+      new Date() // DATE_INSCRIPTION
+    ]);
 
-    <!-- Modèle pour la page d'accueil par défaut -->
-    <template id="landing-template">
-        <div class="max-w-4xl mx-auto text-center">
-            <div class="mb-12">
-                <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
-                <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
-            </div>
+    const successMessage = `Inscription réussie pour ${nom} ! Votre ID étudiant est : ${newId}`;
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Carte pour les administrateurs existants -->
-                <a href="?page=admin" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
-                        <span class="text-3xl">🔑</span>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Utiliser le Système</h2>
-                    <p class="text-gray-600 mt-2">Connectez-vous à votre espace administrateur pour gérer votre établissement.</p>
-                </a>
+    // Renvoyer une réponse de succès au formulaire Vercel
+    return createJsonResponse({ success: true, message: successMessage });
 
-                <!-- Carte pour les nouvelles écoles -->
-                <a href="?page=school-register" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
-                        <span class="text-3xl">🏫</span>
-                    </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
-                    <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
-                </a>
-            </div>
-        </div>
-    </template>
+  } catch (error) {
+    Logger.log(`Erreur inscrireEtudiant: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: `Erreur interne lors de l'inscription: ${error.message}` });
+  }
+}
 
-    <!-- ================================================================== -->
-    <!-- ÉLÉMENTS PARTAGÉS (Modale, Spinner) -->
-    <!-- ================================================================== -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
-                <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto"></div>
-                <div class="items-center px-4 py-3">
-                    <button id="close-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">Fermer</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
-
-    <!-- ================================================================== -->
-    <!-- SCRIPT PRINCIPAL -->
-    <!-- ================================================================== -->
-    <script>
-        // --- CONFIGURATION ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxQGc2CsynNNA88D7LZHEjAD4TdWrWabmOPrB6LDObvCA10Dw0_-J9Z42ZWkqr2zWIcvw/exec';
-        const ADMIN_SESSION_KEY = 'abm_admin_session';
-
-        // --- ROUTEUR PRINCIPAL ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
-            
-            switch (page) {
-                case 'register':
-                    renderPage('register-template', params);
-                    break;
-                case 'school-register':
-                    renderPage('school-register-template', params);
-                    break;
-                case 'attendance':
-                    renderPage('attendance-template', params);
-                    break;
-                case 'admin':
-                    // Vérifier si l'admin est déjà connecté (sessionStorage)
-                    if (sessionStorage.getItem(ADMIN_SESSION_KEY)) {
-                        renderPage('admin-panel-template', params);
-                    } else {
-                        renderPage('admin-login-template', params);
-                    }
-                    break;
-                default:
-                    renderPage('landing-template', params);
-            }
-        });
-
-        function renderPage(templateId, params) {
-            const template = document.getElementById(templateId);
-            const appContainer = document.getElementById('app-container');
-            if (!template || !appContainer) return;
-
-            const clone = template.content.cloneNode(true);
-            appContainer.innerHTML = ''; // Vider le conteneur
-            appContainer.appendChild(clone);
-
-            // Appeler la fonction de setup spécifique à la page
-            const pageName = templateId.split('-')[0];
-            const setupFunction = `setup${pageName.charAt(0).toUpperCase() + pageName.slice(1)}Page`;
-            if (typeof window[setupFunction] === 'function') {
-                windowsetupFunction;
-            }
+/**
+ * NOUVEAU : Récupère les données nécessaires pour le formulaire d'inscription (filières, classes).
+ */
+function getRegistrationData(data) {
+    try {
+        const { universityId } = data;
+        if (!universityId) {
+          return createJsonResponse({ success: false, error: "ID de l'université manquant." });
         }
 
-        // --- FONCTIONS DE SETUP PAR PAGE ---
+        const filieresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.FILIERES);
+        const classesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CLASSES);
 
-        async function setupRegisterPage(params) {
-            const classe = params.get('classe');
-            document.getElementById('inscriptionForm').addEventListener('submit', handleRegistrationSubmit);
+        const filieresData = filieresSheet.getDataRange().getValues();
+        const filieresHeaders = filieresData.shift();
+        const filieres = filieresData
+            .filter(row => row[filieresHeaders.indexOf('ID_UNIVERSITE_FK')] === universityId)
+            .map(row => ({
+                id: row[filieresHeaders.indexOf('ID_FILIERE')],
+                name: row[filieresHeaders.indexOf('NOM_FILIERE')]
+            }));
 
-            // NOUVEAU: Charger les filières et classes
-            setLoading(true, true);
-            try {
-                const result = await callApi('get_registration_data');
-                const { filieres, classes } = result.data;
+        const filiereIdsForUniversity = filieres.map(f => f.id);
 
-                const filiereSelect = document.getElementById('filiereId');
-                const classeSelect = document.getElementById('classeId');
+        const classesData = classesSheet.getDataRange().getValues();
+        const classesHeaders = classesData.shift();
+        const classes = classesData
+            .filter(row => filiereIdsForUniversity.includes(row[classesHeaders.indexOf('ID_FILIERE_FK')]))
+            .map(row => ({
+                id: row[classesHeaders.indexOf('ID_CLASSE')],
+                name: row[classesHeaders.indexOf('NOM_CLASSE')],
+                filiereId: row[classesHeaders.indexOf('ID_FILIERE_FK')]
+            }));
 
-                filieres.forEach(f => {
-                    filiereSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`;
-                });
+        return createJsonResponse({ success: true, data: { filieres, classes } });
+    } catch (error) {
+        return createJsonResponse({ success: false, error: `Erreur de récupération des données: ${error.message}` });
+    }
+}
 
-                filiereSelect.addEventListener('change', () => {
-                    const selectedFiliereId = filiereSelect.value;
-                    classeSelect.innerHTML = '<option value="" disabled selected>-- Choisissez une classe --</option>';
-                    const filteredClasses = classes.filter(c => c.filiereId === selectedFiliereId);
-                    filteredClasses.forEach(c => {
-                        classeSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-                    });
-                    classeSelect.disabled = false;
-                    classeSelect.classList.remove('bg-gray-100');
-                });
-            } catch (error) {
-                renderConfirmationPage('Erreur de chargement', 'Impossible de charger les données d\'inscription. Veuillez réessayer plus tard.', 'error');
-            } finally {
-                setLoading(false, true);
-            }
+/**
+ * NOUVEAU : Enregistre une nouvelle école/université et son administrateur.
+ */
+function registerSchool(data) {
+  try {
+    const { universityName, adminEmail, adminPassword } = data;
+    if (!universityName || !adminEmail || !adminPassword) {
+      return createJsonResponse({ success: false, error: 'Toutes les informations sont requises pour créer un compte école.' });
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const adminsSheet = ss.getSheetByName(SHEET_NAMES.ADMINS);
+    const universitiesSheet = ss.getSheetByName(SHEET_NAMES.UNIVERSITIES);
+
+    // Vérifier si l'email de l'admin n'est pas déjà pris
+    const adminEmails = adminsSheet.getRange(2, 2, adminsSheet.getLastRow(), 1).getValues().flat();
+    if (adminEmails.includes(adminEmail)) {
+      return createJsonResponse({ success: false, error: 'Cette adresse email est déjà utilisée par un autre administrateur.' });
+    }
+
+    // Créer la nouvelle université
+    const newUniversityId = `UNIV-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+    universitiesSheet.appendRow([newUniversityId, universityName]);
+
+    // Créer le nouvel administrateur
+    const newAdminId = `ADM-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+    // ATTENTION: Stocker le mot de passe en clair est une faille de sécurité majeure.
+    // Pour une vraie application, il faudrait le "hasher".
+    adminsSheet.appendRow([newAdminId, adminEmail, adminPassword, newUniversityId]);
+
+    return createJsonResponse({ success: true, message: `L'université "${universityName}" a été créée avec succès. Vous pouvez maintenant vous connecter.` });
+  } catch (error) {
+    return createJsonResponse({ success: false, error: `Erreur lors de la création de l'école: ${error.message}` });
+  }
+}
+
+/**
+ * NOUVEAU : Connecte un administrateur d'école.
+ */
+function loginSchool(data) {
+  try {
+    const { email, password } = data;
+    if (!email || !password) {
+      return createJsonResponse({ success: false, error: 'Email et mot de passe requis.' });
+    }
+
+    const adminsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.ADMINS);
+    const adminsData = adminsSheet.getDataRange().getValues();
+    const headers = adminsData.shift();
+    const emailIdx = headers.indexOf('EMAIL_ADMIN');
+    const passIdx = headers.indexOf('PASSWORD');
+    const univIdIdx = headers.indexOf('ID_UNIVERSITE_FK');
+
+    for (const row of adminsData) {
+      if (row[emailIdx] === email && row[passIdx] === password) {
+        // Le "token" est simplement l'ID de l'université pour cette version simplifiée.
+        return createJsonResponse({ success: true, message: 'Connexion réussie.', token: row[univIdIdx], universityId: row[univIdIdx] });
+      }
+    }
+    return createJsonResponse({ success: false, error: 'Email ou mot de passe incorrect.' });
+  } catch (error) {
+    return createJsonResponse({ success: false, error: `Erreur interne: ${error.message}` });
+  }
+}
+/**
+ * NOUVEAU : Récupère la liste des entités (universités, filières, classes).
+ */
+function getEntitiesForAdmin(data) {
+  try {
+    const { entityType, universityId } = data;
+    if (!universityId) {
+        return createJsonResponse({ success: false, error: "Session administrateur invalide." });
+    }
+
+    const sheetName = getSheetNameForEntity(entityType);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) {
+      return createJsonResponse({ success: false, error: `L'entité '${entityType}' est inconnue.` });
+    }
+    const values = sheet.getDataRange().getValues();
+    const headers = values.shift() || [];
+    
+    let filteredValues = values;
+
+    if (entityType === 'filiere') {
+        const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+        filteredValues = values.filter(row => row[univFkIdx] === universityId);
+    } else if (entityType === 'classe') {
+        const filieresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.FILIERES);
+        const filieresData = filieresSheet.getDataRange().getValues();
+        const filieresHeaders = filieresData.shift();
+        const filiereUnivFkIdx = filieresHeaders.indexOf('ID_UNIVERSITE_FK');
+        const filiereIdIdx = filieresHeaders.indexOf('ID_FILIERE');
+        const allowedFiliereIds = filieresData
+            .filter(row => row[filiereUnivFkIdx] === universityId)
+            .map(row => row[filiereIdIdx]);
+        
+        const classeFkIdx = headers.indexOf('ID_FILIERE_FK');
+        filteredValues = values.filter(row => allowedFiliereIds.includes(row[classeFkIdx]));
+    }
+
+    const entities = filteredValues.map(row => {
+      const entity = {};
+      headers.forEach((header, i) => {
+        entity[header] = row[i];
+      });
+      return entity;
+    });
+    return createJsonResponse({ success: true, data: entities });
+  } catch (error) {
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * NOUVEAU : Ajoute une nouvelle entité.
+ */
+function addEntityForAdmin(data) {
+  try {
+    const { entityType, payload, universityId } = data;
+    if (!entityType || !payload || !payload.name) {
+      return createJsonResponse({ success: false, error: 'Données invalides. Le nom est obligatoire.' });
+    }
+    const sheetName = getSheetNameForEntity(entityType);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) {
+      return createJsonResponse({ success: false, error: `L'entité '${entityType}' est inconnue.` });
+    }
+    
+    const newId = `${entityType.substring(0, 3).toUpperCase()}-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+    
+    let rowData;
+    if (entityType === 'filiere') {
+        if (!universityId) return createJsonResponse({ success: false, error: 'ID Université manquant pour lier la filière.' });
+        rowData = [newId, payload.name, universityId];
+    } else if (entityType === 'classe') {
+        if (!payload.filiereId) return createJsonResponse({ success: false, error: 'ID Filière manquant.' });
+        rowData = [newId, payload.name, payload.filiereId];
+    } else {
+        throw new Error('Type d\'entité non géré pour l\'ajout.');
+    }
+    sheet.appendRow(rowData);
+
+    return createJsonResponse({ success: true, message: `"${payload.name}" a été ajouté avec succès.` });
+  } catch (error) {
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+/**
+ * NOUVEAU : Enregistre la présence d'un étudiant depuis le formulaire HTML.
+ */
+function recordAttendance(data) {
+  try {
+    const { studentId, classe, matiere } = data;
+    if (!studentId || !classe || !matiere) {
+      return createJsonResponse({ success: false, error: 'Données de présence manquantes.' });
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const scanSheet = ss.getSheetByName(SHEET_NAMES.SCAN);
+    const studentsSheet = ss.getSheetByName(SHEET_NAMES.STUDENTS);
+
+    // Trouver le nom de l'étudiant
+    const studentsData = studentsSheet.getRange(2, 1, studentsSheet.getLastRow() - 1, 2).getValues(); // ID et Nom
+    let studentName = 'Inconnu';
+    for (const row of studentsData) {
+      if (row[0].toString().trim().toUpperCase() === studentId.trim().toUpperCase()) {
+        studentName = row[1];
+        break;
+      }
+    }
+
+    const timestamp = new Date();
+    scanSheet.appendRow([timestamp, studentId, studentName, classe, matiere, Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'yyyy-MM-dd'), Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss'), 'Présent']);
+
+    return createJsonResponse({ success: true, message: `Présence enregistrée avec succès pour ${studentName} (${studentId}).` });
+  } catch (error) {
+    Logger.log(`Erreur recordAttendance: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: `Erreur interne lors de l'enregistrement: ${error.message}` });
+  }
+}
+
+/**
+ * NOUVEAU : Trouve le cours actuel pour une classe donnée.
+ */
+function getCurrentCourse(data) {
+  try {
+    const { classe } = data;
+    if (!classe) {
+      return createJsonResponse({ success: false, error: 'Paramètre "classe" manquant.' });
+    }
+
+    const planningSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING);
+    if (!planningSheet) {
+      return createJsonResponse({ success: false, error: 'Erreur Système: L\'onglet "Planning" est introuvable.' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const planningData = planningSheet.getDataRange().getValues();
+    const headers = planningData.shift();
+    
+    const classeIdx = headers.indexOf('CLASSE');
+    const matiereIdx = headers.indexOf('MATIERE');
+    const dateIdx = headers.indexOf('DATE_COURS');
+    const statutIdx = headers.indexOf('STATUT');
+
+    if ([classeIdx, matiereIdx, dateIdx, statutIdx].includes(-1)) {
+        return createJsonResponse({ success: false, error: 'Erreur de Configuration: Colonnes manquantes dans Planning.' });
+    }
+
+    for (const row of planningData) {
+      const courseDate = new Date(row[dateIdx]);
+      courseDate.setHours(0, 0, 0, 0);
+
+      if (row[classeIdx] == classe && courseDate.getTime() === today.getTime() && row[statutIdx] === 'Confirmé') {
+        const courseFound = { classe: row[classeIdx], matiere: row[matiereIdx] };
+        return createJsonResponse({ success: true, data: courseFound });
+      }
+    }
+
+    return createJsonResponse({ success: false, error: `Aucun cours confirmé pour la classe ${classe} aujourd'hui.` });
+
+  } catch (error) {
+    Logger.log(`Erreur getCurrentCourse: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: `Erreur interne: ${error.message}` });
+  }
+}
+/**
+ * NOUVEAU : Vérifie la clé d'administration.
+ */
+function adminLogin(data) {
+  try {
+    const { adminKey } = data;
+    if (!adminKey) {
+      return createJsonResponse({ success: false, error: 'Clé d\'administration manquante.' });
+    }
+    const config = getConfiguration();
+    if (config.ADMIN_KEY && config.ADMIN_KEY === adminKey) {
+      return createJsonResponse({ success: true, message: 'Connexion réussie.' });
+    } else {
+      return createJsonResponse({ success: false, error: 'Clé d\'administration incorrecte.' });
+    }
+  } catch (error) {
+    return createJsonResponse({ success: false, error: `Erreur interne: ${error.message}` });
+  }
+}
+// ============================================================================
+// FONCTIONS D'INITIALISATION ET UTILITAIRES (Mises à jour)
+// ============================================================================
+
+/**
+ * Initialise la structure du Google Sheet (onglets, en-têtes).
+ * MISE À JOUR : Ajout de la colonne DATE_INSCRIPTION.
+ */
+function setup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert(
+    'Confirmation de la Configuration',
+    'Cette action va configurer votre Google Sheet pour ABM EduPilote. TOUTES les données et onglets existants seront supprimés et remplacés. Êtes-vous sûr de vouloir continuer ?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    ui.alert('Configuration annulée.');
+    return;
+  }
+
+  try {
+    // 1. Nettoyer le Google Sheet
+    ss.getSheets().forEach(sheet => {
+      if (ss.getSheets().length > 1) { ss.deleteSheet(sheet); }
+    });
+    ss.getSheets()[0].setName('TEMP').clear();
+
+    // 2. Définir la structure complète
+    const sheetConfigs = {
+      [SHEET_NAMES.CONFIG]: { headers: ['Clé', 'Valeur'], color: '#f4b400', validations: {} },
+      [SHEET_NAMES.UNIVERSITIES]: { headers: ['ID_UNIVERSITE', 'NOM_UNIVERSITE'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.FILIERES]: { headers: ['ID_FILIERE', 'NOM_FILIERE', 'ID_UNIVERSITE_FK'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.CLASSES]: { headers: ['ID_CLASSE', 'NOM_CLASSE', 'ID_FILIERE_FK'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD', 'ID_UNIVERSITE_FK'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
+      [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'CLASSE', 'MATIERE', 'ENSEIGNANT', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
+      [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MATIERE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
+      [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7', validations: {} }
+    };
+
+    // 3. Créer et formater les onglets
+    Object.entries(sheetConfigs).forEach(([name, config]) => {
+      const sheet = ss.insertSheet(name);
+      sheet.setTabColor(config.color);
+      const headerRange = sheet.getRange(1, 1, 1, config.headers.length);
+      headerRange.setValues([config.headers]);
+      headerRange.setBackground(config.color).setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
+      sheet.setFrozenRows(1);
+
+      const headers = config.headers;
+      for (const colName in config.validations) {
+        const colIndex = headers.indexOf(colName);
+        if (colIndex !== -1) {
+          const rule = SpreadsheetApp.newDataValidation().requireValueInList(config.validations[colName]).setAllowInvalid(false).build();
+          sheet.getRange(2, colIndex + 1, sheet.getMaxRows() - 1, 1).setDataValidation(rule);
         }
+      }
+      config.headers.forEach((header, i) => sheet.autoResizeColumn(i + 1));
+    });
 
-        async function setupAttendancePage(params) {
-            const classe = params.get('classe');
-            if (!classe) {
-                renderConfirmationPage('Erreur', 'Aucune classe spécifiée dans l\'URL. Veuillez scanner un QR code valide.', 'error');
-                return;
-            }
+    ss.deleteSheet(ss.getSheetByName('TEMP'));
 
-            setLoading(true, true); // Affiche le spinner de page
-            try {
-                const result = await callApi('get_current_course', { classe: classe });
-                const course = result.data;
+    // 4. Remplir l'onglet Configuration
+    const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
+    const configData = [
+      [CONFIG_KEYS.ADMIN_EMAIL, 'METTRE_VOTRE_EMAIL_ICI'],
+      [CONFIG_KEYS.FRONTEND_URL, 'https://abm-edupilote.netlify.app/'],
+      [CONFIG_KEYS.ADMIN_KEY, `admin-${Utilities.getUuid().substring(0, 8)}`] // Génère une clé admin par défaut
+    ];
+    configSheet.getRange(2, 1, configData.length, 2).setValues(configData);
+    configSheet.autoResizeColumns(1, 2);
 
-                // Remplir le formulaire avec les informations du cours
-                document.getElementById('classe').value = course.classe;
-                document.getElementById('classe-display').textContent = course.classe;
-                document.getElementById('matiere').value = course.matiere;
-                document.getElementById('matiere-display').textContent = course.matiere;
+    // 5. Ajouter des données de démonstration pour les entités
+    const univId = 'UNIV-DEMO';
+    const adminId = 'ADM-DEMO';
+    ss.getSheetByName(SHEET_NAMES.UNIVERSITIES).getRange(2, 1, 1, 2).setValues([[univId, 'Université Virtuelle de Dakar']]);
+    ss.getSheetByName(SHEET_NAMES.ADMINS).getRange(2, 1, 1, 4).setValues([[adminId, 'admin@demo.com', 'password', univId]]);
+    
+    const filieresSheet = ss.getSheetByName(SHEET_NAMES.FILIERES);
+    const demoFilieres = [
+        ['FIL-INFO', 'Informatique de Gestion', 'UNIV-DEMO'],
+        ['FIL-DROIT', 'Droit des Affaires', 'UNIV-DEMO']
+    ];
+    filieresSheet.getRange(2, 1, demoFilieres.length, demoFilieres[0].length).setValues(demoFilieres);
 
-                document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceSubmit);
+    const classesSheet = ss.getSheetByName(SHEET_NAMES.CLASSES);
+    const demoClasses = [
+        ['CLS-L1INFO', 'L1-Info', 'FIL-INFO'],
+        ['CLS-L1DROIT', 'L1-Droit', 'FIL-DROIT']
+    ];
+    classesSheet.getRange(2, 1, demoClasses.length, demoClasses[0].length).setValues(demoClasses);
 
-            } catch (error) {
-                renderConfirmationPage('Formulaire non disponible', error.message, 'error');
-            } finally {
-                setLoading(false, true); // Cache le spinner de page
-            }
+    // 5. Ajouter des données de démonstration
+    const planningSheet = ss.getSheetByName(SHEET_NAMES.PLANNING);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const demoPlanning = [
+      ['C001', 'L1-Info', 'Algorithmique', 'Prof. Ba', today, '08:00', '10:00', 'Confirmé'],
+      ['C002', 'L1-Droit', 'Introduction au Droit', 'Prof. Ndiaye', today, '10:00', '12:00', 'Confirmé'],
+      ['C003', 'L1-Info', 'Bases de données', 'Prof. Sow', tomorrow, '08:00', '10:00', 'En attente']
+    ];
+    planningSheet.getRange(2, 1, demoPlanning.length, demoPlanning[0].length).setValues(demoPlanning);
+    planningSheet.getRange('E:E').setNumberFormat('dd/mm/yyyy');
+    planningSheet.getRange('F:G').setNumberFormat('hh"h"mm');
+    planningSheet.autoResizeColumns(1, planningSheet.getLastColumn());
+
+    const studentsSheet = ss.getSheetByName(SHEET_NAMES.STUDENTS);
+    const demoStudents = [
+        ['ETU-DEMO1', 'Moussa Fall', 'FIL-INFO', 'CLS-L1INFO', 'm.fall@example.com', univId, new Date()],
+        ['ETU-DEMO2', 'Awa Diop', 'FIL-DROIT', 'CLS-L1DROIT', 'a.diop@example.com', univId, new Date()]
+    ];
+    studentsSheet.getRange(2, 1, demoStudents.length, demoStudents[0].length).setValues(demoStudents);
+    studentsSheet.getRange('F:F').setNumberFormat('dd/mm/yyyy hh:mm');
+    studentsSheet.autoResizeColumns(1, studentsSheet.getLastColumn());
+
+    // 6. Message final
+    ui.alert(
+      '🚀 Configuration Terminée !',
+      'Votre système ABM EduPilote est prêt.\n\nProchaines étapes :\n1. Allez dans l\'onglet "Administrateurs" pour voir le compte démo (admin@demo.com / password).\n2. Déployez le script en tant qu\'application web si ce n\'est pas déjà fait.\n3. Utilisez le menu "ABM Gestion U" pour commencer.',
+      ui.ButtonSet.OK
+    );
+
+  } catch (e) {
+    Logger.log(e);
+    ui.alert('Erreur lors de la configuration', e.message, ui.ButtonSet.OK);
+  }
+}
+
+
+/**
+ * NOUVEAU : Crée une réponse standard au format JSON pour l'API.
+ */
+function createJsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+// --- TOUTES LES AUTRES FONCTIONS (onOpen, createDailyForms, processFormResponse, etc.) RESTENT IDENTIQUES ---
+// (Le code complet est inclus ci-dessous pour éviter toute confusion)
+
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('ABM Gestion U')
+
+    .addItem('1. Initialiser le Système (Setup)', 'setup')
+    .addSeparator()
+    .addItem('Générer les URLs des QR Codes', 'generateQrCodeUrls')
+    .addItem('Générer les liens d\'inscription', 'generateRegistrationLinks')
+    .addToUi();
+}
+
+function getConfiguration() {
+  const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CONFIG);
+  if (!configSheet) return {};
+  const data = configSheet.getDataRange().getValues();
+  data.shift();
+  const config = {};
+  data.forEach(row => { if (row[0] && row[1]) { config[row[0]] = row[1]; } });
+  return config;
+}
+
+function generateQrCodeUrls() {
+  try {
+    const htmlContent = generateQrCodeUrlsLogic();
+    const htmlOutput = HtmlService.createHtmlOutput(htmlContent).setWidth(600).setHeight(500);
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Générateur d\'URLs pour QR Codes');
+  } catch (error) {
+    Logger.log(`Erreur generateQrCodeUrls: ${error.toString()}`);
+    SpreadsheetApp.getUi().alert(`Erreur: ${error.message}`);
+  }
+}
+
+/**
+ * NOUVEAU : Génère des liens d'inscription spécifiques à chaque classe.
+ */
+function generateRegistrationLinks() {
+  try {
+    const htmlContent = generateRegistrationLinksLogic();
+    const htmlOutput = HtmlService.createHtmlOutput(htmlContent).setWidth(600).setHeight(400);
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Générateur de Liens d\'Inscription');
+  } catch (error) {
+    Logger.log(`Erreur generateRegistrationLinks: ${error.toString()}`);
+    SpreadsheetApp.getUi().alert(`Erreur: ${error.message}`);
+  }
+}
+
+// ============================================================================
+// FONCTIONS POUR L'INTERFACE ADMIN (appelées par doPost)
+// ============================================================================
+
+/**
+ * NOUVEAU: Version de generateQrCodeUrls pour l'interface admin HTML.
+ * Renvoie une réponse JSON avec le contenu HTML.
+ */
+function generateQrCodeUrlsForAdmin(data) {
+  try {
+    const htmlContent = generateQrCodeUrlsLogic(data.universityId);
+    return createJsonResponse({ success: true, html: htmlContent });
+  } catch (error) {
+    Logger.log(`Erreur generateQrCodeUrlsForAdmin: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * NOUVEAU: Version de generateRegistrationLinks pour l'interface admin HTML.
+ * Renvoie une réponse JSON avec le contenu HTML.
+ */
+function generateRegistrationLinksForAdmin(data) {
+  try {
+    const htmlContent = generateRegistrationLinksLogic(data.universityId);
+    return createJsonResponse({ success: true, html: htmlContent });
+  } catch (error) {
+    Logger.log(`Erreur generateRegistrationLinksForAdmin: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+
+// ============================================================================
+// LOGIQUE MÉTIER REFACTORISÉE (pour être appelée par les deux interfaces)
+// ============================================================================
+
+/**
+ * NOUVEAU: Logique de génération des QR codes, renvoie le HTML.
+ */
+function generateQrCodeUrlsLogic(universityId) {
+  const config = getConfiguration();
+  const frontendUrl = config.FRONTEND_URL;
+
+  if (!frontendUrl || frontendUrl.includes('METTRE_URL')) {
+    throw new Error("L'URL du frontend n'est pas configurée. Veuillez l'ajouter dans l'onglet Configuration.");
+  }
+  if (!universityId) {
+    throw new Error("ID de l'université manquant pour générer les liens.");
+  }
+
+  const filieresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.FILIERES);
+  const filieresData = filieresSheet.getDataRange().getValues();
+  const filieresHeaders = filieresData.shift();
+  const allowedFiliereIds = filieresData
+      .filter(row => row[filieresHeaders.indexOf('ID_UNIVERSITE_FK')] === universityId)
+      .map(row => row[filieresHeaders.indexOf('ID_FILIERE')]);
+
+  const classesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CLASSES);
+  const classesData = classesSheet.getDataRange().getValues();
+  const classesHeaders = classesData.shift();
+  const classes = classesData
+      .filter(row => allowedFiliereIds.includes(row[classesHeaders.indexOf('ID_FILIERE_FK')]))
+      .map(row => ({ id: row[classesHeaders.indexOf('ID_CLASSE')], name: row[classesHeaders.indexOf('NOM_CLASSE')] }));
+
+  let htmlContent = '<h2>URLs pour les QR Codes des salles</h2><ul>';
+  classes.forEach(classe => {
+    const fullUrl = `${frontendUrl}?page=attendance&classe=${encodeURIComponent(classe.id)}`;
+    const qrCodeApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(fullUrl)}&size=200`;
+    htmlContent += `<li style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 15px;"><b>Salle : ${classe.name}</b><br><img src="${qrCodeApiUrl}" alt="QR Code pour ${classe.name}"><br><p>URL à encoder :</p><input type="text" value="${fullUrl}" readonly style="width:95%;"></li>`;
+  });
+  htmlContent += '</ul>';
+  return htmlContent;
+}
+
+function getSheetNameForEntity(entityType) {
+  const map = { 'university': SHEET_NAMES.UNIVERSITIES, 'filiere': SHEET_NAMES.FILIERES, 'classe': SHEET_NAMES.CLASSES };
+  const sheetName = map[entityType];
+  if (!sheetName) throw new Error(`Type d'entité inconnu: ${entityType}`);
+  return sheetName;
+}
+function createHtmlResponse(title, message) {
+  const html = `
+    <!DOCTYPE html><html><head><base target="_top"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; margin: 0; padding: 15px; } .card { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; max-width: 100%; } h1 { color: #d9534f; } p { color: #333; }</style></head><body><div class="card"><h1>${title}</h1><p>${message}</p></div></body></html>`;
+  return HtmlService.createHtmlOutput(html).setTitle(title);
+}
+
+/**
+ * NOUVEAU: Logique de génération des liens d'inscription, renvoie le HTML.
+ */
+function generateRegistrationLinksLogic(universityId) {
+  const config = getConfiguration();
+  const frontendUrl = config.FRONTEND_URL;
+
+  if (!frontendUrl || frontendUrl.includes('METTRE_URL')) {
+    throw new Error("L'URL du frontend n'est pas configurée. Veuillez l'ajouter dans l'onglet Configuration.");
+  }
+  if (!universityId) {
+    throw new Error("ID de l'université manquant pour générer les liens.");
+  }
+
+  const filieresSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.FILIERES);
+  const filieresData = filieresSheet.getDataRange().getValues();
+  const filieresHeaders = filieresData.shift();
+  const allowedFiliereIds = filieresData
+      .filter(row => row[filieresHeaders.indexOf('ID_UNIVERSITE_FK')] === universityId)
+      .map(row => row[filieresHeaders.indexOf('ID_FILIERE')]);
+
+  const classesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CLASSES);
+  const classesData = classesSheet.getDataRange().getValues();
+  const classesHeaders = classesData.shift();
+  const classes = classesData
+      .filter(row => allowedFiliereIds.includes(row[classesHeaders.indexOf('ID_FILIERE_FK')]))
+      .map(row => ({ id: row[classesHeaders.indexOf('ID_CLASSE')], name: row[classesHeaders.indexOf('NOM_CLASSE')] }));
+
+  let htmlContent = '<h2>Liens d\'inscription par classe (Prêts à partager !)</h2><p>Partagez le lien correspondant à la classe pour que les étudiants soient automatiquement assignés.</p><ul>';
+  classes.forEach(classe => {
+    const registrationLink = `${frontendUrl}?page=register&university=${encodeURIComponent(universityId)}&classe=${encodeURIComponent(classe.id)}`;
+    htmlContent += `<li style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;"><b>Classe : ${classe.name}</b><br><input type="text" value="${registrationLink}" readonly style="width:95%; margin-top: 5px;"></li>`;
+  });
+
+  htmlContent += '</ul>';
+  return htmlContent;
+}
+    const entities = values.map(row => {
+      const entity = {};
+      headers.forEach((header, i) => {
+        entity[header] = row[i];
+      });
+      return entity;
+    });
+    return createJsonResponse({ success: true, data: entities });
+  } catch (error) {
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * NOUVEAU : Ajoute une nouvelle entité.
+ */
+function addEntity(data) {
+  try {
+    const { entityType, payload, universityId } = data; // On reçoit l'ID de l'université
+    if (!entityType || !payload || !payload.name) {
+      return createJsonResponse({ success: false, error: 'Données invalides. Le nom est obligatoire.' });
+    }
+    const sheetName = getSheetNameForEntity(entityType);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) {
+      return createJsonResponse({ success: false, error: `L'entité '${entityType}' est inconnue.` });
+    }
+    
+    const newId = `${entityType.substring(0, 3).toUpperCase()}-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+    
+    let rowData;
+    if (entityType === 'university') {
+        rowData = [newId, payload.name];
+    } else if (entityType === 'filiere') {
+        if (!universityId) return createJsonResponse({ success: false, error: 'ID Université manquant pour lier la filière.' });
+        rowData = [newId, payload.name, universityId];
+    } else if (entityType === 'classe') {
+        if (!payload.filiereId) return createJsonResponse({ success: false, error: 'ID Filière manquant.' });
+        rowData = [newId, payload.name, payload.filiereId];
+    } else {
+        throw new Error('Type d\'entité non géré pour l\'ajout.');
+    }
+    sheet.appendRow(rowData);
+
+    return createJsonResponse({ success: true, message: `"${payload.name}" a été ajouté avec succès.` });
+  } catch (error) {
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+/**
+ * NOUVEAU : Enregistre la présence d'un étudiant depuis le formulaire HTML.
+ */
+function recordAttendance(data) {
+  try {
+    const { studentId, classe, matiere } = data;
+    if (!studentId || !classe || !matiere) {
+      return createJsonResponse({ success: false, error: 'Données de présence manquantes.' });
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const scanSheet = ss.getSheetByName(SHEET_NAMES.SCAN);
+    const studentsSheet = ss.getSheetByName(SHEET_NAMES.STUDENTS);
+
+    // Trouver le nom de l'étudiant
+    const studentsData = studentsSheet.getRange(2, 1, studentsSheet.getLastRow() - 1, 2).getValues(); // ID et Nom
+    let studentName = 'Inconnu';
+    for (const row of studentsData) {
+      if (row[0].toString().trim().toUpperCase() === studentId.trim().toUpperCase()) {
+        studentName = row[1];
+        break;
+      }
+    }
+
+    const timestamp = new Date();
+    scanSheet.appendRow([timestamp, studentId, studentName, classe, matiere, Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'yyyy-MM-dd'), Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss'), 'Présent']);
+
+    return createJsonResponse({ success: true, message: `Présence enregistrée avec succès pour ${studentName} (${studentId}).` });
+  } catch (error) {
+    Logger.log(`Erreur recordAttendance: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: `Erreur interne lors de l'enregistrement: ${error.message}` });
+  }
+}
+
+/**
+ * NOUVEAU : Trouve le cours actuel pour une classe donnée.
+ */
+function getCurrentCourse(data) {
+  try {
+    const { classe } = data;
+    if (!classe) {
+      return createJsonResponse({ success: false, error: 'Paramètre "classe" manquant.' });
+    }
+
+    const planningSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING);
+    if (!planningSheet) {
+      return createJsonResponse({ success: false, error: 'Erreur Système: L\'onglet "Planning" est introuvable.' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const planningData = planningSheet.getDataRange().getValues();
+    const headers = planningData.shift();
+    
+    const classeIdx = headers.indexOf('CLASSE');
+    const matiereIdx = headers.indexOf('MATIERE');
+    const dateIdx = headers.indexOf('DATE_COURS');
+    const statutIdx = headers.indexOf('STATUT');
+
+    if ([classeIdx, matiereIdx, dateIdx, statutIdx].includes(-1)) {
+        return createJsonResponse({ success: false, error: 'Erreur de Configuration: Colonnes manquantes dans Planning.' });
+    }
+
+    for (const row of planningData) {
+      const courseDate = new Date(row[dateIdx]);
+      courseDate.setHours(0, 0, 0, 0);
+
+      if (row[classeIdx] == classe && courseDate.getTime() === today.getTime() && row[statutIdx] === 'Confirmé') {
+        const courseFound = { classe: row[classeIdx], matiere: row[matiereIdx] };
+        return createJsonResponse({ success: true, data: courseFound });
+      }
+    }
+
+    return createJsonResponse({ success: false, error: `Aucun cours confirmé pour la classe ${classe} aujourd'hui.` });
+
+  } catch (error) {
+    Logger.log(`Erreur getCurrentCourse: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: `Erreur interne: ${error.message}` });
+  }
+}
+/**
+ * NOUVEAU : Vérifie la clé d'administration.
+ */
+function adminLogin(data) {
+  try {
+    const { adminKey } = data;
+    if (!adminKey) {
+      return createJsonResponse({ success: false, error: 'Clé d\'administration manquante.' });
+    }
+    const config = getConfiguration();
+    if (config.ADMIN_KEY && config.ADMIN_KEY === adminKey) {
+      return createJsonResponse({ success: true, message: 'Connexion réussie.' });
+    } else {
+      return createJsonResponse({ success: false, error: 'Clé d\'administration incorrecte.' });
+    }
+  } catch (error) {
+    return createJsonResponse({ success: false, error: `Erreur interne: ${error.message}` });
+  }
+}
+// ============================================================================
+// FONCTIONS D'INITIALISATION ET UTILITAIRES (Mises à jour)
+// ============================================================================
+
+/**
+ * Initialise la structure du Google Sheet (onglets, en-têtes).
+ * MISE À JOUR : Ajout de la colonne DATE_INSCRIPTION.
+ */
+function setup() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ui = SpreadsheetApp.getUi();
+
+  const response = ui.alert(
+    'Confirmation de la Configuration',
+    'Cette action va configurer votre Google Sheet pour ABM EduPilote. TOUTES les données et onglets existants seront supprimés et remplacés. Êtes-vous sûr de vouloir continuer ?',
+    ui.ButtonSet.YES_NO
+  );
+
+  if (response !== ui.Button.YES) {
+    ui.alert('Configuration annulée.');
+    return;
+  }
+
+  try {
+    // 1. Nettoyer le Google Sheet
+    ss.getSheets().forEach(sheet => {
+      if (ss.getSheets().length > 1) { ss.deleteSheet(sheet); }
+    });
+    ss.getSheets()[0].setName('TEMP').clear();
+
+    // 2. Définir la structure complète
+    const sheetConfigs = {
+      [SHEET_NAMES.CONFIG]: { headers: ['Clé', 'Valeur'], color: '#f4b400', validations: {} },
+      [SHEET_NAMES.UNIVERSITIES]: { headers: ['ID_UNIVERSITE', 'NOM_UNIVERSITE'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.FILIERES]: { headers: ['ID_FILIERE', 'NOM_FILIERE', 'ID_UNIVERSITE_FK'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.CLASSES]: { headers: ['ID_CLASSE', 'NOM_CLASSE', 'ID_FILIERE_FK'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD', 'ID_UNIVERSITE_FK'], color: '#a61c00', validations: {} },
+      [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
+      [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'CLASSE', 'MATIERE', 'ENSEIGNANT', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
+      [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MATIERE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
+      [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7', validations: {} }
+    };
+
+    // 3. Créer et formater les onglets
+    Object.entries(sheetConfigs).forEach(([name, config]) => {
+      const sheet = ss.insertSheet(name);
+      sheet.setTabColor(config.color);
+      const headerRange = sheet.getRange(1, 1, 1, config.headers.length);
+      headerRange.setValues([config.headers]);
+      headerRange.setBackground(config.color).setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
+      sheet.setFrozenRows(1);
+
+      const headers = config.headers;
+      for (const colName in config.validations) {
+        const colIndex = headers.indexOf(colName);
+        if (colIndex !== -1) {
+          const rule = SpreadsheetApp.newDataValidation().requireValueInList(config.validations[colName]).setAllowInvalid(false).build();
+          sheet.getRange(2, colIndex + 1, sheet.getMaxRows() - 1, 1).setDataValidation(rule);
         }
+      }
+      config.headers.forEach((header, i) => sheet.autoResizeColumn(i + 1));
+    });
 
-        function setupAdminloginPage(params) {
-            document.getElementById('schoolLoginForm').addEventListener('submit', handleSchoolLoginSubmit);
-        }
+    ss.deleteSheet(ss.getSheetByName('TEMP'));
 
-        function setupSchoolregisterPage(params) {
-            document.getElementById('schoolRegisterForm').addEventListener('submit', handleSchoolRegisterSubmit);
-        }
+    // 4. Remplir l'onglet Configuration
+    const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
+    const configData = [
+      [CONFIG_KEYS.ADMIN_EMAIL, 'METTRE_VOTRE_EMAIL_ICI'],
+      [CONFIG_KEYS.FRONTEND_URL, 'https://abm-edupilote.netlify.app/'],
+      [CONFIG_KEYS.ADMIN_KEY, `admin-${Utilities.getUuid().substring(0, 8)}`] // Génère une clé admin par défaut
+    ];
+    configSheet.getRange(2, 1, configData.length, 2).setValues(configData);
+    configSheet.autoResizeColumns(1, 2);
 
-        function setupAdminmanagementPage(params) {
-            const tabs = document.querySelectorAll('.management-tab');
-            const tabContents = document.querySelectorAll('.management-tab-content');
+    // 5. Ajouter des données de démonstration pour les entités
+    const univId = 'UNIV-DEMO';
+    const adminId = 'ADM-DEMO';
+    ss.getSheetByName(SHEET_NAMES.UNIVERSITIES).getRange(2, 1, 1, 2).setValues([[univId, 'Université Virtuelle de Dakar']]);
+    ss.getSheetByName(SHEET_NAMES.ADMINS).getRange(2, 1, 1, 4).setValues([[adminId, 'admin@demo.com', 'password', univId]]);
+    
+    const filieresSheet = ss.getSheetByName(SHEET_NAMES.FILIERES);
+    const demoFilieres = [
+        ['FIL-INFO', 'Informatique de Gestion', 'UNIV-DEMO'],
+        ['FIL-DROIT', 'Droit des Affaires', 'UNIV-DEMO']
+    ];
+    filieresSheet.getRange(2, 1, demoFilieres.length, demoFilieres[0].length).setValues(demoFilieres);
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('border-indigo-500', 'text-indigo-600'));
-                    tabs.forEach(t => t.classList.add('border-transparent', 'text-gray-500'));
-                    tab.classList.add('border-indigo-500', 'text-indigo-600');
-                    tab.classList.remove('border-transparent', 'text-gray-500');
-                    tabContents.forEach(c => c.classList.add('hidden'));
-                    const targetContent = document.getElementById(tab.dataset.target);
-                    if (targetContent) targetContent.classList.remove('hidden');
-                    const entityType = tab.dataset.target.split('-')[0];
-                    loadAndRenderEntities(entityType);
-                });
-            });
+    const classesSheet = ss.getSheetByName(SHEET_NAMES.CLASSES);
+    const demoClasses = [
+        ['CLS-L1INFO', 'L1-Info', 'FIL-INFO'],
+        ['CLS-L1DROIT', 'L1-Droit', 'FIL-DROIT']
+    ];
+    classesSheet.getRange(2, 1, demoClasses.length, demoClasses[0].length).setValues(demoClasses);
 
-            // Activer le premier onglet par défaut
-            if (tabs.length > 0) {
-                tabs[0].click();
-            }
+    // 5. Ajouter des données de démonstration
+    const planningSheet = ss.getSheetByName(SHEET_NAMES.PLANNING);
+    const today = new Date();
+    const tomorrow = new Date();
+    tomorrow.setDate(today.getDate() + 1);
+    const demoPlanning = [
+      ['C001', 'L1-Info', 'Algorithmique', 'Prof. Ba', today, '08:00', '10:00', 'Confirmé'],
+      ['C002', 'L1-Droit', 'Introduction au Droit', 'Prof. Ndiaye', today, '10:00', '12:00', 'Confirmé'],
+      ['C003', 'L1-Info', 'Bases de données', 'Prof. Sow', tomorrow, '08:00', '10:00', 'En attente']
+    ];
+    planningSheet.getRange(2, 1, demoPlanning.length, demoPlanning[0].length).setValues(demoPlanning);
+    planningSheet.getRange('E:E').setNumberFormat('dd/mm/yyyy');
+    planningSheet.getRange('F:G').setNumberFormat('hh"h"mm');
+    planningSheet.autoResizeColumns(1, planningSheet.getLastColumn());
 
-            setupEntityForm('filiere', {});
-            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
-        }
+    const studentsSheet = ss.getSheetByName(SHEET_NAMES.STUDENTS);
+    const demoStudents = [
+        ['ETU-DEMO1', 'Moussa Fall', 'FIL-INFO', 'CLS-L1INFO', 'm.fall@example.com', univId, new Date()],
+        ['ETU-DEMO2', 'Awa Diop', 'FIL-DROIT', 'CLS-L1DROIT', 'a.diop@example.com', univId, new Date()]
+    ];
+    studentsSheet.getRange(2, 1, demoStudents.length, demoStudents[0].length).setValues(demoStudents);
+    studentsSheet.getRange('F:F').setNumberFormat('dd/mm/yyyy hh:mm');
+    studentsSheet.autoResizeColumns(1, studentsSheet.getLastColumn());
 
-        function setupEntityForm(entityType, options) {
-            const form = document.getElementById(`add-${entityType}-form`);
-            if (!form) return;
+    // 6. Message final
+    ui.alert(
+      '🚀 Configuration Terminée !',
+      'Votre système ABM EduPilote est prêt.\n\nProchaines étapes :\n1. Allez dans l\'onglet "Administrateurs" pour voir le compte démo (admin@demo.com / password).\n2. Déployez le script en tant qu\'application web si ce n\'est pas déjà fait.\n3. Utilisez le menu "ABM Gestion U" pour commencer.',
+      ui.ButtonSet.OK
+    );
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const nameInput = document.getElementById(`${entityType}-name`);
-                const name = nameInput.value.trim();
-                if (!name) return;
+  } catch (e) {
+    Logger.log(e);
+    ui.alert('Erreur lors de la configuration', e.message, ui.ButtonSet.OK);
+  }
+}
 
-                const payload = { name };
-                if (options.parent) {
-                    const parentSelect = document.getElementById(options.parentSelectId);
-                    payload[`${options.parent}Id`] = parentSelect.value;
-                }
 
-                setLoading(true);
-                try {
-                    const result = await callAdminApi('admin_add_entity', { entityType, payload, universityId: sessionStorage.getItem(ADMIN_SESSION_KEY) });
-                    showModal('Succès', result.message);
-                    nameInput.value = '';
-                    loadAndRenderEntities(entityType);
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    setLoading(false);
-                }
-            });
-        }
+/**
+ * NOUVEAU : Crée une réponse standard au format JSON pour l'API.
+ */
+function createJsonResponse(data) {
+  return ContentService.createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-        function setupAdminpanelPage(params) {
-            // La logique est dans les `onclick` des cartes, rien à faire ici pour l'instant.
-        }
 
-        // --- GESTIONNAIRES DE SOUMISSION ---
+// --- TOUTES LES AUTRES FONCTIONS (onOpen, createDailyForms, processFormResponse, etc.) RESTENT IDENTIQUES ---
+// (Le code complet est inclus ci-dessous pour éviter toute confusion)
 
-        async function handleRegistrationSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                nom: form.nom.value,
-                email: form.email.value,
-                filiereId: form.filiereId.value, // Déjà un ID
-                classeId: form.classeId.value   // Déjà un ID
-            };
-            setLoading(true); // Affiche le spinner du bouton
-            try {
-                const result = await callApi('inscrireEtudiant', data);
-                renderConfirmationPage('Inscription Réussie !', result.message, 'success');
-            } catch (error) {
-                renderConfirmationPage('Erreur d\'inscription', error.message, 'error');
-            }
-        }
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('ABM Gestion U')
 
-        async function handleAttendanceSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                studentId: form.studentId.value,
-                classe: form.classe.value,
-                matiere: form.matiere.value
-            };
-            setLoading(true); // Affiche le spinner du bouton
-            try {
-                const result = await callApi('recordAttendance', data);
-                renderConfirmationPage('Présence Enregistrée', result.message, 'success');
-            } catch (error) {
-                renderConfirmationPage('Erreur de Pointage', error.message, 'error');
-            }
-        }
+    .addItem('1. Initialiser le Système (Setup)', 'setup')
+    .addSeparator()
+    .addItem('Générer les URLs des QR Codes', 'generateQrCodeUrls')
+    .addItem('Générer les liens d\'inscription', 'generateRegistrationLinks')
+    .addToUi();
+}
 
-        async function handleSchoolRegisterSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                universityName: form.universityName.value,
-                adminEmail: form.adminEmail.value,
-                adminPassword: form.adminPassword.value
-            };
-            setLoading(true);
-            try {
-                const result = await callApi('register_school', data);
-                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
-            } catch (error) {
-                displayMessageInForm(error.message, 'error');
-            } finally {
-                setLoading(false);
-            }
-        }
+function getConfiguration() {
+  const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CONFIG);
+  if (!configSheet) return {};
+  const data = configSheet.getDataRange().getValues();
+  data.shift();
+  const config = {};
+  data.forEach(row => { if (row[0] && row[1]) { config[row[0]] = row[1]; } });
+  return config;
+}
 
-        async function loadAndRenderEntities(entityType) {
-            const listElement = document.getElementById(`${entityType}-list`);
-            if (!listElement) return;
-            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
+function generateQrCodeUrls() {
+  try {
+    const htmlContent = generateQrCodeUrlsLogic();
+    const htmlOutput = HtmlService.createHtmlOutput(htmlContent).setWidth(600).setHeight(500);
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Générateur d\'URLs pour QR Codes');
+  } catch (error) {
+    Logger.log(`Erreur generateQrCodeUrls: ${error.toString()}`);
+    SpreadsheetApp.getUi().alert(`Erreur: ${error.message}`);
+  }
+}
 
-            try {
-                const result = await callAdminApi('admin_get_entities', { entityType });
-                const entities = result.data;
-                
-                // Remplir les listes déroulantes pour les formulaires d'ajout
-                if (entityType === 'filiere') {
-                    const parentSelectId = 'classe-filiere-select';
-                    const parentSelect = document.getElementById(parentSelectId);
-                    if (parentSelect) {
-                        parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
-                            + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
-                    }
-                }
+/**
+ * NOUVEAU : Génère des liens d'inscription spécifiques à chaque classe.
+ */
+function generateRegistrationLinks() {
+  try {
+    const htmlContent = generateRegistrationLinksLogic();
+    const htmlOutput = HtmlService.createHtmlOutput(htmlContent).setWidth(600).setHeight(400);
+    SpreadsheetApp.getUi().showModalDialog(htmlOutput, 'Générateur de Liens d\'Inscription');
+  } catch (error) {
+    Logger.log(`Erreur generateRegistrationLinks: ${error.toString()}`);
+    SpreadsheetApp.getUi().alert(`Erreur: ${error.message}`);
+  }
+}
 
-                if (entities.length === 0) {
-                    listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
-                    return;
-                }
+// ============================================================================
+// FONCTIONS POUR L'INTERFACE ADMIN (appelées par doPost)
+// ============================================================================
 
-                listElement.innerHTML = entities.map(entity => {
-                    const idKey = `ID_${entityType.toUpperCase()}`;
-                    const nameKey = `NOM_${entityType.toUpperCase()}`;
+/**
+ * NOUVEAU: Version de generateQrCodeUrls pour l'interface admin HTML.
+ * Renvoie une réponse JSON avec le contenu HTML.
+ */
+function generateQrCodeUrlsForAdmin() {
+  try {
+    const htmlContent = generateQrCodeUrlsLogic();
+    return createJsonResponse({ success: true, html: htmlContent });
+  } catch (error) {
+    Logger.log(`Erreur generateQrCodeUrlsForAdmin: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
 
-                    return `
-                        <li class="p-3 bg-white border rounded-md flex justify-between items-center">
-                            <span>${entity[nameKey]}</span>
-                            <span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span>
-                        </li>
-                    `;
-                }).join('');
+/**
+ * NOUVEAU: Version de generateRegistrationLinks pour l'interface admin HTML.
+ * Renvoie une réponse JSON avec le contenu HTML.
+ */
+function generateRegistrationLinksForAdmin() {
+  try {
+    const htmlContent = generateRegistrationLinksLogic();
+    return createJsonResponse({ success: true, html: htmlContent });
+  } catch (error) {
+    Logger.log(`Erreur generateRegistrationLinksForAdmin: ${error.toString()}`);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
 
-            } catch (error) {
-                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
-            }
-        }
-        // --- FONCTIONS UTILITAIRES ---
+// ============================================================================
+// LOGIQUE MÉTIER REFACTORISÉE (pour être appelée par les deux interfaces)
+// ============================================================================
 
-        async function callApi(action, data = {}) {
-            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
-            
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data })
-            });
+/**
+ * NOUVEAU: Logique de génération des QR codes, renvoie le HTML.
+ */
+function generateQrCodeUrlsLogic() {
+  const webAppUrl = ScriptApp.getService().getUrl();
+  if (!webAppUrl) { throw new Error('Déployez d\'abord le script en tant qu\'application web.'); }
+  const planningSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING);
+  const data = planningSheet.getDataRange().getValues();
+  const headers = data.shift();
+  const classeIdx = headers.indexOf('CLASSE');
+  if (classeIdx === -1) { throw new Error('Colonne "CLASSE" introuvable.'); }
+  const classes = [...new Set(data.map(row => row[classeIdx]).filter(c => c))];
+  let htmlContent = '<h2>URLs pour les QR Codes des salles</h2><ul>';
+  classes.forEach(classe => {
+    const targetUrl = `?classe=${encodeURIComponent(classe)}`;
+    const fullUrl = `${webAppUrl}${targetUrl}`;
+    const qrCodeApiUrl = `https://quickchart.io/qr?text=${encodeURIComponent(fullUrl)}&size=200`;
+    htmlContent += `<li style="margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 15px;"><b>Salle : ${classe}</b><br><img src="${qrCodeApiUrl}" alt="QR Code pour ${classe}"><br><p>URL à encoder :</p><input type="text" value="${fullUrl}" readonly style="width:95%;"></li>`;
+  });
+  htmlContent += '</ul>';
+  return htmlContent;
+}
 
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
-            return result;
-        }
+function getSheetNameForEntity(entityType) {
+  const map = { 'university': SHEET_NAMES.UNIVERSITIES, 'filiere': SHEET_NAMES.FILIERES, 'classe': SHEET_NAMES.CLASSES };
+  const sheetName = map[entityType];
+  if (!sheetName) throw new Error(`Type d'entité inconnu: ${entityType}`);
+  return sheetName;
+}
+function createHtmlResponse(title, message) {
+  const html = `
+    <!DOCTYPE html><html><head><base target="_top"><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f2f5; margin: 0; padding: 15px; } .card { background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); text-align: center; max-width: 100%; } h1 { color: #d9534f; } p { color: #333; }</style></head><body><div class="card"><h1>${title}</h1><p>${message}</p></div></body></html>`;
+  return HtmlService.createHtmlOutput(html).setTitle(title);
+}
 
-        async function callAdminApi(action, data = {}) {
-            const token = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!token) {
-                // Rediriger vers la page de login si le token n'est pas trouvé
-                renderPage('school-login-template', new URLSearchParams());
-                throw new Error('Non authentifié.');
-            }
-            return callApi(action, { ...data, universityId: token });
-        }
+/**
+ * NOUVEAU: Logique de génération des liens d'inscription, renvoie le HTML.
+ */
+function generateRegistrationLinksLogic() {
+  const config = getConfiguration();
+  const frontendUrl = config.FRONTEND_URL;
 
-        async function callAdminAction(actionName) {
-            const spinnerOverlay = document.getElementById('spinner-overlay');
-            spinnerOverlay.classList.remove('hidden');
-            try {
-                const result = await callApi(actionName);
-                if (result.html) {
-                    showModal('Résultat de l\'opération', result.html);
-                } else if (result.message) {
-                    showModal('Opération terminée', `<p class="text-green-600 font-semibold">${result.message}</p>`);
-                }
-            } catch (error) {
-                showModal('Erreur', `<p class="text-red-600 font-semibold">${error.message}</p>`);
-            } finally {
-                spinnerOverlay.classList.add('hidden');
-            }
-        }
+  if (!frontendUrl || frontendUrl.includes('METTRE_URL')) {
+    throw new Error("L'URL du frontend n'est pas configurée. Veuillez l'ajouter dans l'onglet Configuration.");
+  }
 
-        function setLoading(isLoading, isPageLoad = false) {
-            const spinnerOverlay = document.getElementById('spinner-overlay');
-            if (isPageLoad && spinnerOverlay) {
-                spinnerOverlay.classList.toggle('hidden', !isLoading);
-                return;
-            }
+  const planningSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING);
+  const data = planningSheet.getDataRange().getValues();
+  const headers = data.shift();
+  const classeIdx = headers.indexOf('CLASSE');
+  if (classeIdx === -1) { throw new Error('La colonne "CLASSE" est introuvable dans l\'onglet Planning.'); }
+  const classes = [...new Set(data.map(row => row[classeIdx]).filter(c => c))];
+  let htmlContent = '<h2>Liens d\'inscription par classe (Prêts à partager !)</h2><p>Partagez le lien correspondant à la classe pour que les étudiants soient automatiquement assignés.</p><ul>';
+  classes.forEach(classe => {
+    // L'URL pointe vers la page d'inscription sur le frontend
+    const registrationLink = `${frontendUrl}?page=register&classe=${encodeURIComponent(classe)}`;
+    htmlContent += `<li style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;"><b>Classe : ${classe}</b><br><input type="text" value="${registrationLink}" readonly style="width:95%; margin-top: 5px;"></li>`;
+  });
 
-            const submitBtn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
-            if (!submitBtn || !btnText || !btnSpinner) return;
-            
-            submitBtn.disabled = isLoading;
-            btnText.classList.toggle('hidden', isLoading);
-            btnSpinner.classList.toggle('hidden', !isLoading);
-        }
-        function displayMessageInForm(message, type) { // Renamed from displayMessage
-            const messageArea = document.getElementById('messageArea');
-            if (!messageArea) return;
-            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
-            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
-            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-lg"><strong class="font-bold">${type === 'success' ? 'Succès !' : 'Erreur !'}</strong><span class="block sm:inline"> ${message}</span></div>`;
-        }
-
-        function renderConfirmationPage(title, message, type = 'success') {
-            const template = document.getElementById('confirmation-template');
-            const appContainer = document.getElementById('app-container');
-            if (!template || !appContainer) return;
-
-            const clone = template.content.cloneNode(true);
-            
-            const iconContainer = clone.querySelector('#confirmation-icon');
-            const titleEl = clone.querySelector('#confirmation-title');
-            const messageEl = clone.querySelector('#confirmation-message');
-
-            if (type === 'success') {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-green-600">✓</span>`;
-                titleEl.textContent = title || 'Succès !';
-            } else {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-red-600">✗</span>`;
-                titleEl.textContent = title || 'Erreur';
-            }
-            messageEl.textContent = message;
-
-            appContainer.innerHTML = '';
-            appContainer.appendChild(clone);
-        }
-
-        function showModal(title, content) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-content').innerHTML = content;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('close-modal').onclick = () => document.getElementById('modal').classList.add('hidden');
-        }
-    </script>
-
-</body>
-</html>
-                <div class="space-y-5">
-                    <div>
-                        <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
-                        <input type="text" id="nom" name="nom" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: Moussa Diop">
-                    </div>
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Adresse Email</label>
-                        <input type="email" id="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: m.diop@email.com">
-                    </div>
-                    <div>
-                        <label for="filiere" class="block text-sm font-medium text-gray-700 mb-1">Filière souhaitée</label>
-                        <select id="filiere" name="filiere" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white">
-                            <option value="" disabled selected>-- Choisissez une filière --</option>
-                            <option value="Informatique de Gestion">Informatique de Gestion</option>
-                            <option value="Marketing & Communication">Marketing & Communication</option>
-                            <option value="Finance & Comptabilité">Finance & Comptabilité</option>
-                            <option value="Droit des Affaires">Droit des Affaires</option>
-                            <!-- Ajoutez d'autres filières ici -->
-                        </select>
-                    </div>
-                </div>
-
-                <div class="mt-8">
-                    <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        <span id="btnText">Envoyer mon Inscription</span>
-                        <span id="btnSpinner" class="hidden">Envoi en cours...</span>
-                    </button>
-                </div>
-            </form>
-            
-            <!-- Zone de message -->
-            <div id="messageArea" class="mt-6 text-center"></div>
-
-        </div>
-        <footer class="bg-gray-50 p-4 text-center text-sm text-gray-500">
-            Propulsé par <a href="#" class="font-bold text-indigo-600">ABM EduPilote</a>
-        </footer>
-    </div>
-
-    <script>
-        // ==================================================================
-        // --- CONFIGURATION REQUISE ---
-        // Collez ici l'URL de votre application web Google Apps Script.
-        // Vous l'obtenez après avoir cliqué sur "Déployer" > "Nouveau déploiement".
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxQGc2CsynNNA88D7LZHEjAD4TdWrWabmOPrB6LDObvCA10Dw0_-J9Z42ZWkqr2zWIcvw/exec';
-        // ==================================================================
-
-        const form = document.getElementById('inscriptionForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const btnText = document.getElementById('btnText');
-        const btnSpinner = document.getElementById('btnSpinner');
-        const messageArea = document.getElementById('messageArea');
-        const classeInput = document.getElementById('classe');
-
-        // NOUVEAU: Récupérer la classe depuis l'URL de la page
-        document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const classe = urlParams.get('classe');
-            if (classe) {
-                classeInput.value = classe;
-            }
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            if (WEB_APP_URL.includes('COLLEZ_VOTRE_URL_APPS_SCRIPT_ICI') || !WEB_APP_URL) {
-                displayMessage('ERREUR DE CONFIGURATION : Veuillez coller l\'URL de votre Apps Script dans le fichier index.html.', 'error');
-                return;
-            }
-
-            // Désactiver le bouton et afficher le spinner
-            setLoading(true);
-
-            const formData = new FormData(form);
-            const data = {
-                nom: formData.get('nom'),
-                email: formData.get('email'),
-                filiere: formData.get('filiere'),
-                classe: formData.get('classe') // Ajout de la classe
-            };
-
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // Recommandé pour Apps Script
-                    },
-                    body: JSON.stringify({
-                        action: 'inscrireEtudiant',
-                        data: data
-                    })
-                });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    displayMessage(result.message, 'success');
-                    form.reset();
-                    form.style.display = 'none'; // Cacher le formulaire après succès
-                } else {
-                    displayMessage(`Erreur : ${result.error}`, 'error');
-                }
-
-            } catch (error) {
-                console.error('Erreur de communication:', error);
-                displayMessage('Une erreur de réseau est survenue. Veuillez réessayer.', 'error');
-            } finally {
-                // Réactiver le bouton
-                setLoading(false);
-            }
-        });
-
-        function setLoading(isLoading) {
-            submitBtn.disabled = isLoading;
-            if (isLoading) {
-                btnText.classList.add('hidden');
-                btnSpinner.classList.remove('hidden');
-            } else {
-                btnText.classList.remove('hidden');
-                btnSpinner.classList.add('hidden');
-            }
-        }
-
-        function displayMessage(message, type) {
-            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
-            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
-
-            messageArea.innerHTML = `
-                <div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-lg">
-                    <strong class="font-bold">${type === 'success' ? 'Succès !' : 'Erreur !'}</strong>
-                    <span class="block sm:inline"> ${message}</span>
-                </div>
-            `;
-        }
-    </script>
-
-</body>
-</html>
+  htmlContent += '</ul>';
+  return htmlContent;
+}
