@@ -409,7 +409,7 @@
     <!-- ================================================================== -->
     <script>
         // --- CONFIGURATION ---
-        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw4cdxSQpy-QHLXAEuPMIFOaOHDWDLyBFVCfNgVSUT2OciLLKGpMCMG6QaN6xwrpchaGQ/exec';
+        const WEBAPP_URL = 'https://script.google.com//s/AKmacrosfycbw4cdxSQpy-QHLXAEuPMIFOaOHDWDLyBFVCfNgVSUT2OciLLKGpMCMG6QaN6xwrpchaGQ/exec';
         const ADMIN_SESSION_KEY = 'admin-4a2957f0';
 
         // --- ROUTEUR PRINCIPAL ---
@@ -456,7 +456,7 @@
             const pageName = templateId.split('-')[0];
             const setupFunction = `setup${pageName.charAt(0).toUpperCase() + pageName.slice(1)}Page`;
             if (typeof window[setupFunction] === 'function') {
-                windowsetupFunction; // Pass params to setup function
+                windowsetupFunction; // Correction de la syntaxe
             }
         }
 
@@ -696,27 +696,6 @@
             }
         }
 
-        async function handleSchoolLoginSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = { 
-                email: form.adminEmail.value,
-                password: form.adminPassword.value
-            };
-            setLoading(true);
-            try {
-                const result = await callApi('login_school', data);
-                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token); // Stocke l'ID de l'université
-                renderPage('admin-panel-template', new URLSearchParams()); // Redirige vers le panneau admin
-            } catch (error) {
-                // Pour une erreur de login, on affiche juste le message dans le formulaire
-                displayMessageInForm(error.message, 'error');
-                sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            } finally {
-                setLoading(false); // Cache le spinner du bouton
-            }
-        }
-
         async function loadAndRenderEntities(entityType) {
             const listElement = document.getElementById(`${entityType}-list`);
             if (!listElement) return;
@@ -906,7 +885,7 @@
         // --- CONFIGURATION REQUISE ---
         // Collez ici l'URL de votre application web Google Apps Script.
         // Vous l'obtenez après avoir cliqué sur "Déployer" > "Nouveau déploiement".
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw2dbd73ndd9HzKFnJmLvo2uyHqMpOcC8nvp0ceIXfafAUfLFh2ICFKRDKf-AEF5s0ysQ/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJt4FQYr6jHHWH_ToSkeMo41n1qE8a8uGyd2pYD70m6PlHYQohcTtulEDAlPG3FQhlGA/exec';
         // ==================================================================
 
         const form = document.getElementById('inscriptionForm');
