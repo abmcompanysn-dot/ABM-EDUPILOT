@@ -456,7 +456,7 @@
             const pageName = templateId.split('-')[0];
             const setupFunction = `setup${pageName.charAt(0).toUpperCase() + pageName.slice(1)}Page`;
             if (typeof window[setupFunction] === 'function') {
-                windowsetupFunction; // Correction de la syntaxe
+                windowsetupFunction;
             }
         }
 
@@ -546,6 +546,10 @@
 
         function setupSchoolregisterPage(params) {
             document.getElementById('schoolRegisterForm').addEventListener('submit', handleSchoolRegisterSubmit);
+        }
+
+        function setupAdminpanelPage(params) {
+            // La logique est dans les `onclick` des cartes, rien à faire ici pour l'instant.
         }
 
         function setupSchoolwelcomePage(params) {
@@ -655,6 +659,27 @@
                 renderConfirmationPage('Présence Enregistrée', result.message, 'success');
             } catch (error) {
                 renderConfirmationPage('Erreur de Pointage', error.message, 'error');
+            }
+        }
+
+        async function handleSchoolLoginSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = { 
+                email: form.adminEmail.value,
+                password: form.adminPassword.value
+            };
+            setLoading(true);
+            try {
+                const result = await callApi('login_school', data);
+                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token); // Stocke l'ID de l'université
+                renderPage('admin-panel-template', new URLSearchParams()); // Redirige vers le panneau admin
+            } catch (error) {
+                // Pour une erreur de login, on affiche juste le message dans le formulaire
+                displayMessageInForm(error.message, 'error');
+                sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            } finally {
+                setLoading(false); // Cache le spinner du bouton
             }
         }
 
@@ -885,7 +910,7 @@
         // --- CONFIGURATION REQUISE ---
         // Collez ici l'URL de votre application web Google Apps Script.
         // Vous l'obtenez après avoir cliqué sur "Déployer" > "Nouveau déploiement".
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwJt4FQYr6jHHWH_ToSkeMo41n1qE8a8uGyd2pYD70m6PlHYQohcTtulEDAlPG3FQhlGA/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbykYCExYF3tTsVzzrfJYFFG37o9jCvC6AJj0car62TsTEeQ4qyBfBjyLDDlWVLQpWzfBg/exec';
         // ==================================================================
 
         const form = document.getElementById('inscriptionForm');
