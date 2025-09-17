@@ -214,18 +214,6 @@
                         </div>
                     </div>
                 </div>
-                <!-- NOUVEAU: Carte pour la gestion des entités -->
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="renderPage('admin-management-template', new URLSearchParams())">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Gestion des Entités</h2>
-                            <p class="text-gray-500 text-sm">Gérer filières et classes.</p>
-                        </div>
-                    </div>
-                </div>
             </main>
         </div>
     </template>
@@ -388,7 +376,7 @@
                     break;
                 case 'admin':
                     // Vérifier si l'admin est déjà connecté (sessionStorage)
-                    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true') {
+                    if (sessionStorage.getItem(ADMIN_SESSION_KEY)) {
                         renderPage('admin-panel-template', params);
                     } else {
                         renderPage('admin-login-template', params);
@@ -420,9 +408,6 @@
 
         async function setupRegisterPage(params) {
             const classe = params.get('classe');
-            if (classe) {
-                document.getElementById('classe').value = classe;
-            }
             document.getElementById('inscriptionForm').addEventListener('submit', handleRegistrationSubmit);
 
             // NOUVEAU: Charger les filières et classes
@@ -501,11 +486,17 @@
                     tab.classList.add('border-indigo-500', 'text-indigo-600');
                     tab.classList.remove('border-transparent', 'text-gray-500');
                     tabContents.forEach(c => c.classList.add('hidden'));
-                    document.getElementById(tab.dataset.target).classList.remove('hidden');
+                    const targetContent = document.getElementById(tab.dataset.target);
+                    if (targetContent) targetContent.classList.remove('hidden');
                     const entityType = tab.dataset.target.split('-')[0];
                     loadAndRenderEntities(entityType);
                 });
             });
+
+            // Activer le premier onglet par défaut
+            if (tabs.length > 0) {
+                tabs[0].click();
+            }
 
             setupEntityForm('filiere', {});
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
@@ -524,19 +515,19 @@
                 const payload = { name };
                 if (options.parent) {
                     const parentSelect = document.getElementById(options.parentSelectId);
-                    payload.filiereId = parentSelect.value;
+                    payload[`${options.parent}Id`] = parentSelect.value;
                 }
 
-                setLoading(true, true);
+                setLoading(true);
                 try {
-                    const result = await callAdminApi('admin_add_entity', { entityType, payload });
+                    const result = await callAdminApi('admin_add_entity', { entityType, payload, universityId: sessionStorage.getItem(ADMIN_SESSION_KEY) });
                     showModal('Succès', result.message);
                     nameInput.value = '';
                     loadAndRenderEntities(entityType);
                 } catch (error) {
                     showModal('Erreur', error.message);
                 } finally {
-                    setLoading(false, true);
+                    setLoading(false);
                 }
             });
         }
@@ -582,24 +573,6 @@
             }
         }
 
-        async function handleAdminLoginSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = { adminKey: form.adminKey.value };
-            setLoading(true);
-            try {
-                const result = await callApi('login_school', { email: form.adminEmail.value, password: form.adminPassword.value });
-                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token); // Stocke l'ID de l'université
-                renderPage('admin-panel-template', new URLSearchParams()); // Redirige vers le panneau admin
-            } catch (error) {
-                // Pour une erreur de login, on affiche juste le message dans le formulaire
-                displayMessageInForm(error.message, 'error');
-                sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            } finally {
-                setLoading(false); // Cache le spinner du bouton
-            }
-        }
-
         async function handleSchoolRegisterSubmit(e) {
             e.preventDefault();
             const form = e.target;
@@ -627,7 +600,7 @@
             try {
                 const result = await callAdminApi('admin_get_entities', { entityType });
                 const entities = result.data;
-
+                
                 // Remplir les listes déroulantes pour les formulaires d'ajout
                 if (entityType === 'filiere') {
                     const parentSelectId = 'classe-filiere-select';
@@ -644,14 +617,13 @@
                 }
 
                 listElement.innerHTML = entities.map(entity => {
-                    let parentInfo = '';
-                    if (entity.ID_UNIVERSITE_FK) parentInfo = `<span class="text-xs text-gray-400 ml-2">(Univ: ${entity.ID_UNIVERSITE_FK})</span>`;
-                    if (entity.ID_FILIERE_FK) parentInfo = `<span class="text-xs text-gray-400 ml-2">(Filière: ${entity.ID_FILIERE_FK})</span>`;
+                    const idKey = `ID_${entityType.toUpperCase()}`;
+                    const nameKey = `NOM_${entityType.toUpperCase()}`;
 
                     return `
                         <li class="p-3 bg-white border rounded-md flex justify-between items-center">
-                            <span>${entity[`NOM_${entityType.toUpperCase()}`]} ${parentInfo}</span>
-                            <span class="text-xs text-gray-400 font-mono">${entity[`ID_${entityType.toUpperCase()}`]}</span>
+                            <span>${entity[nameKey]}</span>
+                            <span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span>
                         </li>
                     `;
                 }).join('');
