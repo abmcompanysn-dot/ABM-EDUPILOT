@@ -11,6 +11,9 @@
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        .action-card {
+            transition: all 0.3s ease-in-out;
+        }
         .action-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -314,10 +317,31 @@
 
     <!-- Modèle pour la page d'accueil par défaut -->
     <template id="landing-template">
-        <div class="text-center">
-            <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
-            <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
-            <p class="mt-8 text-gray-500">Veuillez utiliser un lien d'inscription, de présence ou d'administration pour continuer.</p>
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="mb-12">
+                <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
+                <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Carte pour les administrateurs existants -->
+                <a href="?page=admin" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
+                        <span class="text-3xl">🔑</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Utiliser le Système</h2>
+                    <p class="text-gray-600 mt-2">Connectez-vous à votre espace administrateur pour gérer votre établissement.</p>
+                </a>
+
+                <!-- Carte pour les nouvelles écoles -->
+                <a href="?page=school-register" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
+                        <span class="text-3xl">🏫</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
+                    <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
+                </a>
+            </div>
         </div>
     </template>
 
