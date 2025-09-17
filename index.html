@@ -3,760 +3,254 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABM EduPilote - Plateforme Universitaire</title>
+    <title>ABM EduPilote - Portail</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
         .action-card {
             transition: all 0.3s ease-in-out;
         }
         .action-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
-        #modal-content { max-height: 80vh; }
-        .hidden-template { display: none; }
+        .page {
+            width: 100%;
+            max-width: 42rem; /* 672px */
+            margin: auto;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8">
 
     <!-- Conteneur principal où les pages seront injectées -->
-    <div id="app-container"></div>
+    <main id="app-container">
 
-    <!-- ================================================================== -->
-    <!-- MODÈLES HTML (TEMPLATES) -->
-    <!-- ================================================================== -->
-
-    <!-- Modèle pour la page d'inscription étudiant -->
-    <template id="register-template">
-        <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🎓 Inscription Étudiant</h1>
-                    <p class="text-gray-500 mt-2">Rejoignez notre université via ABM EduPilote</p>
+        <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
+        <section id="page-portal" class="page">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="mb-12">
+                    <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
+                    <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
                 </div>
-                <form id="inscriptionForm">
-                    <input type="hidden" id="universityId" name="universityId" value="">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="nom" class="block text-sm font-medium text-gray-700 mb-1">Nom Complet</label>
-                            <input type="text" id="nom" name="nom" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: Moussa Diop">
+    
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Carte pour les administrateurs existants -->
+                    <div onclick="showPage('page-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
+                            <span class="text-3xl">🔑</span>
                         </div>
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Adresse Email</label>
-                            <input type="email" id="email" name="email" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: m.diop@email.com">
-                        </div>
-                        <div>
-                            <label for="filiereId" class="block text-sm font-medium text-gray-700 mb-1">Filière</label>
-                            <select id="filiereId" name="filiereId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-white">
-                                <option value="" disabled selected>-- Choisissez une filière --</option>
-                                <!-- Options chargées dynamiquement -->
-                            </select>
-                        </div>
-                        <div>
-                            <label for="classeId" class="block text-sm font-medium text-gray-700 mb-1">Classe</label>
-                            <select id="classeId" name="classeId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition bg-gray-100" disabled>
-                                <option value="" disabled selected>-- Choisissez d'abord une filière --</option>
-                                <!-- Options chargées dynamiquement -->
-                            </select>
-                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Se Connecter</h2>
+                        <p class="text-gray-600 mt-2">Accédez à votre espace administrateur pour gérer votre établissement.</p>
                     </div>
-                    <div class="mt-8">
-                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <span id="btnText">Envoyer mon Inscription</span>
-                            <span id="btnSpinner" class="hidden">Envoi en cours...</span>
-                        </button>
-                    </div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-            <footer class="bg-gray-50 p-4 text-center text-sm text-gray-500">Propulsé par <a href="#" class="font-bold text-indigo-600">ABM EduPilote</a></footer>
-        </div>
-    </template>
-
-    <!-- NOUVEAU: Modèle pour l'enregistrement d'une nouvelle école -->
-    <template id="school-register-template">
-        <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🏫 Enregistrer votre École</h1>
-                    <p class="text-gray-500 mt-2">Créez un compte pour votre établissement sur ABM EduPilote.</p>
-                </div>
-                <form id="schoolRegisterForm">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
-                            <input type="text" id="universityName" name="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+    
+                    <!-- Carte pour les nouvelles écoles -->
+                    <div onclick="showPage('page-register')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
+                            <span class="text-3xl">🏫</span>
                         </div>
-                        <div>
-                            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
-                            <input type="email" id="adminEmail" name="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <div>
-                            <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
-                            <input type="password" id="adminPassword" name="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                    </div>
-                    <div class="mt-8"><button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span id="btnText">Créer le compte</span><span id="btnSpinner" class="hidden">Création...</span></button></div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-        </div>
-    </template>
-
-    <!-- NOUVEAU: Modèle pour la page de bienvenue après inscription d'une école -->
-    <template id="school-welcome-template">
-        <div class="w-full max-w-2xl mx-auto text-center">
-            <div class="bg-white rounded-2xl shadow-2xl p-8">
-                <div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
-                    <span class="text-5xl text-green-600">🎉</span>
-                </div>
-                <h1 class="text-3xl font-bold text-gray-800">Félicitations !</h1>
-                <p class="text-gray-600 mt-4 text-lg">
-                    L'établissement <strong id="welcome-school-name" class="text-indigo-600"></strong> a été enregistré avec succès sur ABM EduPilote.
-                </p>
-                <div class="mt-8 text-left bg-gray-50 p-6 rounded-lg border">
-                    <h2 class="text-lg font-semibold text-gray-700 mb-3">Prochaines étapes :</h2>
-                    <ul class="space-y-2 text-gray-600 list-disc list-inside">
-                        <li>Connectez-vous à votre nouveau tableau de bord.</li>
-                        <li>Ajoutez vos <strong class="font-medium">filières</strong> et <strong class="font-medium">classes</strong>.</li>
-                        <li>Générez les <strong class="font-medium">QR codes de présence</strong> pour vos salles.</li>
-                        <li>Partagez les <strong class="font-medium">liens d'inscription</strong> avec vos étudiants.</li>
-                    </ul>
-                </div>
-                <a href="?page=admin" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105">
-                    Se connecter à mon tableau de bord
-                </a>
-            </div>
-        </div>
-    </template>
-
-    <!-- Modèle pour la page de présence -->
-    <template id="attendance-template">
-        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
-                    <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display"></strong> pour la classe <strong class="text-gray-700" id="classe-display"></strong></p>
-                </div>
-                <form id="attendanceForm">
-                    <input type="hidden" id="classe" name="classe" value="">
-                    <input type="hidden" id="matiere" name="matiere" value="">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                            <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: ETU-ABC123">
-                        </div>
-                    </div>
-                    <div class="mt-8">
-                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <span id="btnText">Confirmer ma présence</span>
-                            <span id="btnSpinner" class="hidden">Enregistrement...</span>
-                        </button>
-                    </div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-            <footer class="bg-gray-50 p-4 text-center text-sm text-gray-500">Propulsé par <a href="#" class="font-bold text-indigo-600">ABM EduPilote</a></footer>
-        </div>
-    </template>
-
-    <!-- Modèle pour la page de connexion Admin -->
-    <template id="admin-login-template">
-        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🔑 Accès Administration</h1>
-                    <p class="text-gray-500 mt-2">Veuillez entrer votre clé d'accès.</p>
-                </div>
-                <form id="schoolLoginForm">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
-                            <input type="email" id="adminEmail" name="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
-                        </div>
-                        <div>
-                            <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-                            <input type="password" id="adminPassword" name="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-                        </div>
-                    </div>
-                    <div class="mt-8">
-                        <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            <span id="btnText">Se Connecter</span>
-                            <span id="btnSpinner" class="hidden">Vérification...</span>
-                        </button>
-                    </div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-                <div class="mt-4 text-center text-sm">
-                    <a href="?page=school-register" class="font-medium text-indigo-600 hover:text-indigo-500">Pas encore de compte ? Enregistrez votre école</a>
-                </div>
-                <!-- NOUVEAU: Lien mot de passe oublié -->
-                <div class="mt-2 text-center text-xs">
-                    <a href="?page=forgot-password" class="text-gray-500 hover:text-indigo-500">Mot de passe oublié ?</a>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <!-- NOUVEAU: Modèle pour mot de passe oublié -->
-    <template id="forgot-password-template">
-        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <div class="p-8">
-                <div class="text-center mb-6">
-                    <h1 class="text-3xl font-bold text-gray-800">🔑 Réinitialiser le mot de passe</h1>
-                    <p class="text-gray-500 mt-2">Entrez votre email pour recevoir une assistance.</p>
-                </div>
-                <form id="forgotPasswordForm">
-                    <div class="space-y-5">
-                        <div>
-                            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
-                            <input type="email" id="adminEmail" name="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
-                        </div>
-                    </div>
-                    <div class="mt-8"><button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span id="btnText">Envoyer la demande</span><span id="btnSpinner" class="hidden">Envoi...</span></button></div>
-                </form>
-                <div id="messageArea" class="mt-6 text-center"></div>
-            </div>
-        </div>
-    </template>
-
-    <!-- Modèle pour le panneau d'administration -->
-    <template id="admin-panel-template">
-        <div class="max-w-4xl mx-auto">
-            <header class="text-center mb-10">
-                <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
-                <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
-            </header>
-            <main class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_qr_codes')">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-green-100 text-green-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
-                            <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_reg_links')">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
-                            <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
-                        </div>
-                    </div>
-                </div>
-                <!-- NOUVEAU: Carte pour la gestion des entités -->
-                <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="renderPage('admin-management-template', new URLSearchParams())">
-                    <div class="flex items-center space-x-4">
-                        <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                        </div>
-                        <div>
-                            <h2 class="text-lg font-semibold text-gray-900">Gestion des Entités</h2>
-                            <p class="text-gray-500 text-sm">Gérer universités, filières et classes.</p>
-                        </div>
-                    </div>
-                </div>
-            </main>
-        </div>
-    </template>
-
-    <!-- NOUVEAU: Modèle pour la gestion des entités -->
-    <template id="admin-management-template">
-        <div class="max-w-5xl mx-auto">
-            <header class="mb-10">
-                <button onclick="renderPage('admin-panel-template', new URLSearchParams())" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au panneau d'administration</button>
-                <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
-                <p class="text-gray-600 mt-2">Ajoutez et consultez les universités, filières et classes de votre système.</p>
-            </header>
-
-            <!-- Tabs -->
-            <div class="mb-6 border-b border-gray-200">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="filiere-content">Filières</button>
-                    <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
-                </nav>
-            </div>
-
-            <!-- Contenu des onglets -->
-            <div id="management-content-container">
-                <!-- Contenu Filières -->
-                <div id="filiere-content" class="management-tab-content hidden">
-                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
-                            <form id="add-filiere-form" class="mt-4 space-y-4">
-                                <div>
-                                    <!-- L'université parente est maintenant implicite -->
-                                    <p class="text-sm text-gray-500">La filière sera ajoutée à votre université.</p>
-                                </div>
-                                <div>
-                                    <label for="filiere-name" class="block text-sm font-medium text-gray-700">Nom de la filière</label>
-                                    <input type="text" id="filiere-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                                </div>
-                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
-                            </form>
-                        </div>
-                        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
-                            <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
-                        </div>
-                    </div>
-                </div>
-                <!-- Contenu Classes -->
-                <div id="classe-content" class="management-tab-content hidden">
-                     <div class="grid md:grid-cols-3 gap-8">
-                        <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
-                            <form id="add-classe-form" class="mt-4 space-y-4">
-                                <div>
-                                    <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
-                                    <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
-                                </div>
-                                <div>
-                                    <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
-                                    <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                                </div>
-                                <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
-                            </form>
-                        </div>
-                        <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
-                            <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
-                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
+                        <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
                     </div>
                 </div>
             </div>
-        </div>
-    </template>
+        </section>
 
-    <!-- NOUVEAU: Modèle pour une page de confirmation générique -->
-    <template id="confirmation-template">
-        <div class="w-full max-w-md mx-auto text-center">
-            <div class="bg-white rounded-2xl shadow-2xl p-8">
-                <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center">
-                    <!-- L'icône (✓ ou ✗) sera injectée ici par le script -->
-                </div>
-                <h1 id="confirmation-title" class="text-3xl font-bold text-gray-800"></h1>
-                <p id="confirmation-message" class="text-gray-600 mt-4 text-lg"></p>
-                <a href="/" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
-                    Retour à l'accueil
-                </a>
-            </div>
-        </div>
-    </template>
-
-    <!-- Modèle pour la page d'accueil par défaut -->
-    <template id="landing-template">
-        <div class="max-w-4xl mx-auto text-center">
-            <div class="mb-12">
-                <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
-                <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Carte pour les administrateurs existants -->
-                <a href="?page=admin" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
-                        <span class="text-3xl">🔑</span>
+        <!-- PAGE 2: CONNEXION ADMIN -->
+        <section id="page-login" class="page hidden">
+            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">🔑 Accès Administration</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace.</p>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Utiliser le Système</h2>
-                    <p class="text-gray-600 mt-2">Connectez-vous à votre espace administrateur pour gérer votre établissement.</p>
-                </a>
-
-                <!-- Carte pour les nouvelles écoles -->
-                <a href="?page=school-register" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
-                        <span class="text-3xl">🏫</span>
+                    <form id="loginForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
+                                <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
+                            </div>
+                            <div>
+                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                                <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Se Connecter</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
                     </div>
-                    <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
-                    <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
-                </a>
-            </div>
-        </div>
-    </template>
-
-    <!-- ================================================================== -->
-    <!-- ÉLÉMENTS PARTAGÉS (Modale, Spinner) -->
-    <!-- ================================================================== -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-            <div class="mt-3">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
-                <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto"></div>
-                <div class="items-center px-4 py-3">
-                    <button id="close-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">Fermer</button>
                 </div>
             </div>
-        </div>
-    </div>
-    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
+        </section>
+
+        <!-- PAGE 3: INSCRIPTION ÉCOLE -->
+        <section id="page-register" class="page hidden">
+            <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">🏫 Enregistrer votre École</h1>
+                        <p class="text-gray-500 mt-2">Créez un compte pour votre établissement.</p>
+                    </div>
+                    <form id="registerForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
+                                <input type="text" id="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
+                                <input type="email" id="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
+                                <input type="password" id="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Créer le compte</span>
+                                <span class="btnSpinner hidden">Création...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                     <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 4: TABLEAU DE BORD ADMIN -->
+        <section id="page-dashboard" class="page hidden">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl font-bold text-gray-800">🎓 Tableau de Bord</h1>
+                <p class="text-gray-600 mt-2">Bienvenue, administrateur de <strong id="dashboard-school-name">votre école</strong>.</p>
+                <div class="mt-8 p-6 bg-white rounded-xl shadow-lg">
+                    <p class="text-lg">Votre système est prêt. Vous pouvez maintenant gérer vos filières, classes, et générer les liens d'inscription et QR codes.</p>
+                    <p class="mt-4 text-sm text-gray-500">(Les fonctionnalités complètes du tableau de bord seront ajoutées ici)</p>
+                </div>
+                <button onclick="logout()" class="mt-8 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">
+                    Déconnexion
+                </button>
+            </div>
+        </section>
+
+        <!-- PAGE 5: CONFIRMATION -->
+        <section id="page-confirmation" class="page hidden">
+             <div class="w-full max-w-md mx-auto text-center">
+                <div class="bg-white rounded-2xl shadow-2xl p-8">
+                    <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
+                        <span class="text-5xl text-green-600">✓</span>
+                    </div>
+                    <h1 id="confirmation-title" class="text-3xl font-bold text-gray-800">Opération Réussie</h1>
+                    <p id="confirmation-message" class="text-gray-600 mt-4 text-lg">Votre action a été complétée.</p>
+                    <button onclick="showPage('page-portal')" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
+                        Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        </section>
+
+    </main>
 
     <!-- ================================================================== -->
     <!-- SCRIPT PRINCIPAL -->
     <!-- ================================================================== -->
     <script>
         // --- CONFIGURATION ---
-         const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxTw3O6sj6QpkpamwYtFVBrhodUP2W2_3k9T0ZL7NB0NlPraQyZPoAHV3IcYOOKK4rQUg/exec';
-        const ADMIN_SESSION_KEY = 'admin-9f9e1cf0';
+        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw4cdxSQpy-QHLXAEuPMIFOaOHDWDLyBFVCfNgVSUT2OciLLKGpMCMG6QaN6xwrpchaGQ/exec';
+        const ADMIN_SESSION_KEY = 'abm_admin_session';
 
-        // --- ROUTEUR PRINCIPAL ---
+        // --- ROUTEUR SIMPLE ---
         document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
-            
-            switch (page) {
-                case 'register':
-                    renderPage('register-template', params);
-                    break;
-                case 'school-register':
-                    renderPage('school-register-template', params);
-                    break;
-                case 'forgot-password': // NOUVEAU
-                    renderPage('forgot-password-template', params);
-                    break;
-                case 'attendance':
-                    renderPage('attendance-template', params);
-                    break;
-                case 'admin':
-                    // Vérifier si l'admin est déjà connecté (sessionStorage)
-                    if (sessionStorage.getItem(ADMIN_SESSION_KEY)) {
-                        renderPage('admin-panel-template', params);
-                    } else {
-                        renderPage('admin-login-template', params);
-                    }
-                    break;
-                default:
-                    renderPage('landing-template', params);
+            // Attacher les gestionnaires d'événements une seule fois
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+
+            // Vérifier si une session admin existe
+            const adminToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (adminToken) {
+                // Idéalement, vous devriez valider ce token auprès du backend
+                // Pour cette version simple, on fait confiance à la session
+                showPage('page-dashboard');
+            } else {
+                showPage('page-portal');
             }
         });
 
-        function renderPage(templateId, params) {
-            const template = document.getElementById(templateId);
-            const appContainer = document.getElementById('app-container');
-            if (!template || !appContainer) return;
-
-            const clone = template.content.cloneNode(true);
-            appContainer.innerHTML = ''; // Vider le conteneur
-            appContainer.appendChild(clone);
-
-            // Appeler la fonction de setup spécifique à la page
-            const pageName = templateId.split('-')[0];
-            const setupFunction = `setup${pageName.charAt(0).toUpperCase() + pageName.slice(1)}Page`;
-            if (typeof window[setupFunction] === 'function') {
-                windowsetupFunction;
-            }
-        }
-
-        // --- FONCTIONS DE SETUP PAR PAGE ---
-
-        async function setupRegisterPage(params) {
-            const classeId = params.get('classe');
-            const universityId = params.get('university');
-
-            if (!universityId) {
-                renderConfirmationPage('Erreur', 'Lien d\'inscription invalide. ID de l\'université manquant.', 'error');
-                return;
-            }
-            document.getElementById('universityId').value = universityId;
-
-            document.getElementById('inscriptionForm').addEventListener('submit', handleRegistrationSubmit);
-
-            // NOUVEAU: Charger les filières et classes
-            setLoading(true, true);
-            try {
-                const result = await callApi('get_registration_data', { universityId: universityId });
-                const { filieres, classes } = result.data;
-
-                const filiereSelect = document.getElementById('filiereId');
-                const classeSelect = document.getElementById('classeId');
-
-                filiereSelect.addEventListener('change', () => {
-                    const selectedFiliereId = filiereSelect.value;
-                    classeSelect.innerHTML = '<option value="" disabled selected>-- Choisissez une classe --</option>';
-                    const filteredClasses = classes.filter(c => c.filiereId === selectedFiliereId);
-                    filteredClasses.forEach(c => {
-                        classeSelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
-                    });
-                    classeSelect.disabled = false;
-                    classeSelect.classList.remove('bg-gray-100');
-                });
-
-                filieres.forEach(f => { filiereSelect.innerHTML += `<option value="${f.id}">${f.name}</option>`; });
-                
-                if (classeId) {
-                    const targetClass = classes.find(c => c.id === classeId);
-                    if (targetClass) {
-                        filiereSelect.value = targetClass.filiereId;
-                        filiereSelect.dispatchEvent(new Event('change'));
-                        setTimeout(() => {
-                            classeSelect.value = classeId;
-                        }, 100);
-                    }
-                }
-            } catch (error) {
-                renderConfirmationPage('Erreur de chargement', 'Impossible de charger les données d\'inscription. Veuillez réessayer plus tard.', 'error');
-            } finally {
-                setLoading(false, true);
-            }
-        }
-
-        async function setupAttendancePage(params) {
-            const classe = params.get('classe');
-            if (!classe) {
-                renderConfirmationPage('Erreur', 'Aucune classe spécifiée dans l\'URL. Veuillez scanner un QR code valide.', 'error');
-                return;
-            }
-
-            setLoading(true, true); // Affiche le spinner de page
-            try {
-                const result = await callApi('get_current_course', { classe: classe });
-                const course = result.data;
-
-                // Remplir le formulaire avec les informations du cours
-                document.getElementById('classe').value = course.classe;
-                document.getElementById('classe-display').textContent = course.classe;
-                document.getElementById('matiere').value = course.matiere;
-                document.getElementById('matiere-display').textContent = course.matiere;
-
-                document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceSubmit);
-
-            } catch (error) {
-                renderConfirmationPage('Formulaire non disponible', error.message, 'error');
-            } finally {
-                setLoading(false, true); // Cache le spinner de page
-            }
-        }
-
-        function setupAdminloginPage(params) {
-            document.getElementById('schoolLoginForm').addEventListener('submit', handleSchoolLoginSubmit);
-        }
-
-        function setupSchoolregisterPage(params) {
-            document.getElementById('schoolRegisterForm').addEventListener('submit', handleSchoolRegisterSubmit);
-        }
-
-        function setupAdminpanelPage(params) {
-            // La logique est dans les `onclick` des cartes, rien à faire ici pour l'instant.
-        }
-
-        function setupSchoolwelcomePage(params) {
-            const schoolName = params.get('schoolName');
-            if (schoolName) {
-                document.getElementById('welcome-school-name').textContent = schoolName;
-            }
-        }
-
-        function setupForgotpasswordPage(params) {
-            document.getElementById('forgotPasswordForm').addEventListener('submit', handleForgotPasswordSubmit);
-        }
-
-        function setupAdminmanagementPage(params) {
-            const tabs = document.querySelectorAll('.management-tab');
-            const tabContents = document.querySelectorAll('.management-tab-content');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.classList.remove('border-indigo-500', 'text-indigo-600'));
-                    tabs.forEach(t => t.classList.add('border-transparent', 'text-gray-500'));
-                    tab.classList.add('border-indigo-500', 'text-indigo-600');
-                    tab.classList.remove('border-transparent', 'text-gray-500');
-                    tabContents.forEach(c => c.classList.add('hidden'));
-                    const targetContent = document.getElementById(tab.dataset.target);
-                    if (targetContent) targetContent.classList.remove('hidden');
-                    const entityType = tab.dataset.target.split('-')[0];
-                    loadAndRenderEntities(entityType);
-                });
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
             });
-
-            // Activer le premier onglet par défaut
-            if (tabs.length > 0) {
-                tabs[0].click();
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
             }
-
-            setupEntityForm('filiere', {});
-            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
-        }
-
-        function setupEntityForm(entityType, options) {
-            const form = document.getElementById(`add-${entityType}-form`);
-            if (!form) return;
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const nameInput = document.getElementById(`${entityType}-name`);
-                const name = nameInput.value.trim();
-                if (!name) return;
-
-                const payload = { name };
-                if (options.parent) {
-                    const parentSelect = document.getElementById(options.parentSelectId);
-                    payload[`${options.parent}Id`] = parentSelect.value;
-                }
-
-                setLoading(true);
-                try {
-                    const result = await callAdminApi('admin_add_entity', { entityType, payload });
-                    showModal('Succès', result.message);
-                    nameInput.value = '';
-                    loadAndRenderEntities(entityType);
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    setLoading(false);
-                }
-            });
         }
 
         // --- GESTIONNAIRES DE SOUMISSION ---
 
-        async function handleRegistrationSubmit(e) {
+        async function handleRegister(e) {
             e.preventDefault();
             const form = e.target;
             const data = {
-                nom: form.nom.value,
-                email: form.email.value,
-                filiereId: form.filiereId.value,
-                classeId: form.classeId.value,
-                universityId: form.universityId.value
+                universityName: form.querySelector('#universityName').value,
+                adminEmail: form.querySelector('#adminEmail').value,
+                adminPassword: form.querySelector('#adminPassword').value
             };
-            setLoading(true); // Affiche le spinner du bouton
-            try {
-                const result = await callApi('inscrireEtudiant', data);
-                renderConfirmationPage('Inscription Réussie !', result.message, 'success');
-            } catch (error) {
-                renderConfirmationPage('Erreur d\'inscription', error.message, 'error');
-            }
-        }
-
-        async function handleAttendanceSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                studentId: form.studentId.value,
-                classe: form.classe.value,
-                matiere: form.matiere.value
-            };
-            setLoading(true); // Affiche le spinner du bouton
-            try {
-                const result = await callApi('recordAttendance', data);
-                renderConfirmationPage('Présence Enregistrée', result.message, 'success');
-            } catch (error) {
-                renderConfirmationPage('Erreur de Pointage', error.message, 'error');
-            }
-        }
-
-        async function handleSchoolLoginSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = { 
-                email: form.adminEmail.value,
-                password: form.adminPassword.value
-            };
-            setLoading(true);
-            try {
-                const result = await callApi('login_school', data);
-                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token); // Stocke l'ID de l'université
-                renderPage('admin-panel-template', new URLSearchParams()); // Redirige vers le panneau admin
-            } catch (error) {
-                // Pour une erreur de login, on affiche juste le message dans le formulaire
-                displayMessageInForm(error.message, 'error');
-                sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            } finally {
-                setLoading(false); // Cache le spinner du bouton
-            }
-        }
-
-        async function handleSchoolRegisterSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                universityName: form.universityName.value,
-                adminEmail: form.adminEmail.value,
-                adminPassword: form.adminPassword.value
-            };
-            setLoading(true);
+            setLoading(true, form);
             try {
                 const result = await callApi('register_school', data);
-                const params = new URLSearchParams();
-                params.set('schoolName', data.universityName);
-                renderPage('school-welcome-template', params);
+                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
             } catch (error) {
-                displayMessageInForm(error.message, 'error');
+                displayMessageInForm(form, error.message, 'error');
             } finally {
-                setLoading(false);
+                setLoading(false, form);
             }
         }
 
-        async function handleForgotPasswordSubmit(e) {
+        async function handleLogin(e) {
             e.preventDefault();
             const form = e.target;
-            const data = { email: form.adminEmail.value };
-            setLoading(true);
+            const data = {
+                email: form.querySelector('#loginEmail').value,
+                password: form.querySelector('#loginPassword').value
+            };
+            setLoading(true, form);
             try {
-                const result = await callApi('request_password_reset', data);
-                // On affiche un message de succès même si l'email n'existe pas pour des raisons de sécurité
-                displayMessageInForm(result.message, 'success');
-                form.reset();
+                const result = await callApi('login_school', data);
+                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token);
+                document.getElementById('dashboard-school-name').textContent = result.universityId; // A améliorer pour avoir le nom
+                showPage('page-dashboard');
             } catch (error) {
-                displayMessageInForm(error.message, 'error');
+                displayMessageInForm(form, error.message, 'error');
+                sessionStorage.removeItem(ADMIN_SESSION_KEY);
             } finally {
-                setLoading(false);
+                setLoading(false, form);
             }
         }
 
-        async function loadAndRenderEntities(entityType) {
-            const listElement = document.getElementById(`${entityType}-list`);
-            if (!listElement) return;
-            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
-
-            try {
-                const result = await callAdminApi('admin_get_entities', { entityType });
-                const entities = result.data;
-                
-                // Remplir les listes déroulantes pour les formulaires d'ajout
-                if (entityType === 'filiere') {
-                    const parentSelectId = 'classe-filiere-select';
-                    const parentSelect = document.getElementById(parentSelectId);
-                    if (parentSelect) {
-                        parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
-                            + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
-                    }
-                }
-
-                if (entities.length === 0) {
-                    listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
-                    return;
-                }
-
-                listElement.innerHTML = entities.map(entity => {
-                    const idKey = `ID_${entityType.toUpperCase()}`;
-                    const nameKey = `NOM_${entityType.toUpperCase()}`;
-
-                    return `
-                        <li class="p-3 bg-white border rounded-md flex justify-between items-center">
-                            <span>${entity[nameKey]}</span>
-                            <span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span>
-                        </li>
-                    `;
-                }).join('');
-
-            } catch (error) {
-                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
-            }
+        function logout() {
+            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            showPage('page-portal');
         }
+
         // --- FONCTIONS UTILITAIRES ---
 
         async function callApi(action, data = {}) {
@@ -774,51 +268,19 @@
             return result;
         }
 
-        async function callAdminApi(action, data = {}) {
-            const token = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!token) {
-                // Rediriger vers la page de login si le token n'est pas trouvé
-                renderPage('school-login-template', new URLSearchParams());
-                throw new Error('Non authentifié.');
-            }
-            return callApi(action, { ...data, universityId: token });
-        }
-
-        async function callAdminAction(actionName) {
-            const spinnerOverlay = document.getElementById('spinner-overlay');
-            spinnerOverlay.classList.remove('hidden');
-            try {
-                const result = await callAdminApi(actionName);
-                if (result.html) {
-                    showModal('Résultat de l\'opération', result.html);
-                } else if (result.message) {
-                    showModal('Opération terminée', `<p class="text-green-600 font-semibold">${result.message}</p>`);
-                }
-            } catch (error) {
-                showModal('Erreur', `<p class="text-red-600 font-semibold">${error.message}</p>`);
-            } finally {
-                spinnerOverlay.classList.add('hidden');
-            }
-        }
-
-        function setLoading(isLoading, isPageLoad = false) {
-            const spinnerOverlay = document.getElementById('spinner-overlay');
-            if (isPageLoad && spinnerOverlay) {
-                spinnerOverlay.classList.toggle('hidden', !isLoading);
-                return;
-            }
-
-            const submitBtn = document.getElementById('submitBtn');
-            const btnText = document.getElementById('btnText');
-            const btnSpinner = document.getElementById('btnSpinner');
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement.querySelector('.submitBtn');
+            const btnText = formElement.querySelector('.btnText');
+            const btnSpinner = formElement.querySelector('.btnSpinner');
             if (!submitBtn || !btnText || !btnSpinner) return;
             
             submitBtn.disabled = isLoading;
             btnText.classList.toggle('hidden', isLoading);
             btnSpinner.classList.toggle('hidden', !isLoading);
         }
-        function displayMessageInForm(message, type) { // Renamed from displayMessage
-            const messageArea = document.getElementById('messageArea');
+
+        function displayMessageInForm(formElement, message, type) {
+            const messageArea = formElement.nextElementSibling; // Assumes messageArea is right after the form
             if (!messageArea) return;
             const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
             const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
@@ -827,35 +289,22 @@
         }
 
         function renderConfirmationPage(title, message, type = 'success') {
-            const template = document.getElementById('confirmation-template');
-            const appContainer = document.getElementById('app-container');
-            if (!template || !appContainer) return;
-
-            const clone = template.content.cloneNode(true);
-            
-            const iconContainer = clone.querySelector('#confirmation-icon');
-            const titleEl = clone.querySelector('#confirmation-title');
-            const messageEl = clone.querySelector('#confirmation-message');
+            showPage('page-confirmation');
+            const iconContainer = document.getElementById('confirmation-icon');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
 
             if (type === 'success') {
                 iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
                 iconContainer.innerHTML = `<span class="text-5xl text-green-600">✓</span>`;
-                titleEl.textContent = title || 'Succès !';
             } else {
                 iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
                 iconContainer.innerHTML = `<span class="text-5xl text-red-600">✗</span>`;
-                titleEl.textContent = title || 'Erreur';
             }
+            titleEl.textContent = title;
             messageEl.textContent = message;
-
-            appContainer.innerHTML = '';
-            appContainer.appendChild(clone);
-        }
-
-        function showModal(title, content) {
-            document.getElementById('modal-title').textContent = title;
-            document.getElementById('modal-content').innerHTML = content;
-            document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('close-modal').onclick = () => document.getElementById('modal').classList.add('hidden');
         }
     </script>
+
+</body>
+</html>
