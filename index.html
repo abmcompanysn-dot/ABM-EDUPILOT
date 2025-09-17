@@ -108,6 +108,33 @@
         </div>
     </template>
 
+    <!-- NOUVEAU: Modèle pour la page de bienvenue après inscription d'une école -->
+    <template id="school-welcome-template">
+        <div class="w-full max-w-2xl mx-auto text-center">
+            <div class="bg-white rounded-2xl shadow-2xl p-8">
+                <div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
+                    <span class="text-5xl text-green-600">🎉</span>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800">Félicitations !</h1>
+                <p class="text-gray-600 mt-4 text-lg">
+                    L'établissement <strong id="welcome-school-name" class="text-indigo-600"></strong> a été enregistré avec succès sur ABM EduPilote.
+                </p>
+                <div class="mt-8 text-left bg-gray-50 p-6 rounded-lg border">
+                    <h2 class="text-lg font-semibold text-gray-700 mb-3">Prochaines étapes :</h2>
+                    <ul class="space-y-2 text-gray-600 list-disc list-inside">
+                        <li>Connectez-vous à votre nouveau tableau de bord.</li>
+                        <li>Ajoutez vos <strong class="font-medium">filières</strong> et <strong class="font-medium">classes</strong>.</li>
+                        <li>Générez les <strong class="font-medium">QR codes de présence</strong> pour vos salles.</li>
+                        <li>Partagez les <strong class="font-medium">liens d'inscription</strong> avec vos étudiants.</li>
+                    </ul>
+                </div>
+                <a href="?page=admin" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg transition-transform transform hover:scale-105">
+                    Se connecter à mon tableau de bord
+                </a>
+            </div>
+        </div>
+    </template>
+
     <!-- Modèle pour la page de présence -->
     <template id="attendance-template">
         <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -168,6 +195,32 @@
                 <div class="mt-4 text-center text-sm">
                     <a href="?page=school-register" class="font-medium text-indigo-600 hover:text-indigo-500">Pas encore de compte ? Enregistrez votre école</a>
                 </div>
+                <!-- NOUVEAU: Lien mot de passe oublié -->
+                <div class="mt-2 text-center text-xs">
+                    <a href="?page=forgot-password" class="text-gray-500 hover:text-indigo-500">Mot de passe oublié ?</a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- NOUVEAU: Modèle pour mot de passe oublié -->
+    <template id="forgot-password-template">
+        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">🔑 Réinitialiser le mot de passe</h1>
+                    <p class="text-gray-500 mt-2">Entrez votre email pour recevoir une assistance.</p>
+                </div>
+                <form id="forgotPasswordForm">
+                    <div class="space-y-5">
+                        <div>
+                            <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
+                            <input type="email" id="adminEmail" name="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
+                        </div>
+                    </div>
+                    <div class="mt-8"><button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span id="btnText">Envoyer la demande</span><span id="btnSpinner" class="hidden">Envoi...</span></button></div>
+                </form>
+                <div id="messageArea" class="mt-6 text-center"></div>
             </div>
         </div>
     </template>
@@ -356,8 +409,8 @@
     <!-- ================================================================== -->
     <script>
         // --- CONFIGURATION ---
-        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbxoBls5QVUcXfOkmWfY--GJ_1RSVC8Ao9M5ahJkmiCVXX-y-YiV2KbnDho61VMxqyqjHQ/exec';
-        const ADMIN_SESSION_KEY = 'abm_admin_session';
+        const WEBAPP_URL = 'https://script.google.com/macros/s/AKfycbw4cdxSQpy-QHLXAEuPMIFOaOHDWDLyBFVCfNgVSUT2OciLLKGpMCMG6QaN6xwrpchaGQ/exec';
+        const ADMIN_SESSION_KEY = 'admin-4a2957f0';
 
         // --- ROUTEUR PRINCIPAL ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -370,6 +423,9 @@
                     break;
                 case 'school-register':
                     renderPage('school-register-template', params);
+                    break;
+                case 'forgot-password': // NOUVEAU
+                    renderPage('forgot-password-template', params);
                     break;
                 case 'attendance':
                     renderPage('attendance-template', params);
@@ -400,7 +456,7 @@
             const pageName = templateId.split('-')[0];
             const setupFunction = `setup${pageName.charAt(0).toUpperCase() + pageName.slice(1)}Page`;
             if (typeof window[setupFunction] === 'function') {
-                windowsetupFunction;
+                windowsetupFunction; // Pass params to setup function
             }
         }
 
@@ -490,6 +546,17 @@
 
         function setupSchoolregisterPage(params) {
             document.getElementById('schoolRegisterForm').addEventListener('submit', handleSchoolRegisterSubmit);
+        }
+
+        function setupSchoolwelcomePage(params) {
+            const schoolName = params.get('schoolName');
+            if (schoolName) {
+                document.getElementById('welcome-school-name').textContent = schoolName;
+            }
+        }
+
+        function setupForgotpasswordPage(params) {
+            document.getElementById('forgotPasswordForm').addEventListener('submit', handleForgotPasswordSubmit);
         }
 
         function setupAdminmanagementPage(params) {
@@ -602,7 +669,26 @@
             setLoading(true);
             try {
                 const result = await callApi('register_school', data);
-                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
+                const params = new URLSearchParams();
+                params.set('schoolName', data.universityName);
+                renderPage('school-welcome-template', params);
+            } catch (error) {
+                displayMessageInForm(error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        async function handleForgotPasswordSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = { email: form.adminEmail.value };
+            setLoading(true);
+            try {
+                const result = await callApi('request_password_reset', data);
+                // On affiche un message de succès même si l'email n'existe pas pour des raisons de sécurité
+                displayMessageInForm(result.message, 'success');
+                form.reset();
             } catch (error) {
                 displayMessageInForm(error.message, 'error');
             } finally {
