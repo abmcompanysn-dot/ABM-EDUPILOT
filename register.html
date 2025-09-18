@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rejoindre une Classe - ABM EduPilote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <main id="app-container">
+        <!-- This will be replaced by the confirmation page on success -->
+        <div id="form-container" class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">Rejoindre la Classe</h1>
+                    <p class="text-gray-500 mt-2">Confirmez votre identité pour vous inscrire à la classe <strong id="class-name-display" class="text-indigo-600">Chargement...</strong>.</p>
+                </div>
+                <form id="classRegisterForm">
+                    <input type="hidden" id="classId" name="classId" value="">
+                    <div class="space-y-5">
+                        <div>
+                            <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                            <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
+                        </div>
+                        <div>
+                            <label for="studentEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email d'inscription</label>
+                            <input type="email" id="studentEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: m.diop@email.com">
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
+                            <span class="btnText">M'inscrire à la classe</span>
+                            <span class="btnSpinner hidden">Vérification...</span>
+                        </button>
+                    </div>
+                </form>
+                <div class="messageArea mt-6 text-center"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTw3O6sj6QpkpamwYtFVBrhodUP2W2_3k9T0ZL7NB0NlPraQyZPoAHV3IcYOOKK4rQUg/exec';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const classId = params.get('classId');
+
+            if (!classId) {
+                renderConfirmationPage('Erreur', 'Lien d\'inscription invalide. ID de classe manquant.', 'error');
+                return;
+            }
+
+            document.getElementById('classId').value = classId;
+            document.getElementById('classRegisterForm').addEventListener('submit', handleClassRegisterSubmit);
+
+            // Récupérer et afficher le nom de la classe
+            try {
+                const result = await callApi('get_class_details', { classId });
+                document.getElementById('class-name-display').textContent = result.data.className;
+            } catch (error) {
+                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
+                displayMessageInForm(document.getElementById('classRegisterForm'), `Erreur: ${error.message}`, 'error');
+            }
+        });
+
+        async function handleClassRegisterSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: form.querySelector('#studentId').value,
+                email: form.querySelector('#studentEmail').value,
+                classId: form.querySelector('#classId').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('assign_student_to_class', data);
+                renderConfirmationPage('Inscription Réussie !', result.message, 'success');
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // --- UTILITY FUNCTIONS (copied from index.html) ---
+
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
+            
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data })
+            });
+
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
+            return result;
+        }
+
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement.querySelector('.submitBtn');
+            const btnText = formElement.querySelector('.btnText');
+            const btnSpinner = formElement.querySelector('.btnSpinner');
+            if (!submitBtn || !btnText || !btnSpinner) return;
+            
+            submitBtn.disabled = isLoading;
+            btnText.classList.toggle('hidden', isLoading);
+            btnSpinner.classList.toggle('hidden', !isLoading);
+        }
+
+        function displayMessageInForm(formElement, message, type) {
+            const messageArea = formElement.nextElementSibling;
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-lg"><strong class="font-bold">${type === 'success' ? 'Succès !' : 'Erreur !'}</strong><span class="block sm:inline"> ${message}</span></div>`;
+        }
+
+        function renderConfirmationPage(title, message, type = 'success') {
+            const appContainer = document.getElementById('app-container');
+            let iconHtml = '';
+            if (type === 'success') {
+                iconHtml = `<div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div>`;
+            } else {
+                iconHtml = `<div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100"><span class="text-5xl text-red-600">✗</span></div>`;
+            }
+
+            appContainer.innerHTML = `
+                <div class="w-full max-w-md mx-auto text-center">
+                    <div class="bg-white rounded-2xl shadow-2xl p-8">
+                        ${iconHtml}
+                        <h1 class="text-3xl font-bold text-gray-800">${title}</h1>
+                        <p class="text-gray-600 mt-4 text-lg">${message}</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+
+</body>
+</html>
