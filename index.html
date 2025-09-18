@@ -61,6 +61,16 @@
                         <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
                         <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
                     </div>
+                    
+                    <!-- NOUVEAU: Carte pour les responsables -->
+                    <div onclick="showPage('page-responsable-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-blue-100">
+                            <span class="text-3xl">👨‍🏫</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Espace Responsable</h2>
+                        <p class="text-gray-600 mt-2">Gérez le planning et les inscriptions de votre classe.</p>
+                    </div>
+                    
 
                     <!-- NOUVEAU: Carte pour l'espace étudiant -->
                     <div onclick="showPage('page-student-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer md:col-span-2">
@@ -140,6 +150,40 @@
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
                      <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOUVEAU: PAGE POUR CONNEXION RESPONSABLE -->
+        <section id="page-responsable-login" class="page hidden">
+            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">👨‍🏫 Espace Responsable</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace de gestion.</p>
+                    </div>
+                    <form id="responsableLoginForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="responsableLoginEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email</label>
+                                <input type="email" id="responsableLoginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="responsable@ecole.com">
+                            </div>
+                            <div>
+                                <label for="responsableLoginPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de passe</label>
+                                <input type="password" id="responsableLoginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Se Connecter</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                    <div class="mt-4 text-center text-sm">
                         <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
                     </div>
                 </div>
@@ -318,7 +362,7 @@
     <!-- ================================================================== -->
     <script>
         // --- CONFIGURATION ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycby2lkXJ9T9RHOJCaNoeqJs-R0aH1bwXxqudE8c45XoJizb2yuMJxiSTKF3yN8OBB0ZyvQ/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwsPQLPwRmlNAGtiZos91q3hsSGL9fVcErXNIwR3eXmjMa1JRxB9XTSZHaLQQX6VMtBTg/exec';
         const ADMIN_SESSION_KEY = 'abm_admin_session';
         const STUDENT_SESSION_KEY = 'abm_student_session';
 
@@ -351,6 +395,7 @@
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             document.getElementById('studentLoginForm').addEventListener('submit', handleStudentLogin);
+            document.getElementById('responsableLoginForm').addEventListener('submit', handleResponsableLogin);
         });
 
         function showPage(pageId) {
@@ -494,6 +539,25 @@
                 sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
                 showPage('page-student-dashboard');
                 loadStudentDashboard(result.data.studentId);
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleResponsableLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                email: form.querySelector('#responsableLoginEmail').value,
+                password: form.querySelector('#responsableLoginPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('responsableLogin', data);
+                // Redirection vers responsable.html avec le token
+                window.location.href = `responsable.html?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
