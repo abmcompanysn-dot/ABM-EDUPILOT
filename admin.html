@@ -4,9 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Administration - ABM EduPilote</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
@@ -18,111 +19,79 @@
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        #modal-content {
-            max-height: 80vh;
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
-<body class="p-4 sm:p-8">
+<body>
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white shadow-md flex-shrink-0">
+            <div class="p-6">
+                <h1 class="text-2xl font-bold text-indigo-600">ABM EduPilote</h1>
+            </div>
+            <nav class="mt-6">
+                <a href="#" onclick="showPage('main-dashboard')" class="nav-link flex items-center py-3 px-6 text-gray-700 bg-gray-200">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                    Tableau de Bord
+                </a>
+                <a href="#" onclick="showPage('management-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    Filières & Classes
+                </a>
+                <a href="#" onclick="showPage('responsables-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    Responsables
+                </a>
+                <a href="#" onclick="showPage('planning-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    Planning
+                </a>
+                <a href="#" onclick="showPage('attendance-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    Présences
+                </a>
+                <a href="#" onclick="showPage('tools-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
+                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
+                    Outils (QR/Liens)
+                </a>
+            </nav>
+        </aside>
 
-    <div id="main-dashboard" class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
-            <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
-        </header>
-
-        <!-- NOUVEAU: Bouton de déconnexion -->
-        <div class="text-right mb-6">
-            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="flex justify-between items-center p-6 bg-white border-b">
+                <h2 id="page-title" class="text-2xl font-semibold text-gray-700">Tableau de Bord</h2>
+                <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+            </header>
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                
+    <div id="main-dashboard" class="page-container">
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h4 class="text-gray-500 font-medium">Total Étudiants</h4>
+                <p id="stats-student-count" class="text-3xl font-bold text-indigo-600">...</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h4 class="text-gray-500 font-medium">Total Classes</h4>
+                <p id="stats-class-count" class="text-3xl font-bold text-indigo-600">...</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h4 class="text-gray-500 font-medium">Présences Aujourd'hui</h4>
+                <p class="text-3xl font-bold text-indigo-600">N/A</p>
+            </div>
         </div>
-
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <!-- Carte 2: Générer les QR Codes -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('adminGetQrCodes')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-green-100 text-green-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
-                        <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Carte 3: Générer les liens d'inscription -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('adminGetRegLinks')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
-                        <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NOUVEAU: Carte pour la gestion des entités -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('management-page')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Gérer Filières & Classes</h2>
-                        <p class="text-gray-500 text-sm">Ajoutez et consultez vos filières et classes.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NOUVEAU: Carte pour la gestion du planning -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('planning-page')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-yellow-100 text-yellow-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Gérer le Planning</h2>
-                        <p class="text-gray-500 text-sm">Planifiez les cours pour vos classes.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NOUVEAU: Carte pour la gestion des responsables -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('responsables-page')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-blue-100 text-blue-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Gérer les Responsables</h2>
-                        <p class="text-gray-500 text-sm">Assignez des responsables à vos classes.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- NOUVEAU: Carte pour la feuille de présence -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('attendance-page')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-teal-100 text-teal-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Feuille de Présence</h2>
-                        <p class="text-gray-500 text-sm">Consultez les pointages des étudiants.</p>
-                    </div>
-                </div>
-            </div>
-
-        </main>
+        <!-- Chart -->
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des Étudiants par Filière</h3>
+            <canvas id="studentsByFiliereChart"></canvas>
+        </div>
     </div>
 
-    <!-- NOUVEAU: Page de gestion des entités -->
-    <div id="management-page" class="page-container max-w-5xl mx-auto hidden">
+    <div id="management-page" class="page-container hidden">
         <header class="mb-10">
-            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
             <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
             <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
         </header>
@@ -186,9 +155,8 @@
     </div>
 
     <!-- NOUVEAU: Page de gestion du planning -->
-    <div id="planning-page" class="page-container max-w-6xl mx-auto hidden">
+    <div id="planning-page" class="page-container hidden">
         <header class="mb-10">
-            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
             <h1 class="text-4xl font-bold text-gray-800">📅 Gestion du Planning</h1>
             <p class="text-gray-600 mt-2">Planifiez les cours et consultez l'emploi du temps.</p>
         </header>
@@ -236,9 +204,8 @@
     </div>
 
     <!-- NOUVEAU: Page de gestion des responsables -->
-    <div id="responsables-page" class="page-container max-w-6xl mx-auto hidden">
+    <div id="responsables-page" class="page-container hidden">
         <header class="mb-10">
-            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
             <h1 class="text-4xl font-bold text-gray-800">👥 Gestion des Responsables de Classe</h1>
             <p class="text-gray-600 mt-2">Créez des comptes pour les responsables et assignez-les à une classe.</p>
         </header>
@@ -276,9 +243,8 @@
     </div>
 
     <!-- NOUVEAU: Page de consultation des présences -->
-    <div id="attendance-page" class="page-container max-w-6xl mx-auto hidden">
+    <div id="attendance-page" class="page-container hidden">
         <header class="mb-10">
-            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
             <h1 class="text-4xl font-bold text-gray-800">📋 Feuille de Présence</h1>
             <p class="text-gray-600 mt-2">Consultez l'historique des pointages par QR code.</p>
         </header>
@@ -289,9 +255,31 @@
         </div>
     </div>
 
+    <!-- NOUVEAU: Page des outils -->
+    <div id="tools-page" class="page-container hidden">
+        <header class="mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">🛠️ Outils et Générateurs</h1>
+            <p class="text-gray-600 mt-2">Générez ici vos QR codes de présence et liens d'inscription.</p>
+        </header>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les QR Codes de Présence</h3>
+                <button class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700" onclick="callAdminAction('adminGetQrCodes')">Lancer la génération</button>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les Liens d'Inscription</h3>
+                <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700" onclick="callAdminAction('adminGetRegLinks')">Lancer la génération</button>
+            </div>
+        </div>
+    </div>
+
+            </main>
+        </div>
+    </div>
+
     <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white">
             <div class="mt-3">
                 <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
                 <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto">
@@ -315,7 +303,7 @@
         
         // ==================================================================
         // --- CONFIGURATION REQUISE ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwsPQLPwRmlNAGtiZos91q3hsSGL9fVcErXNIwR3eXmjMa1JRxB9XTSZHaLQQX6VMtBTg/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwpJwZSlmqqQGod3cQG-gLHOS1lSxhWq4F1SX2aMSk5OjunN_MxqXYIZXAINOe91Pr_5A/exec';
         const ADMIN_SESSION_KEY = 'abm_admin_session'; // Clé pour stocker l'ID de l'école
         // ==================================================================
 
@@ -351,26 +339,37 @@
             window.location.href = 'index.html';
         }
 
-        // NOUVEAU: Logique pour afficher les pages
-        function showPage(pageId) {
-            document.querySelectorAll('.page-container, #main-dashboard').forEach(p => p.classList.add('hidden'));
+        function showPage(pageId, linkElement) {
+            document.querySelectorAll('.page-container').forEach(p => p.classList.add('hidden'));
+            document.getElementById(pageId).classList.remove('hidden');
             
-            const page = document.getElementById(pageId);
-            if (page) {
-                page.classList.remove('hidden');
-            }
+            // Mettre à jour le titre de la page
+            const pageTitles = {
+                'main-dashboard': 'Tableau de Bord',
+                'management-page': 'Filières & Classes',
+                'responsables-page': 'Responsables',
+                'planning-page': 'Planning',
+                'attendance-page': 'Présences',
+                'tools-page': 'Outils'
+            };
+            document.getElementById('page-title').textContent = pageTitles[pageId] || 'Administration';
 
+            // Mettre à jour le style du lien actif dans la sidebar
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('bg-gray-200', 'text-gray-700'));
+            if (linkElement) {
+                linkElement.classList.add('bg-gray-200', 'text-gray-700');
+            }
+            
             if (pageId === 'management-page') {
                 setupAdminManagementPage();
-            }
-            if (pageId === 'planning-page') {
+            } else if (pageId === 'planning-page') {
                 setupPlanningPage();
-            }
-            if (pageId === 'attendance-page') { // NOUVEAU
+            } else if (pageId === 'attendance-page') {
                 setupAttendancePage();
-            }
-            if (pageId === 'responsables-page') { // NOUVEAU
+            } else if (pageId === 'responsables-page') {
                 setupResponsablesPage();
+            } else if (pageId === 'main-dashboard') {
+                loadAdminDashboard();
             }
         }
 
@@ -404,6 +403,44 @@
 
             setupEntityForm('filiere', {});
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
+        }
+
+        async function loadAdminDashboard() {
+            try {
+                const result = await callAdminApi('adminGetDashboardStats');
+                const stats = result.data;
+
+                document.getElementById('stats-student-count').textContent = stats.studentCount;
+                document.getElementById('stats-class-count').textContent = stats.classCount;
+
+                // Render Chart
+                const ctx = document.getElementById('studentsByFiliereChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(stats.studentsByFiliere),
+                        datasets: [{
+                            label: 'Étudiants',
+                            data: Object.values(stats.studentsByFiliere),
+                            backgroundColor: [
+                                'rgba(79, 70, 229, 0.8)',
+                                'rgba(30, 64, 175, 0.8)',
+                                'rgba(124, 58, 237, 0.8)',
+                                'rgba(147, 51, 234, 0.8)',
+                                'rgba(219, 39, 119, 0.8)',
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { position: 'top' } }
+                    }
+                });
+            } catch (error) {
+                console.error("Erreur de chargement du dashboard:", error);
+            }
         }
 
         // NOUVEAU: Gère la soumission des formulaires d'ajout
@@ -700,6 +737,12 @@
                 showSpinner(false);
             }
         }
+
+        // Initialisation de la page au chargement
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('.nav-link').click(); // Clique sur le premier lien (Tableau de Bord)
+            loadAdminDashboard();
+        });
 
         closeModalBtn.onclick = () => modal.classList.add('hidden');
         window.onclick = (event) => {
