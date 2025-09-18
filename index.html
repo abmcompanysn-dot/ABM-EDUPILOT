@@ -304,7 +304,7 @@
             form.addEventListener('submit', handleClassRegisterSubmit);
 
             try {
-                const result = await callApi('get_class_details', { classId });
+                const result = await callApi('getClassDetails', { classId });
                 const details = result.data;
                 document.getElementById('class-name-display').textContent = details.className;
                 const contextEl = document.getElementById('class-context-display');
@@ -327,7 +327,7 @@
 
             const form = document.getElementById('attendanceForm');
             try {
-                const result = await callApi('get_current_course', { classe: classe });
+                const result = await callApi('getCurrentCourse', { classe: classe });
                 const course = result.data;
 
                 form.querySelector('#classe').value = course.classe;
@@ -354,7 +354,7 @@
             };
             setLoading(true, form);
             try {
-                const result = await callApi('register_school', data);
+                const result = await callApi('registerSchool', data);
                 renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
@@ -372,7 +372,7 @@
             };
             setLoading(true, form);
             try {
-                const result = await callApi('login_school', data);
+                const result = await callApi('loginSchool', data);
                 // Redirection directe vers admin.html avec le token (universityId)
                 window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
@@ -393,7 +393,7 @@
             };
             setLoading(true, form);
             try {
-                const result = await callApi('assign_student_to_class', data);
+                const result = await callApi('assignStudentToClass', data);
                 // Afficher la confirmation dans la modale
                 const modalContent = document.getElementById('modal-content');
                 modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
