@@ -232,6 +232,14 @@
             const params = new URLSearchParams(window.location.search);
             const page = params.get('page');
 
+            // Si une page est demandée dans l'URL (ex: depuis un lien QR code ou d'inscription)
+            if (page === 'class-register') {
+                openModalWithTemplate('class-register-template', params);
+            } else if (page === 'attendance') {
+                openModalWithTemplate('attendance-template', params);
+            }
+
+            // Attacher les gestionnaires pour les pages de base
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
             showPage('page-portal');
