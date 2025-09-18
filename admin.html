@@ -90,6 +90,19 @@
                 </div>
             </div>
 
+            <!-- NOUVEAU: Carte pour la feuille de présence -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('attendance-page')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-teal-100 text-teal-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Feuille de Présence</h2>
+                        <p class="text-gray-500 text-sm">Consultez les pointages des étudiants.</p>
+                    </div>
+                </div>
+            </div>
+
         </main>
     </div>
 
@@ -209,6 +222,20 @@
         </div>
     </div>
 
+    <!-- NOUVEAU: Page de consultation des présences -->
+    <div id="attendance-page" class="page-container max-w-6xl mx-auto hidden">
+        <header class="mb-10">
+            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
+            <h1 class="text-4xl font-bold text-gray-800">📋 Feuille de Présence</h1>
+            <p class="text-gray-600 mt-2">Consultez l'historique des pointages par QR code.</p>
+        </header>
+
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">Historique des Pointages</h3>
+            <div id="attendance-table-container" class="max-h-[70vh] overflow-y-auto"><p>Chargement des données de présence...</p></div>
+        </div>
+    </div>
+
     <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
         <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
@@ -285,6 +312,9 @@
             }
             if (pageId === 'planning-page') {
                 setupPlanningPage();
+            }
+            if (pageId === 'attendance-page') { // NOUVEAU
+                setupAttendancePage();
             }
         }
 
@@ -470,6 +500,57 @@
                     showModal('Erreur', error.message);
                 }
             });
+        }
+
+        // NOUVEAU: Initialise la page de présence
+        function setupAttendancePage() {
+            loadAndRenderAttendance();
+        }
+
+        // NOUVEAU: Charge et affiche les données de présence
+        async function loadAndRenderAttendance() {
+            const container = document.getElementById('attendance-table-container');
+            container.innerHTML = '<p>Chargement des données de présence...</p>';
+
+            try {
+                const result = await callAdminApi('adminGetAttendance');
+                const scans = result.data;
+
+                if (scans.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré pour le moment.</p>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'min-w-full divide-y divide-gray-200';
+                table.innerHTML = `
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Heure</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Étudiant</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Étudiant</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        ${scans.map(scan => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(scan.TIMESTAMP).toLocaleString('fr-FR')}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${scan.NOM_ETUDIANT}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${scan.ID_ETUDIANT}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.CLASSE}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.MATIERE}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                container.innerHTML = '';
+                container.appendChild(table);
+
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
         }
 
         // NOUVEAU: Gère le clic sur le bouton de suppression de cours
