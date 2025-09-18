@@ -7,7 +7,7 @@
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
@@ -27,6 +27,9 @@
             width: 100%;
             max-width: 42rem; /* 672px */
             margin: auto;
+        }
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
@@ -235,12 +238,19 @@
                 <div class="lg:col-span-1 space-y-8">
                     <!-- Carte d'édition des infos -->
                     <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Mes Informations</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Mes Informations</h3>
                         <form id="studentUpdateForm">
                             <div class="space-y-4">
                                 <div>
                                     <label for="student-info-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
                                     <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <!-- NOUVEAU: Affichage du QR Code Personnel -->
+                                <div class="text-center">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Mon QR Code d'Identification</h4>
+                                    <div id="personal-qr-code" class="mx-auto w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <p class="text-xs text-gray-500">Chargement...</p>
+                                    </div>
                                 </div>
                                 <div>
                                     <label for="student-info-email" class="block text-sm font-medium text-gray-700">Email</label>
@@ -256,15 +266,15 @@
                     </div>
                     <!-- Carte du Scanner QR -->
                     <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900 mb-4">Pointer ma présence</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Pointer ma présence</h3>
                         <div id="qr-reader" class="w-full border-dashed border-2 border-gray-300 rounded-lg bg-gray-50" style="min-height: 250px;"></div>
                         <div id="qr-reader-results" class="mt-2 text-center text-sm text-green-600 font-medium"></div>
-                        <button id="start-scan-btn" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Activer la caméra</button>
+                        <button id="start-scan-btn" class="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 font-semibold">Activer la caméra</button>
                     </div>
                 </div>
                 <!-- Colonne 2: Historique des présences -->
                 <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Historique de mes Présences</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Historique de mes Présences</h3>
                     <div id="student-attendance-history" class="max-h-[70vh] overflow-y-auto"><p>Chargement de l'historique...</p></div>
                 </div>
             </div>
@@ -362,7 +372,7 @@
     <!-- ================================================================== -->
     <script>
         // --- CONFIGURATION ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwsPQLPwRmlNAGtiZos91q3hsSGL9fVcErXNIwR3eXmjMa1JRxB9XTSZHaLQQX6VMtBTg/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwpJwZSlmqqQGod3cQG-gLHOS1lSxhWq4F1SX2aMSk5OjunN_MxqXYIZXAINOe91Pr_5A/exec';
         const ADMIN_SESSION_KEY = 'abm_admin_session';
         const STUDENT_SESSION_KEY = 'abm_student_session';
 
@@ -620,6 +630,7 @@
             document.getElementById('student-dashboard-name').textContent = '...';
             loadStudentInfo(studentId);
             loadStudentAttendance(studentId);
+            loadPersonalQrCode(studentId);
             setupQrScanner(studentId);
         }
 
@@ -669,25 +680,32 @@
                     container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
                     return;
                 }
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50"><tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Matière</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
-                    </tr></thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${history.map(item => `
-                            <tr>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">${new Date(item.TIMESTAMP).toLocaleDateString('fr-FR')}</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm">${item.MATIERE}</td>
-                                <td class="px-4 py-2 whitespace-nowrap text-sm"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${item.STATUT_PRESENCE}</span></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>`;
+                const timeline = document.createElement('div');
+                timeline.className = 'space-y-4';
+                timeline.innerHTML = history.map(item => `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <span class="text-xl">📘</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                        </div>
+                    </div>
+                `).join('');
                 container.innerHTML = '';
-                container.appendChild(table);
+                container.appendChild(timeline);
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        async function loadPersonalQrCode(studentId) {
+            const container = document.getElementById('personal-qr-code');
+            try {
+                const qrData = `ABM-ETU-ID:${studentId}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}`;
+                container.innerHTML = `<img src="${qrApiUrl}" alt="Mon QR Code" class="rounded-lg">`;
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
