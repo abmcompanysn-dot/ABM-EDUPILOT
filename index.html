@@ -166,7 +166,8 @@
         <div class="p-8">
             <div class="text-center mb-6">
                 <h1 class="text-3xl font-bold text-gray-800">Rejoindre la Classe</h1>
-                <p class="text-gray-500 mt-2">Confirmez votre identité pour vous inscrire à la classe <strong id="class-name-display" class="text-indigo-600"></strong>.</p>
+                <p class="text-gray-600 mt-2">Vous êtes sur le point de rejoindre la classe <strong id="class-name-display" class="text-indigo-600"></strong>.</p>
+                <p id="class-context-display" class="text-sm text-gray-500 mt-1"></p>
             </div>
             <form id="classRegisterForm">
                 <input type="hidden" id="classId" name="classId" value="">
@@ -304,7 +305,12 @@
 
             try {
                 const result = await callApi('get_class_details', { classId });
-                document.getElementById('class-name-display').textContent = result.data.className;
+                const details = result.data;
+                document.getElementById('class-name-display').textContent = details.className;
+                const contextEl = document.getElementById('class-context-display');
+                if (contextEl) {
+                    contextEl.textContent = `${details.filiereName} / ${details.universityName}`;
+                }
             } catch (error) {
                 document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
                 displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
