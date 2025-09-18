@@ -25,47 +25,6 @@
 </head>
 <body class="p-4 sm:p-8">
 
-    <div class="max-w-4xl mx-auto">
-        <header class="text-center mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
-            <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
-        </header>
-
-        <!-- NOUVEAU: Bouton de déconnexion -->
-        <div class="text-right mb-6">
-            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
-        </div>
-
-        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <!-- Carte 2: Générer les QR Codes -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_qr_codes')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-green-100 text-green-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
-                        <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Carte 3: Générer les liens d'inscription -->
-            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_reg_links')">
-                <div class="flex items-center space-x-4">
-                    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
-                        <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
-                    </div>
-                </div>
-            </div>
-
-        </main>
-    </div>
     <div id="main-dashboard" class="max-w-4xl mx-auto">
         <header class="text-center mb-10">
             <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
