@@ -3,961 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABM EduPilote - Portail</title>
-    <script src="https://cdn.tailwindcss.com"></script><!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABM EduPilote - Portail</title>
+    <title>Administration - ABM EduPilote</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
         }
         .action-card {
-            transition: all 0.3s ease-in-out;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         .action-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .page {
-            width: 100%;
-            max-width: 42rem; /* 672px */
-            margin: auto;
+        #modal-content {
+            max-height: 80vh;
         }
     </style>
 </head>
 <body class="p-4 sm:p-8">
 
-    <!-- Conteneur principal où les pages seront injectées -->
-    <main id="app-container">
+    <div id="main-dashboard" class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
+            <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
+        </header>
 
-        <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
-        <section id="page-portal" class="page">
-            <div class="max-w-4xl mx-auto text-center">
-                <div class="mb-12">
-                    <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
-                    <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
-                </div>
-    
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Carte pour les administrateurs existants -->
-                    <div onclick="showPage('page-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
-                            <span class="text-3xl">🔑</span>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900">Se Connecter</h2>
-                        <p class="text-gray-600 mt-2">Accédez à votre espace administrateur pour gérer votre établissement.</p>
+        <!-- NOUVEAU: Bouton de déconnexion -->
+        <div class="text-right mb-6">
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+        </div>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Carte 2: Générer les QR Codes -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('adminGetQrCodes')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-green-100 text-green-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
                     </div>
-    
-                    <!-- Carte pour les nouvelles écoles -->
-                    <div onclick="showPage('page-register')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
-                            <span class="text-3xl">🏫</span>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
-                        <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
+                        <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- PAGE 2: CONNEXION ADMIN -->
-        <section id="page-login" class="page hidden">
-            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-                <div class="p-8">
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-800">🔑 Accès Administration</h1>
-                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace.</p>
+            <!-- Carte 3: Générer les liens d'inscription -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('adminGetRegLinks')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     </div>
-                    <form id="loginForm">
-                        <div class="space-y-5">
-                            <div>
-                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
-                                <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
-                            </div>
-                            <div>
-                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-                                <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-                            </div>
-                        </div>
-                        <div class="mt-8">
-                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
-                                <span class="btnText">Se Connecter</span>
-                                <span class="btnSpinner hidden">Vérification...</span>
-                            </button>
-                        </div>
-                    </form>
-                    <div class="messageArea mt-6 text-center"></div>
-                    <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
+                        <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- PAGE 3: INSCRIPTION ÉCOLE -->
-        <section id="page-register" class="page hidden">
-            <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-                <div class="p-8">
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-800">🏫 Enregistrer votre École</h1>
-                        <p class="text-gray-500 mt-2">Créez un compte pour votre établissement.</p>
+            <!-- NOUVEAU: Carte pour la gestion des entités -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('management-page')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
                     </div>
-                    <form id="registerForm">
-                        <div class="space-y-5">
-                            <div>
-                                <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
-                                <input type="text" id="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
-                                <input type="email" id="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
-                                <input type="password" id="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                        <div class="mt-8">
-                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
-                                <span class="btnText">Créer le compte</span>
-                                <span class="btnSpinner hidden">Création...</span>
-                            </button>
-                        </div>
-                    </form>
-                    <div class="messageArea mt-6 text-center"></div>
-                     <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Gérer Filières & Classes</h2>
+                        <p class="text-gray-500 text-sm">Ajoutez et consultez vos filières et classes.</p>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- PAGE 5: CONFIRMATION -->
-        <section id="page-confirmation" class="page hidden">
-             <div class="w-full max-w-md mx-auto text-center">
-                <div class="bg-white rounded-2xl shadow-2xl p-8">
-                    <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
-                        <span class="text-5xl text-green-600">✓</span>
+        </main>
+    </div>
+
+    <!-- NOUVEAU: Page de gestion des entités -->
+    <div id="management-page" class="max-w-5xl mx-auto hidden">
+        <header class="mb-10">
+            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
+            <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
+            <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600" data-target="filiere-content">Filières</button>
+                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
+            </nav>
+        </div>
+
+        <!-- Contenu des onglets -->
+        <div id="management-content-container">
+            <!-- Contenu Filières -->
+            <div id="filiere-content" class="management-tab-content">
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
+                        <form id="add-filiere-form" class="mt-4 space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-500">La filière sera ajoutée à votre université.</p>
+                            </div>
+                            <div>
+                                <label for="filiere-name" class="block text-sm font-medium text-gray-700">Nom de la filière</label>
+                                <input type="text" id="filiere-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
+                        </form>
                     </div>
-                    <h1 id="confirmation-title" class="text-3xl font-bold text-gray-800">Opération Réussie</h1>
-                    <p id="confirmation-message" class="text-gray-600 mt-4 text-lg">Votre action a été complétée.</p>
-                    <button onclick="showPage('page-portal')" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
-                        Retour à l'accueil
-                    </button>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
+                        <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                    </div>
                 </div>
             </div>
-        </section>
-
-    </main>
-
-    <!-- NOUVEAU: Modale générique -->
-    <div id="modal-container" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-md">
-            <!-- Le contenu du formulaire sera injecté ici -->
+            <!-- Contenu Classes -->
+            <div id="classe-content" class="management-tab-content hidden">
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
+                        <form id="add-classe-form" class="mt-4 space-y-4">
+                            <div>
+                                <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
+                                <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
+                            </div>
+                            <div>
+                                <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
+                                <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
+                        </form>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
+                        <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- NOUVEAU: Modèles pour les formulaires -->
-    <template id="class-register-template">
-        <div class="p-8">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">Rejoindre la Classe</h1>
-                <p class="text-gray-600 mt-2">Vous êtes sur le point de rejoindre la classe <strong id="class-name-display" class="text-indigo-600"></strong>.</p>
-                <p id="class-context-display" class="text-sm text-gray-500 mt-1"></p>
-            </div>
-            <form id="classRegisterForm">
-                <input type="hidden" id="classId" name="classId" value="">
-                <div class="space-y-5">
-                    <div>
-                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                        <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
-                    </div>
-                    <div>
-                        <label for="studentEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email d'inscription</label>
-                        <input type="email" id="studentEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: m.diop@email.com">
-                    </div>
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
+                <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto">
+                    <!-- Content will be injected here -->
                 </div>
-                <div class="mt-8"><button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span class="btnText">M'inscrire à la classe</span><span class="btnSpinner hidden">Vérification...</span></button></div>
-            </form>
-            <div class="messageArea mt-6 text-center"></div>
-            <div class="mt-4 text-center text-sm">
-                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
-            </div>
-        </div>
-    </template>
-
-    <template id="attendance-template">
-        <div class="p-8">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
-                <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display">Chargement...</strong> pour la classe <strong class="text-gray-700" id="classe-display">...</strong></p>
-            </div>
-            <form id="attendanceForm">
-                <input type="hidden" id="classe" name="classe" value="">
-                <input type="hidden" id="matiere" name="matiere" value="">
-                <div class="space-y-5">
-                    <div>
-                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                        <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
-                    </div>
-                </div>
-                <div class="mt-8">
-                    <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg">
-                        <span class="btnText">Confirmer ma présence</span>
-                        <span class="btnSpinner hidden">Enregistrement...</span>
+                <div class="items-center px-4 py-3">
+                    <button id="close-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Fermer
                     </button>
                 </div>
-            </form>
-            <div class="messageArea mt-6 text-center"></div>
-            <div class="mt-4 text-center text-sm">
-                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
             </div>
         </div>
-    </template>
+    </div>
 
-    <!-- ================================================================== -->
-    <!-- SCRIPT PRINCIPAL -->
-    <!-- ================================================================== -->
+    <!-- Spinner Overlay -->
+    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
     <script>
-        // --- CONFIGURATION ---
+        
+        // ==================================================================
+        // --- CONFIGURATION REQUISE ---
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwfxbJryqMPwj3betyUDdhzosHYoZP0Rn42sFm2sNDMPXtJg-bMcXPkE4hPQ8bnQzpt/exec';
-        const ADMIN_SESSION_KEY = 'abm_admin_session';
+        const ADMIN_SESSION_KEY = 'abm_admin_session'; // Clé pour stocker l'ID de l'école
+        // ==================================================================
 
-        // --- ROUTEUR SIMPLE ---
+
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalBtn = document.getElementById('close-modal');
+        const spinnerOverlay = document.getElementById('spinner-overlay');
+
+        // NOUVEAU: Gérer l'authentification au chargement de la page
         document.addEventListener('DOMContentLoaded', () => {
-            // Attacher les gestionnaires d'événements une seule fois
-            const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get('token');
 
-            // Si une page est demandée dans l'URL (ex: depuis un lien QR code ou d'inscription)
-            // On gère l'ancien format 'register' et le nouveau 'class-register' pour la robustesse
-            if (page === 'class-register' || page === 'register') {
-                // Assurer la compatibilité avec l'ancien format de lien qui utilisait 'classe=' au lieu de 'classId='
-                if (!params.has('classId') && params.has('classe')) {
-                    params.set('classId', params.get('classe'));
-                }
-                openModalWithTemplate('class-register-template', params);
-            } else if (page === 'attendance') {
-                openModalWithTemplate('attendance-template', params);
+            if (tokenFromUrl) {
+                // Si un token est dans l'URL, on le sauvegarde et on nettoie l'URL
+                sessionStorage.setItem(ADMIN_SESSION_KEY, tokenFromUrl);
+                // Redirige vers la même page sans les paramètres pour une URL propre
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
 
-            // Attacher les gestionnaires pour les pages de base
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
-            showPage('page-portal');
+            // Vérifier si on a une session valide
+            const sessionToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (!sessionToken) {
+                // Si pas de token, on redirige vers la page de connexion
+                window.location.href = 'index.html'; 
+            }
         });
 
+        function logout() {
+            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            window.location.href = 'index.html';
+        }
+
+        // NOUVEAU: Logique pour afficher les pages
         function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.add('hidden');
+            document.getElementById('main-dashboard').classList.add('hidden');
+            document.getElementById('management-page').classList.add('hidden');
+            
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.classList.remove('hidden');
+            }
+
+            if (pageId === 'management-page') {
+                setupAdminManagementPage();
+            }
+        }
+
+        // NOUVEAU: Initialise la page de gestion
+        function setupAdminManagementPage() {
+            const tabs = document.querySelectorAll('.management-tab');
+            const tabContents = document.querySelectorAll('.management-tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        t.classList.remove('border-indigo-500', 'text-indigo-600');
+                        t.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    tab.classList.add('border-indigo-500', 'text-indigo-600');
+                    tab.classList.remove('border-transparent', 'text-gray-500');
+                    
+                    tabContents.forEach(c => c.classList.add('hidden'));
+                    const targetContent = document.getElementById(tab.dataset.target);
+                    if (targetContent) targetContent.classList.remove('hidden');
+                    
+                    const entityType = tab.dataset.target.split('-')[0];
+                    loadAndRenderEntities(entityType);
+                });
             });
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.remove('hidden');
-            }
-        }
 
-        // NOUVEAU: Fonctions pour la modale
-        function openModalWithTemplate(templateId, params) {
-            const template = document.getElementById(templateId);
-            const modalContent = document.getElementById('modal-content');
-            const modalContainer = document.getElementById('modal-container');
-
-            if (!template || !modalContent || !modalContainer) return;
-
-            const clone = template.content.cloneNode(true);
-            modalContent.innerHTML = '';
-            modalContent.appendChild(clone);
-
-            // Appeler la fonction de setup spécifique au formulaire
-            if (templateId === 'class-register-template') {
-                setupClassRegisterForm(params);
-            } else if (templateId === 'attendance-template') {
-                setupAttendanceForm(params);
+            // Activer le premier onglet par défaut
+            if (tabs.length > 0 && !document.querySelector('.management-tab.border-indigo-500')) {
+                tabs[0].click();
             }
 
-            modalContainer.classList.remove('hidden');
+            setupEntityForm('filiere', {});
+            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
         }
 
-        function closeModal() {
-            const modalContainer = document.getElementById('modal-container');
-            modalContainer.classList.add('hidden');
-            // Nettoyer l'URL pour enlever les paramètres de la page modale
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
+        // NOUVEAU: Gère la soumission des formulaires d'ajout
+        function setupEntityForm(entityType, options) {
+            const form = document.getElementById(`add-${entityType}-form`);
+            if (!form) return;
 
-        // NOUVEAU: Fonctions de setup pour les formulaires modaux
-        async function setupClassRegisterForm(params) {
-            const classId = params.get('classId');
-            if (!classId) {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Lien d'inscription invalide. ID de classe manquant.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
-                return;
-            }
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById(`${entityType}-name`);
+                const name = nameInput.value.trim();
+                if (!name) return;
 
-            const form = document.getElementById('classRegisterForm');
-            form.querySelector('#classId').value = classId;
-            form.addEventListener('submit', handleClassRegisterSubmit);
-
-            try {
-                const result = await callApi('getClassDetails', { classId });
-                const details = result.data;
-                document.getElementById('class-name-display').textContent = details.className;
-                const contextEl = document.getElementById('class-context-display');
-                if (contextEl) {
-                    contextEl.textContent = `${details.filiereName} / ${details.universityName}`;
+                const payload = { name };
+                if (options.parent) {
+                    const parentSelect = document.getElementById(options.parentSelectId);
+                    payload[`${options.parent}Id`] = parentSelect.value;
                 }
-            } catch (error) {
-                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
-                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
-            }
+
+                showSpinner(true);
+                try {
+                    const result = await callAdminApi('adminAddEntity', { entityType, payload });
+                    showModal('Succès', result.message);
+                    nameInput.value = '';
+                    loadAndRenderEntities(entityType); // Recharger la liste
+                } catch (error) {
+                    showModal('Erreur', error.message);
+                } finally {
+                    showSpinner(false);
+                }
+            });
         }
 
-        async function setupAttendanceForm(params) {
-            const classe = params.get('classe');
-            if (!classe) {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
-                return;
-            }
+        // NOUVEAU: Charge et affiche les listes de filières/classes
+        async function loadAndRenderEntities(entityType) {
+            const listElement = document.getElementById(`${entityType}-list`);
+            if (!listElement) return;
+            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
 
-            const form = document.getElementById('attendanceForm');
             try {
-                const result = await callApi('getCurrentCourse', { classe: classe });
-                const course = result.data;
+                const result = await callAdminApi('adminGetEntities', { entityType });
+                const entities = result.data;
+                
+                if (entityType === 'filiere') {
+                    const parentSelect = document.getElementById('classe-filiere-select');
+                    if (parentSelect) {
+                        parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
+                            + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
+                    }
+                }
 
-                form.querySelector('#classe').value = course.classe;
-                document.getElementById('classe-display').textContent = course.classe;
-                form.querySelector('#matiere').value = course.matiere;
-                document.getElementById('matiere-display').textContent = course.matiere;
+                if (entities.length === 0) {
+                    listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                    return;
+                }
 
-                form.addEventListener('submit', handleAttendanceSubmit);
+                listElement.innerHTML = entities.map(entity => {
+                    const idKey = `ID_${entityType.toUpperCase()}`;
+                    const nameKey = `NOM_${entityType.toUpperCase()}`;
+                    return `<li class="p-3 bg-white border rounded-md flex justify-between items-center"><span>${entity[nameKey]}</span><span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span></li>`;
+                }).join('');
+
             } catch (error) {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Formulaire non disponible</h2><p class="text-gray-600 mt-2">${error.message}</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
             }
         }
 
-        // --- GESTIONNAIRES DE SOUMISSION ---
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                universityName: form.querySelector('#universityName').value,
-                adminEmail: form.querySelector('#adminEmail').value,
-                adminPassword: form.querySelector('#adminPassword').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('registerSchool', data);
-                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
+        closeModalBtn.onclick = () => modal.classList.add('hidden');
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.classList.add('hidden');
             }
         }
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                email: form.querySelector('#loginEmail').value,
-                password: form.querySelector('#loginPassword').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('loginSchool', data);
-                // Redirection directe vers admin.html avec le token (universityId)
-                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
+        function showSpinner(show) {
+            spinnerOverlay.classList.toggle('hidden', !show);
         }
 
-        // NOUVEAU: Gestionnaires de soumission pour les formulaires modaux
-        async function handleClassRegisterSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                studentId: form.querySelector('#studentId').value,
-                email: form.querySelector('#studentEmail').value,
-                classId: form.querySelector('#classId').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('assignStudentToClass', data);
-                // Afficher la confirmation dans la modale
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
+        function showModal(title, content) {
+            modalTitle.textContent = title;
+            modalContent.innerHTML = content;
+            modal.classList.remove('hidden');
         }
 
-        async function handleAttendanceSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                studentId: form.querySelector('#studentId').value,
-                classe: form.querySelector('#classe').value,
-                matiere: form.querySelector('#matiere').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('recordAttendance', data);
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Présence Enregistrée</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
+        // NOUVEAU: Fonction d'appel API spécifique à l'admin
+        async function callAdminApi(action, data = {}) {
+            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (!universityId) {
+                throw new Error('Session administrateur invalide. Veuillez vous reconnecter.');
             }
-        }
-
-        // --- FONCTIONS UTILITAIRES ---
-
-        async function callApi(action, data = {}) {
-            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
             
             const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data })
+                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data: { ...data, universityId } })
             });
-
             const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
+            if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
             return result;
         }
 
-        function setLoading(isLoading, formElement) {
-            const submitBtn = formElement.querySelector('.submitBtn');
-            const btnText = formElement.querySelector('.btnText');
-            const btnSpinner = formElement.querySelector('.btnSpinner');
-            if (!submitBtn || !btnText || !btnSpinner) return;
-            
-            submitBtn.disabled = isLoading;
-            btnText.classList.toggle('hidden', isLoading);
-            btnSpinner.classList.toggle('hidden', !isLoading);
-        }
+        async function callAdminAction(actionName) {
+            showSpinner(true);
 
-        function displayMessageInForm(formElement, message, type) {
-            const messageArea = formElement.nextElementSibling; // Assumes messageArea is right after the form
-            if (!messageArea) return;
-            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
-            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
-            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-lg"><strong class="font-bold">${type === 'success' ? 'Succès !' : 'Erreur !'}</strong><span class="block sm:inline"> ${message}</span></div>`;
-        }
-
-        function renderConfirmationPage(title, message, type = 'success') {
-            showPage('page-confirmation');
-            const iconContainer = document.getElementById('confirmation-icon');
-            const titleEl = document.getElementById('confirmation-title');
-            const messageEl = document.getElementById('confirmation-message');
-
-            if (type === 'success') {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-green-600">✓</span>`;
-            } else {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-red-600">✗</span>`;
-            }
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-        }
-    </script>
-
-</body>
-</html>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-        .action-card {
-            transition: all 0.3s ease-in-out;
-        }
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-        }
-        .page {
-            width: 100%;
-            max-width: 42rem; /* 672px */
-            margin: auto;
-        }
-    </style>
-</head>
-<body class="p-4 sm:p-8">
-
-    <!-- Conteneur principal où les pages seront injectées -->
-    <main id="app-container">
-
-        <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
-        <section id="page-portal" class="page">
-            <div class="max-w-4xl mx-auto text-center">
-                <div class="mb-12">
-                    <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
-                    <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
-                </div>
-    
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Carte pour les administrateurs existants -->
-                    <div onclick="showPage('page-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
-                            <span class="text-3xl">🔑</span>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900">Se Connecter</h2>
-                        <p class="text-gray-600 mt-2">Accédez à votre espace administrateur pour gérer votre établissement.</p>
-                    </div>
-    
-                    <!-- Carte pour les nouvelles écoles -->
-                    <div onclick="showPage('page-register')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
-                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
-                            <span class="text-3xl">🏫</span>
-                        </div>
-                        <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
-                        <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE 2: CONNEXION ADMIN -->
-        <section id="page-login" class="page hidden">
-            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-                <div class="p-8">
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-800">🔑 Accès Administration</h1>
-                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace.</p>
-                    </div>
-                    <form id="loginForm">
-                        <div class="space-y-5">
-                            <div>
-                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
-                                <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
-                            </div>
-                            <div>
-                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
-                                <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
-                            </div>
-                        </div>
-                        <div class="mt-8">
-                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
-                                <span class="btnText">Se Connecter</span>
-                                <span class="btnSpinner hidden">Vérification...</span>
-                            </button>
-                        </div>
-                    </form>
-                    <div class="messageArea mt-6 text-center"></div>
-                    <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE 3: INSCRIPTION ÉCOLE -->
-        <section id="page-register" class="page hidden">
-            <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
-                <div class="p-8">
-                    <div class="text-center mb-6">
-                        <h1 class="text-3xl font-bold text-gray-800">🏫 Enregistrer votre École</h1>
-                        <p class="text-gray-500 mt-2">Créez un compte pour votre établissement.</p>
-                    </div>
-                    <form id="registerForm">
-                        <div class="space-y-5">
-                            <div>
-                                <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
-                                <input type="text" id="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
-                                <input type="email" id="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                            <div>
-                                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
-                                <input type="password" id="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
-                            </div>
-                        </div>
-                        <div class="mt-8">
-                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
-                                <span class="btnText">Créer le compte</span>
-                                <span class="btnSpinner hidden">Création...</span>
-                            </button>
-                        </div>
-                    </form>
-                    <div class="messageArea mt-6 text-center"></div>
-                     <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- PAGE 5: CONFIRMATION -->
-        <section id="page-confirmation" class="page hidden">
-             <div class="w-full max-w-md mx-auto text-center">
-                <div class="bg-white rounded-2xl shadow-2xl p-8">
-                    <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
-                        <span class="text-5xl text-green-600">✓</span>
-                    </div>
-                    <h1 id="confirmation-title" class="text-3xl font-bold text-gray-800">Opération Réussie</h1>
-                    <p id="confirmation-message" class="text-gray-600 mt-4 text-lg">Votre action a été complétée.</p>
-                    <button onclick="showPage('page-portal')" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
-                        Retour à l'accueil
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- NOUVEAU: Modale générique -->
-    <div id="modal-container" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
-        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-md">
-            <!-- Le contenu du formulaire sera injecté ici -->
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Modèles pour les formulaires -->
-    <template id="class-register-template">
-        <div class="p-8">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">Rejoindre la Classe</h1>
-                <p class="text-gray-600 mt-2">Vous êtes sur le point de rejoindre la classe <strong id="class-name-display" class="text-indigo-600"></strong>.</p>
-                <p id="class-context-display" class="text-sm text-gray-500 mt-1"></p>
-            </div>
-            <form id="classRegisterForm">
-                <input type="hidden" id="classId" name="classId" value="">
-                <div class="space-y-5">
-                    <div>
-                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                        <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
-                    </div>
-                    <div>
-                        <label for="studentEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email d'inscription</label>
-                        <input type="email" id="studentEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: m.diop@email.com">
-                    </div>
-                </div>
-                <div class="mt-8"><button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span class="btnText">M'inscrire à la classe</span><span class="btnSpinner hidden">Vérification...</span></button></div>
-            </form>
-            <div class="messageArea mt-6 text-center"></div>
-            <div class="mt-4 text-center text-sm">
-                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
-            </div>
-        </div>
-    </template>
-
-    <template id="attendance-template">
-        <div class="p-8">
-            <div class="text-center mb-6">
-                <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
-                <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display">Chargement...</strong> pour la classe <strong class="text-gray-700" id="classe-display">...</strong></p>
-            </div>
-            <form id="attendanceForm">
-                <input type="hidden" id="classe" name="classe" value="">
-                <input type="hidden" id="matiere" name="matiere" value="">
-                <div class="space-y-5">
-                    <div>
-                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                        <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
-                    </div>
-                </div>
-                <div class="mt-8">
-                    <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg">
-                        <span class="btnText">Confirmer ma présence</span>
-                        <span class="btnSpinner hidden">Enregistrement...</span>
-                    </button>
-                </div>
-            </form>
-            <div class="messageArea mt-6 text-center"></div>
-            <div class="mt-4 text-center text-sm">
-                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
-            </div>
-        </div>
-    </template>
-
-    <!-- ================================================================== -->
-    <!-- SCRIPT PRINCIPAL -->
-    <!-- ================================================================== -->
-    <script>
-        // --- CONFIGURATION ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTw3O6sj6QpkpamwYtFVBrhodUP2W2_3k9T0ZL7NB0NlPraQyZPoAHV3IcYOOKK4rQUg/exec';
-        const ADMIN_SESSION_KEY = 'abm_admin_session';
-
-        // --- ROUTEUR SIMPLE ---
-        document.addEventListener('DOMContentLoaded', () => {
-            // Attacher les gestionnaires d'événements une seule fois
-            const params = new URLSearchParams(window.location.search);
-            const page = params.get('page');
-
-            // Si une page est demandée dans l'URL (ex: depuis un lien QR code ou d'inscription)
-            // On gère l'ancien format 'register' et le nouveau 'class-register' pour la robustesse
-            if (page === 'class-register' || page === 'register') {
-                // Assurer la compatibilité avec l'ancien format de lien qui utilisait 'classe=' au lieu de 'classId='
-                if (!params.has('classId') && params.has('classe')) {
-                    params.set('classId', params.get('classe'));
-                }
-                openModalWithTemplate('class-register-template', params);
-            } else if (page === 'attendance') {
-                openModalWithTemplate('attendance-template', params);
-            }
-
-            // Attacher les gestionnaires pour les pages de base
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
-            showPage('page-portal');
-        });
-
-        function showPage(pageId) {
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.add('hidden');
-            });
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.remove('hidden');
-            }
-        }
-
-        // NOUVEAU: Fonctions pour la modale
-        function openModalWithTemplate(templateId, params) {
-            const template = document.getElementById(templateId);
-            const modalContent = document.getElementById('modal-content');
-            const modalContainer = document.getElementById('modal-container');
-
-            if (!template || !modalContent || !modalContainer) return;
-
-            const clone = template.content.cloneNode(true);
-            modalContent.innerHTML = '';
-            modalContent.appendChild(clone);
-
-            // Appeler la fonction de setup spécifique au formulaire
-            if (templateId === 'class-register-template') {
-                setupClassRegisterForm(params);
-            } else if (templateId === 'attendance-template') {
-                setupAttendanceForm(params);
-            }
-
-            modalContainer.classList.remove('hidden');
-        }
-
-        function closeModal() {
-            const modalContainer = document.getElementById('modal-container');
-            modalContainer.classList.add('hidden');
-            // Nettoyer l'URL pour enlever les paramètres de la page modale
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        // NOUVEAU: Fonctions de setup pour les formulaires modaux
-        async function setupClassRegisterForm(params) {
-            const classId = params.get('classId');
-            if (!classId) {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Lien d'inscription invalide. ID de classe manquant.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (!universityId) {
+                showModal('Erreur d\'authentification', '<p class="text-red-600 font-semibold">Votre session a expiré. Veuillez vous reconnecter.</p>');
+                showSpinner(false);
+                // Optionnel: rediriger vers la page de login après un délai
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
                 return;
             }
 
-            const form = document.getElementById('classRegisterForm');
-            form.querySelector('#classId').value = classId;
-            form.addEventListener('submit', handleClassRegisterSubmit);
-
             try {
-                const result = await callApi('getClassDetails', { classId });
-                const details = result.data;
-                document.getElementById('class-name-display').textContent = details.className;
-                const contextEl = document.getElementById('class-context-display');
-                if (contextEl) {
-                    contextEl.textContent = `${details.filiereName} / ${details.universityName}`;
+                const result = await callAdminApi(actionName);
+
+                if (result.success) {
+                    if (result.html) {
+                        showModal('Résultat de l\'opération', result.html);
+                    } else if (result.message) {
+                        showModal('Opération terminée', `<p class="text-green-600 font-semibold">${result.message}</p>`);
+                    }
+                } else {
+                    showModal('Erreur', `<p class="text-red-600 font-semibold">${result.error || 'Une erreur inconnue est survenue.'}</p>`);
                 }
+
             } catch (error) {
-                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
-                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
-            }
-        }
-
-        async function setupAttendanceForm(params) {
-            const classe = params.get('classe');
-            if (!classe) {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
-                return;
-            }
-
-            const form = document.getElementById('attendanceForm');
-            try {
-                const result = await callApi('getCurrentCourse', { classe: classe });
-                const course = result.data;
-
-                form.querySelector('#classe').value = course.classe;
-                document.getElementById('classe-display').textContent = course.classe;
-                form.querySelector('#matiere').value = course.matiere;
-                document.getElementById('matiere-display').textContent = course.matiere;
-
-                form.addEventListener('submit', handleAttendanceSubmit);
-            } catch (error) {
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Formulaire non disponible</h2><p class="text-gray-600 mt-2">${error.message}</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
-            }
-        }
-
-        // --- GESTIONNAIRES DE SOUMISSION ---
-
-        async function handleRegister(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                universityName: form.querySelector('#universityName').value,
-                adminEmail: form.querySelector('#adminEmail').value,
-                adminPassword: form.querySelector('#adminPassword').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('registerSchool', data);
-                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
+                console.error('Erreur de communication:', error);
+                showModal('Erreur de communication', `<p class="text-red-600 font-semibold">${error.message}</p>`);
             } finally {
-                setLoading(false, form);
+                showSpinner(false);
             }
-        }
-
-        async function handleLogin(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                email: form.querySelector('#loginEmail').value,
-                password: form.querySelector('#loginPassword').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('loginSchool', data);
-                // Redirection directe vers admin.html avec le token (universityId)
-                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
-        }
-
-        // NOUVEAU: Gestionnaires de soumission pour les formulaires modaux
-        async function handleClassRegisterSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                studentId: form.querySelector('#studentId').value,
-                email: form.querySelector('#studentEmail').value,
-                classId: form.querySelector('#classId').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('assignStudentToClass', data);
-                // Afficher la confirmation dans la modale
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
-        }
-
-        async function handleAttendanceSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const data = {
-                studentId: form.querySelector('#studentId').value,
-                classe: form.querySelector('#classe').value,
-                matiere: form.querySelector('#matiere').value
-            };
-            setLoading(true, form);
-            try {
-                const result = await callApi('recordAttendance', data);
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Présence Enregistrée</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
-        }
-
-        // --- FONCTIONS UTILITAIRES ---
-
-        async function callApi(action, data = {}) {
-            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
-            
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data })
-            });
-
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
-            return result;
-        }
-
-        function setLoading(isLoading, formElement) {
-            const submitBtn = formElement.querySelector('.submitBtn');
-            const btnText = formElement.querySelector('.btnText');
-            const btnSpinner = formElement.querySelector('.btnSpinner');
-            if (!submitBtn || !btnText || !btnSpinner) return;
-            
-            submitBtn.disabled = isLoading;
-            btnText.classList.toggle('hidden', isLoading);
-            btnSpinner.classList.toggle('hidden', !isLoading);
-        }
-
-        function displayMessageInForm(formElement, message, type) {
-            const messageArea = formElement.nextElementSibling; // Assumes messageArea is right after the form
-            if (!messageArea) return;
-            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
-            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
-            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-lg"><strong class="font-bold">${type === 'success' ? 'Succès !' : 'Erreur !'}</strong><span class="block sm:inline"> ${message}</span></div>`;
-        }
-
-        function renderConfirmationPage(title, message, type = 'success') {
-            showPage('page-confirmation');
-            const iconContainer = document.getElementById('confirmation-icon');
-            const titleEl = document.getElementById('confirmation-title');
-            const messageEl = document.getElementById('confirmation-message');
-
-            if (type === 'success') {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-green-600">✓</span>`;
-            } else {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-red-600">✗</span>`;
-            }
-            titleEl.textContent = title;
-            messageEl.textContent = message;
         }
     </script>
 
