@@ -154,6 +154,70 @@
 
     </main>
 
+    <!-- NOUVEAU: Modale générique -->
+    <div id="modal-container" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-md">
+            <!-- Le contenu du formulaire sera injecté ici -->
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Modèles pour les formulaires -->
+    <template id="class-register-template">
+        <div class="p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Rejoindre la Classe</h1>
+                <p class="text-gray-500 mt-2">Confirmez votre identité pour vous inscrire à la classe <strong id="class-name-display" class="text-indigo-600"></strong>.</p>
+            </div>
+            <form id="classRegisterForm">
+                <input type="hidden" id="classId" name="classId" value="">
+                <div class="space-y-5">
+                    <div>
+                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                        <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
+                    </div>
+                    <div>
+                        <label for="studentEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email d'inscription</label>
+                        <input type="email" id="studentEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: m.diop@email.com">
+                    </div>
+                </div>
+                <div class="mt-8"><button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span class="btnText">M'inscrire à la classe</span><span class="btnSpinner hidden">Vérification...</span></button></div>
+            </form>
+            <div class="messageArea mt-6 text-center"></div>
+            <div class="mt-4 text-center text-sm">
+                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
+            </div>
+        </div>
+    </template>
+
+    <template id="attendance-template">
+        <div class="p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
+                <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display">Chargement...</strong> pour la classe <strong class="text-gray-700" id="classe-display">...</strong></p>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" id="classe" name="classe" value="">
+                <input type="hidden" id="matiere" name="matiere" value="">
+                <div class="space-y-5">
+                    <div>
+                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                        <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg">
+                        <span class="btnText">Confirmer ma présence</span>
+                        <span class="btnSpinner hidden">Enregistrement...</span>
+                    </button>
+                </div>
+            </form>
+            <div class="messageArea mt-6 text-center"></div>
+            <div class="mt-4 text-center text-sm">
+                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
+            </div>
+        </div>
+    </template>
+
     <!-- ================================================================== -->
     <!-- SCRIPT PRINCIPAL -->
     <!-- ================================================================== -->
@@ -180,6 +244,82 @@
             const targetPage = document.getElementById(pageId);
             if (targetPage) {
                 targetPage.classList.remove('hidden');
+            }
+        }
+
+        // NOUVEAU: Fonctions pour la modale
+        function openModalWithTemplate(templateId, params) {
+            const template = document.getElementById(templateId);
+            const modalContent = document.getElementById('modal-content');
+            const modalContainer = document.getElementById('modal-container');
+
+            if (!template || !modalContent || !modalContainer) return;
+
+            const clone = template.content.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            // Appeler la fonction de setup spécifique au formulaire
+            if (templateId === 'class-register-template') {
+                setupClassRegisterForm(params);
+            } else if (templateId === 'attendance-template') {
+                setupAttendanceForm(params);
+            }
+
+            modalContainer.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.classList.add('hidden');
+            // Nettoyer l'URL pour enlever les paramètres de la page modale
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // NOUVEAU: Fonctions de setup pour les formulaires modaux
+        async function setupClassRegisterForm(params) {
+            const classId = params.get('classId');
+            if (!classId) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Lien d'inscription invalide. ID de classe manquant.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+                return;
+            }
+
+            const form = document.getElementById('classRegisterForm');
+            form.querySelector('#classId').value = classId;
+            form.addEventListener('submit', handleClassRegisterSubmit);
+
+            try {
+                const result = await callApi('get_class_details', { classId });
+                document.getElementById('class-name-display').textContent = result.data.className;
+            } catch (error) {
+                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
+                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function setupAttendanceForm(params) {
+            const classe = params.get('classe');
+            if (!classe) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+                return;
+            }
+
+            const form = document.getElementById('attendanceForm');
+            try {
+                const result = await callApi('get_current_course', { classe: classe });
+                const course = result.data;
+
+                form.querySelector('#classe').value = course.classe;
+                document.getElementById('classe-display').textContent = course.classe;
+                form.querySelector('#matiere').value = course.matiere;
+                document.getElementById('matiere-display').textContent = course.matiere;
+
+                form.addEventListener('submit', handleAttendanceSubmit);
+            } catch (error) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Formulaire non disponible</h2><p class="text-gray-600 mt-2">${error.message}</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
             }
         }
 
@@ -216,6 +356,48 @@
                 const result = await callApi('login_school', data);
                 // Redirection directe vers admin.html avec le token (universityId)
                 window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // NOUVEAU: Gestionnaires de soumission pour les formulaires modaux
+        async function handleClassRegisterSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: form.querySelector('#studentId').value,
+                email: form.querySelector('#studentEmail').value,
+                classId: form.querySelector('#classId').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('assign_student_to_class', data);
+                // Afficher la confirmation dans la modale
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: form.querySelector('#studentId').value,
+                classe: form.querySelector('#classe').value,
+                matiere: form.querySelector('#matiere').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('recordAttendance', data);
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Présence Enregistrée</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
