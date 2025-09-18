@@ -136,21 +136,6 @@
             </div>
         </section>
 
-        <!-- PAGE 4: TABLEAU DE BORD ADMIN -->
-        <section id="page-dashboard" class="page hidden">
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-4xl font-bold text-gray-800">🎓 Tableau de Bord</h1>
-                <p class="text-gray-600 mt-2">Bienvenue, administrateur de <strong id="dashboard-school-name">votre école</strong>.</p>
-                <div class="mt-8 p-6 bg-white rounded-xl shadow-lg">
-                    <p class="text-lg">Votre système est prêt. Vous pouvez maintenant gérer vos filières, classes, et générer les liens d'inscription et QR codes.</p>
-                    <p class="mt-4 text-sm text-gray-500">(Les fonctionnalités complètes du tableau de bord seront ajoutées ici)</p>
-                </div>
-                <button onclick="logout()" class="mt-8 bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-lg">
-                    Déconnexion
-                </button>
-            </div>
-        </section>
-
         <!-- PAGE 5: CONFIRMATION -->
         <section id="page-confirmation" class="page hidden">
              <div class="w-full max-w-md mx-auto text-center">
@@ -175,7 +160,7 @@
     <script>
         // --- CONFIGURATION ---
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTw3O6sj6QpkpamwYtFVBrhodUP2W2_3k9T0ZL7NB0NlPraQyZPoAHV3IcYOOKK4rQUg/exec';
-        const ADMIN_SESSION_KEY = 'admin-528cbd38';
+        const ADMIN_SESSION_KEY = 'abm_admin_session';
 
         // --- ROUTEUR SIMPLE ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -183,15 +168,8 @@
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('registerForm').addEventListener('submit', handleRegister);
 
-            // Vérifier si une session admin existe
-            const adminToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (adminToken) {
-                // Idéalement, vous devriez valider ce token auprès du backend
-                // Pour cette version simple, on fait confiance à la session
-                showPage('page-dashboard');
-            } else {
-                showPage('page-portal');
-            }
+            // Toujours afficher le portail au chargement
+            showPage('page-portal');
         });
 
         function showPage(pageId) {
@@ -235,20 +213,13 @@
             setLoading(true, form);
             try {
                 const result = await callApi('login_school', data);
-                sessionStorage.setItem(ADMIN_SESSION_KEY, result.token);
-                document.getElementById('dashboard-school-name').textContent = result.universityId; // A améliorer pour avoir le nom
-                showPage('page-dashboard');
+                // Redirection directe vers admin.html avec le token (universityId)
+                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
-                sessionStorage.removeItem(ADMIN_SESSION_KEY);
             } finally {
                 setLoading(false, form);
             }
-        }
-
-        function logout() {
-            sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            showPage('page-portal');
         }
 
         // --- FONCTIONS UTILITAIRES ---
