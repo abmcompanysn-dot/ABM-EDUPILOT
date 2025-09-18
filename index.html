@@ -233,9 +233,9 @@
             const page = params.get('page');
 
             // Si une page est demandée dans l'URL (ex: depuis un lien QR code ou d'inscription)
-            // On gère l'ancien format 'register' et le nouveau 'class-register' pour la robustesse.
+            // On gère l'ancien format 'register' et le nouveau 'class-register' pour la robustesse
             if (page === 'class-register' || page === 'register') {
-                // Assurer la compatibilité avec l'ancien format de lien qui utilisait 'classe='
+                // Assurer la compatibilité avec l'ancien format de lien qui utilisait 'classe=' au lieu de 'classId='
                 if (!params.has('classId') && params.has('classe')) {
                     params.set('classId', params.get('classe'));
                 }
