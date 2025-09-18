@@ -181,6 +181,35 @@
         </div>
     </template>
 
+    <!-- NOUVEAU: Modèle pour la page de présence -->
+    <template id="attendance-template">
+        <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="p-8">
+                <div class="text-center mb-6">
+                    <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
+                    <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display">Chargement...</strong> pour la classe <strong class="text-gray-700" id="classe-display">...</strong></p>
+                </div>
+                <form id="attendanceForm">
+                    <input type="hidden" id="classe" name="classe" value="">
+                    <input type="hidden" id="matiere" name="matiere" value="">
+                    <div class="space-y-5">
+                        <div>
+                            <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                            <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition" placeholder="Ex: ETU-ABC123">
+                        </div>
+                    </div>
+                    <div class="mt-8">
+                        <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg">
+                            <span class="btnText">Confirmer ma présence</span>
+                            <span class="btnSpinner hidden">Enregistrement...</span>
+                        </button>
+                    </div>
+                </form>
+                <div class="messageArea mt-6 text-center"></div>
+            </div>
+        </div>
+    </template>
+
     <!-- ================================================================== -->
     <!-- SCRIPT PRINCIPAL -->
     <!-- ================================================================== -->
@@ -192,11 +221,20 @@
         // --- ROUTEUR SIMPLE ---
         document.addEventListener('DOMContentLoaded', () => {
             // Attacher les gestionnaires d'événements une seule fois
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
-            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            const params = new URLSearchParams(window.location.search);
+            const page = params.get('page');
 
-            // Toujours afficher le portail au chargement
-            showPage('page-portal');
+            if (page === 'class-register') {
+                renderClassRegisterPage(params);
+            } else if (page === 'attendance') {
+                renderAttendancePage(params);
+            } else {
+                // Attacher les gestionnaires pour les pages par défaut
+                document.getElementById('loginForm').addEventListener('submit', handleLogin);
+                document.getElementById('registerForm').addEventListener('submit', handleRegister);
+                // Par défaut, afficher le portail
+                showPage('page-portal');
+            }
         });
 
         function showPage(pageId) {
@@ -288,6 +326,57 @@
             try {
                 const result = await callApi('assign_student_to_class', data);
                 renderConfirmationPage('Inscription Réussie !', result.message, 'success');
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // NOUVEAU: Affiche et configure la page de présence
+        async function renderAttendancePage(params) {
+            const classe = params.get('classe');
+            if (!classe) {
+                renderConfirmationPage('Erreur', 'Aucune classe spécifiée dans l\'URL. Veuillez scanner un QR code valide.', 'error');
+                return;
+            }
+
+            const template = document.getElementById('attendance-template');
+            const appContainer = document.getElementById('app-container');
+            const clone = template.content.cloneNode(true);
+            appContainer.innerHTML = '';
+            appContainer.appendChild(clone);
+
+            try {
+                const result = await callApi('get_current_course', { classe: classe });
+                const course = result.data;
+
+                // Remplir le formulaire avec les informations du cours
+                document.getElementById('classe').value = course.classe;
+                document.getElementById('classe-display').textContent = course.classe;
+                document.getElementById('matiere').value = course.matiere;
+                document.getElementById('matiere-display').textContent = course.matiere;
+
+                document.getElementById('attendanceForm').addEventListener('submit', handleAttendanceSubmit);
+
+            } catch (error) {
+                renderConfirmationPage('Formulaire non disponible', error.message, 'error');
+            }
+        }
+
+        // NOUVEAU: Gère la soumission du formulaire de présence
+        async function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: form.querySelector('#studentId').value,
+                classe: form.querySelector('#classe').value,
+                matiere: form.querySelector('#matiere').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('recordAttendance', data);
+                renderConfirmationPage('Présence Enregistrée', result.message, 'success');
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
