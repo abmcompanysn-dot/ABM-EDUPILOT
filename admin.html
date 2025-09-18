@@ -3,811 +3,793 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - ABM EduPilote</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>ABM EduPilote - Portail</title>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
         .action-card {
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s ease-in-out;
         }
         .action-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .page {
+            width: 100%;
+            max-width: 42rem; /* 672px */
+            margin: auto;
         }
         h1, h2, h3 {
             font-family: 'Poppins', sans-serif;
         }
     </style>
 </head>
-<body>
-    <div class="flex h-screen bg-gray-100">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-white shadow-md flex-shrink-0">
-            <div class="p-6">
-                <h1 class="text-2xl font-bold text-indigo-600">ABM EduPilote</h1>
-            </div>
-            <nav class="mt-6">
-                <a href="#" onclick="showPage('main-dashboard')" class="nav-link flex items-center py-3 px-6 text-gray-700 bg-gray-200">
-                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-                    Tableau de Bord
-                </a>
-                <a href="#" onclick="showPage('management-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
-                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                    Filières & Classes
-                </a>
-                <a href="#" onclick="showPage('responsables-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
-                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                    Responsables
-                </a>
-                <a href="#" onclick="showPage('planning-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
-                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Planning
-                </a>
-                <a href="#" onclick="showPage('attendance-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
-                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
-                    Présences
-                </a>
-                <a href="#" onclick="showPage('tools-page')" class="nav-link flex items-center py-3 px-6 text-gray-600 hover:bg-gray-100">
-                    <svg class="h-6 w-6 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
-                    Outils (QR/Liens)
-                </a>
-            </nav>
-        </aside>
+<body class="p-4 sm:p-8">
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center p-6 bg-white border-b">
-                <h2 id="page-title" class="text-2xl font-semibold text-gray-700">Tableau de Bord</h2>
-                <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+    <!-- Conteneur principal où les pages seront injectées -->
+    <main id="app-container">
+
+        <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
+        <section id="page-portal" class="page">
+            <div class="max-w-4xl mx-auto text-center">
+                <div class="mb-12">
+                    <h1 class="text-5xl font-bold text-gray-800">Bienvenue sur ABM EduPilote</h1>
+                    <p class="text-gray-600 mt-4 text-xl">Votre plateforme de gestion universitaire tout-en-un.</p>
+                </div>
+    
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Carte pour les administrateurs existants -->
+                    <div onclick="showPage('page-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-indigo-100">
+                            <span class="text-3xl">🔑</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Se Connecter</h2>
+                        <p class="text-gray-600 mt-2">Accédez à votre espace administrateur pour gérer votre établissement.</p>
+                    </div>
+    
+                    <!-- Carte pour les nouvelles écoles -->
+                    <div onclick="showPage('page-register')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100">
+                            <span class="text-3xl">🏫</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Inscrire votre École</h2>
+                        <p class="text-gray-600 mt-2">Créez un nouveau compte pour votre université et commencez à utiliser ABM EduPilote.</p>
+                    </div>
+                    
+                    <!-- NOUVEAU: Carte pour les responsables -->
+                    <div onclick="showPage('page-responsable-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-blue-100">
+                            <span class="text-3xl">👨‍🏫</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Espace Responsable</h2>
+                        <p class="text-gray-600 mt-2">Gérez le planning et les inscriptions de votre classe.</p>
+                    </div>
+                    
+
+                    <!-- NOUVEAU: Carte pour l'espace étudiant -->
+                    <div onclick="showPage('page-student-login')" class="action-card block p-8 bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-shadow duration-300 cursor-pointer md:col-span-2">
+                        <div class="w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center bg-yellow-100">
+                            <span class="text-3xl">🧑‍🎓</span>
+                        </div>
+                        <h2 class="text-2xl font-bold text-gray-900">Espace Étudiant</h2>
+                        <p class="text-gray-600 mt-2">Consultez vos présences, modifiez vos informations et pointez votre présence.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 2: CONNEXION ADMIN -->
+        <section id="page-login" class="page hidden">
+            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">🔑 Accès Administration</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace.</p>
+                    </div>
+                    <form id="loginForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
+                                <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="admin@ecole.com">
+                            </div>
+                            <div>
+                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                                <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Se Connecter</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PAGE 3: INSCRIPTION ÉCOLE -->
+        <section id="page-register" class="page hidden">
+            <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">🏫 Enregistrer votre École</h1>
+                        <p class="text-gray-500 mt-2">Créez un compte pour votre établissement.</p>
+                    </div>
+                    <form id="registerForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
+                                <input type="text" id="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
+                                <input type="email" id="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                            <div>
+                                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
+                                <input type="password" id="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Créer le compte</span>
+                                <span class="btnSpinner hidden">Création...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                     <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOUVEAU: PAGE POUR CONNEXION RESPONSABLE -->
+        <section id="page-responsable-login" class="page hidden">
+            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">👨‍🏫 Espace Responsable</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace de gestion.</p>
+                    </div>
+                    <form id="responsableLoginForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="responsableLoginEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email</label>
+                                <input type="email" id="responsableLoginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="responsable@ecole.com">
+                            </div>
+                            <div>
+                                <label for="responsableLoginPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de passe</label>
+                                <input type="password" id="responsableLoginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Se Connecter</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOUVEAU: PAGE 4: CONNEXION ÉTUDIANT -->
+        <section id="page-student-login" class="page hidden">
+            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800">🧑‍🎓 Espace Étudiant</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous avec votre ID Étudiant.</p>
+                    </div>
+                    <form id="studentLoginForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="loginStudentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                                <input type="text" id="loginStudentId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500" placeholder="Ex: ETU-ABC123">
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Entrer</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-indigo-600 hover:text-indigo-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOUVEAU: PAGE 6: TABLEAU DE BORD ÉTUDIANT -->
+        <section id="page-student-dashboard" class="page hidden max-w-4xl">
+            <header class="mb-10">
+                <h1 class="text-4xl font-bold text-gray-800">👋 Bonjour, <span id="student-dashboard-name"></span></h1>
+                <div class="flex justify-between items-center">
+                    <p class="text-gray-600 mt-2">Bienvenue dans votre espace personnel.</p>
+                    <button onclick="studentLogout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+                </div>
             </header>
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                
-    <div id="main-dashboard" class="page-container">
-        <!-- Stat Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h4 class="text-gray-500 font-medium">Total Étudiants</h4>
-                <p id="stats-student-count" class="text-3xl font-bold text-indigo-600">...</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h4 class="text-gray-500 font-medium">Total Classes</h4>
-                <p id="stats-class-count" class="text-3xl font-bold text-indigo-600">...</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h4 class="text-gray-500 font-medium">Présences Aujourd'hui</h4>
-                <p class="text-3xl font-bold text-indigo-600">N/A</p>
-            </div>
-        </div>
-        <!-- Chart -->
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des Étudiants par Filière</h3>
-            <canvas id="studentsByFiliereChart"></canvas>
-        </div>
-    </div>
 
-    <div id="management-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
-            <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
-        </header>
-
-        <!-- Tabs -->
-        <div class="mb-6 border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600" data-target="filiere-content">Filières</button>
-                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
-            </nav>
-        </div>
-
-        <!-- Contenu des onglets -->
-        <div id="management-content-container">
-            <!-- Contenu Filières -->
-            <div id="filiere-content" class="management-tab-content">
-                 <div class="grid md:grid-cols-3 gap-8">
-                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
-                        <form id="add-filiere-form" class="mt-4 space-y-4">
-                            <div>
-                                <p class="text-sm text-gray-500">La filière sera ajoutée à votre université.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Colonne 1: Infos & Scanner -->
+                <div class="lg:col-span-1 space-y-8">
+                    <!-- Carte d'édition des infos -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Mes Informations</h3>
+                        <form id="studentUpdateForm">
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="student-info-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
+                                    <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <!-- NOUVEAU: Affichage du QR Code Personnel -->
+                                <div class="text-center">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Mon QR Code d'Identification</h4>
+                                    <div id="personal-qr-code" class="mx-auto w-40 h-40 bg-gray-100 rounded-lg flex items-center justify-center">
+                                        <p class="text-xs text-gray-500">Chargement...</p>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label for="student-info-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="student-info-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                                </div>
+                                <button type="submit" class="submitBtn w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">
+                                    <span class="btnText">Mettre à jour</span>
+                                    <span class="btnSpinner hidden">Sauvegarde...</span>
+                                </button>
                             </div>
-                            <div>
-                                <label for="filiere-name" class="block text-sm font-medium text-gray-700">Nom de la filière</label>
-                                <input type="text" id="filiere-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                            </div>
-                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
+                             <div class="messageArea mt-4 text-center"></div>
                         </form>
                     </div>
-                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
-                        <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                    <!-- Carte du Scanner QR -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Pointer ma présence</h3>
+                        <div id="qr-reader" class="w-full border-dashed border-2 border-gray-300 rounded-lg bg-gray-50" style="min-height: 250px;"></div>
+                        <div id="qr-reader-results" class="mt-2 text-center text-sm text-green-600 font-medium"></div>
+                        <button id="start-scan-btn" class="mt-4 w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 font-semibold">Activer la caméra</button>
                     </div>
                 </div>
-            </div>
-            <!-- Contenu Classes -->
-            <div id="classe-content" class="management-tab-content hidden">
-                 <div class="grid md:grid-cols-3 gap-8">
-                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
-                        <form id="add-classe-form" class="mt-4 space-y-4">
-                            <div>
-                                <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
-                                <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
-                            </div>
-                            <div>
-                                <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
-                                <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                            </div>
-                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
-                        </form>
-                    </div>
-                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
-                        <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
-                    </div>
+                <!-- Colonne 2: Historique des présences -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Historique de mes Présences</h3>
+                    <div id="student-attendance-history" class="max-h-[70vh] overflow-y-auto"><p>Chargement de l'historique...</p></div>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- NOUVEAU: Page de gestion du planning -->
-    <div id="planning-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">📅 Gestion du Planning</h1>
-            <p class="text-gray-600 mt-2">Planifiez les cours et consultez l'emploi du temps.</p>
-        </header>
-
-        <div class="grid md:grid-cols-3 gap-8">
-            <!-- Formulaire d'ajout de cours -->
-            <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Cours</h3>
-                <form id="add-course-form" class="space-y-4">
-                    <div>
-                        <label for="course-classe-select" class="block text-sm font-medium text-gray-700">Classe</label>
-                        <select id="course-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
+        <!-- PAGE 5: CONFIRMATION -->
+        <section id="page-confirmation" class="page hidden">
+             <div class="w-full max-w-md mx-auto text-center">
+                <div class="bg-white rounded-2xl shadow-2xl p-8">
+                    <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
+                        <span class="text-5xl text-green-600">✓</span>
                     </div>
-                    <div>
-                        <label for="course-matiere" class="block text-sm font-medium text-gray-700">Matière</label>
-                        <input type="text" id="course-matiere" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label>
-                        <input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="course-date" class="block text-sm font-medium text-gray-700">Date du cours</label>
-                        <input type="date" id="course-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="course-start-time" class="block text-sm font-medium text-gray-700">Heure Début</label>
-                            <input type="time" id="course-start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="course-end-time" class="block text-sm font-medium text-gray-700">Heure Fin</label>
-                            <input type="time" id="course-end-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Planifier le cours</button>
-                </form>
-            </div>
-            <!-- Affichage du planning -->
-            <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Planning des Cours</h3>
-                <div id="planning-table-container" class="max-h-[60vh] overflow-y-auto"><p>Chargement du planning...</p></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page de gestion des responsables -->
-    <div id="responsables-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">👥 Gestion des Responsables de Classe</h1>
-            <p class="text-gray-600 mt-2">Créez des comptes pour les responsables et assignez-les à une classe.</p>
-        </header>
-
-        <div class="grid md:grid-cols-3 gap-8">
-            <!-- Formulaire d'ajout de responsable -->
-            <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Responsable</h3>
-                <form id="add-responsable-form" class="space-y-4">
-                    <div>
-                        <label for="responsable-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
-                        <input type="text" id="responsable-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="responsable-email" class="block text-sm font-medium text-gray-700">Email de connexion</label>
-                        <input type="email" id="responsable-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="responsable-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
-                        <input type="password" id="responsable-password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="responsable-classe-select" class="block text-sm font-medium text-gray-700">Assigner à la classe</label>
-                        <select id="responsable-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
-                    </div>
-                    <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Créer et Assigner</button>
-                </form>
-            </div>
-            <!-- Affichage des responsables -->
-            <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Responsables Actuels</h3>
-                <div id="responsables-table-container" class="max-h-[60vh] overflow-y-auto"><p>Chargement des responsables...</p></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page de consultation des présences -->
-    <div id="attendance-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">📋 Feuille de Présence</h1>
-            <p class="text-gray-600 mt-2">Consultez l'historique des pointages par QR code.</p>
-        </header>
-
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Historique des Pointages</h3>
-            <div id="attendance-table-container" class="max-h-[70vh] overflow-y-auto"><p>Chargement des données de présence...</p></div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page des outils -->
-    <div id="tools-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">🛠️ Outils et Générateurs</h1>
-            <p class="text-gray-600 mt-2">Générez ici vos QR codes de présence et liens d'inscription.</p>
-        </header>
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les QR Codes de Présence</h3>
-                <button class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700" onclick="callAdminAction('adminGetQrCodes')">Lancer la génération</button>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les Liens d'Inscription</h3>
-                <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700" onclick="callAdminAction('adminGetRegLinks')">Lancer la génération</button>
-            </div>
-        </div>
-    </div>
-
-            </main>
-        </div>
-    </div>
-
-    <!-- Modal -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-xl bg-white">
-            <div class="mt-3">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
-                <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto">
-                    <!-- Content will be injected here -->
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="close-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
-                        Fermer
+                    <h1 id="confirmation-title" class="text-3xl font-bold text-gray-800">Opération Réussie</h1>
+                    <p id="confirmation-message" class="text-gray-600 mt-4 text-lg">Votre action a été complétée.</p>
+                    <button onclick="showPage('page-portal')" class="mt-8 inline-block w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition">
+                        Retour à l'accueil
                     </button>
                 </div>
             </div>
+        </section>
+
+    </main>
+
+    <!-- NOUVEAU: Modale générique -->
+    <div id="modal-container" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 hidden z-50">
+        <div id="modal-content" class="bg-white rounded-2xl shadow-2xl overflow-hidden w-full max-w-md">
+            <!-- Le contenu du formulaire sera injecté ici -->
         </div>
     </div>
 
-    <!-- Spinner Overlay -->
-    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-    </div>
+    <!-- NOUVEAU: Modèles pour les formulaires -->
+    <template id="class-register-template">
+        <div class="p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">Rejoindre la Classe</h1>
+                <p class="text-gray-600 mt-2">Vous êtes sur le point de rejoindre la classe <strong id="class-name-display" class="text-indigo-600"></strong>.</p>
+                <p id="class-context-display" class="text-sm text-gray-500 mt-1"></p>
+            </div>
+            <form id="classRegisterForm">
+                <input type="hidden" id="classId" name="classId" value="">
+                <div class="space-y-5">
+                    <div>
+                        <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">Votre Nom Complet</label>
+                        <input type="text" id="studentName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: Moussa Diop">
+                    </div>
+                    <div>
+                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                        <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
+                    </div>
+                    <div>
+                        <label for="studentEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email d'inscription</label>
+                        <input type="email" id="studentEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: m.diop@email.com">
+                    </div>
+                </div>
+                <div class="mt-8"><button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-lg"><span class="btnText">M'inscrire à la classe</span><span class="btnSpinner hidden">Vérification...</span></button></div>
+            </form>
+            <div class="messageArea mt-6 text-center"></div>
+            <div class="mt-4 text-center text-sm">
+                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
+            </div>
+        </div>
+    </template>
 
+    <template id="attendance-template">
+        <div class="p-8">
+            <div class="text-center mb-6">
+                <h1 class="text-3xl font-bold text-gray-800">🕒 Feuille de Présence</h1>
+                <p class="text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display">Chargement...</strong> pour la classe <strong class="text-gray-700" id="classe-display">...</strong></p>
+            </div>
+            <form id="attendanceForm">
+                <input type="hidden" id="classe" name="classe" value="">
+                <input type="hidden" id="matiere" name="matiere" value="">
+                <div class="space-y-5">
+                    <div>
+                        <label for="studentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                        <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500" placeholder="Ex: ETU-ABC123">
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <button type="submit" class="submitBtn w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 px-4 rounded-lg">
+                        <span class="btnText">Confirmer ma présence</span>
+                        <span class="btnSpinner hidden">Enregistrement...</span>
+                    </button>
+                </div>
+            </form>
+            <div class="messageArea mt-6 text-center"></div>
+            <div class="mt-4 text-center text-sm">
+                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
+            </div>
+        </div>
+    </template>
+
+    <!-- ================================================================== -->
+    <!-- SCRIPT PRINCIPAL -->
+    <!-- ================================================================== -->
     <script>
-        
-        // ==================================================================
-        // --- CONFIGURATION REQUISE ---
+        // --- CONFIGURATION ---
         const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwpJwZSlmqqQGod3cQG-gLHOS1lSxhWq4F1SX2aMSk5OjunN_MxqXYIZXAINOe91Pr_5A/exec';
-        const ADMIN_SESSION_KEY = 'abm_admin_session'; // Clé pour stocker l'ID de l'école
-        // ==================================================================
+        const ADMIN_SESSION_KEY = 'abm_admin_session';
+        const STUDENT_SESSION_KEY = 'abm_student_session';
 
-
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalContent = document.getElementById('modal-content');
-        const closeModalBtn = document.getElementById('close-modal');
-        const spinnerOverlay = document.getElementById('spinner-overlay');
-
-        // NOUVEAU: Gérer l'authentification au chargement de la page
+        // --- ROUTEUR SIMPLE ---
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tokenFromUrl = urlParams.get('token');
+            const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+            if (studentSessionId) {
+                // Si l'étudiant est déjà connecté, on va directement à son tableau de bord
+                showPage('page-student-dashboard');
+                loadStudentDashboard(studentSessionId);
+            } else {
+                // Sinon, on vérifie si une action est demandée dans l'URL (QR code, etc.)
+                const params = new URLSearchParams(window.location.search);
+                const page = params.get('page');
 
-            if (tokenFromUrl) {
-                // Si un token est dans l'URL, on le sauvegarde et on nettoie l'URL
-                sessionStorage.setItem(ADMIN_SESSION_KEY, tokenFromUrl);
-                // Redirige vers la même page sans les paramètres pour une URL propre
-                window.history.replaceState({}, document.title, window.location.pathname);
+                if (page === 'class-register' || page === 'register') {
+                    if (!params.has('classId') && params.has('classe')) {
+                        params.set('classId', params.get('classe'));
+                    }
+                    openModalWithTemplate('class-register-template', params);
+                } else if (page === 'attendance') {
+                    openModalWithTemplate('attendance-template', params);
+                } else {
+                    // Si aucune action spécifique, on affiche le portail d'accueil
+                    showPage('page-portal');
+                }
             }
 
-            // Vérifier si on a une session valide
-            const sessionToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!sessionToken) {
-                // Si pas de token, on redirige vers la page de connexion
-                window.location.href = 'index.html'; 
-            }
+            // Attacher les gestionnaires pour les pages de base
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('studentLoginForm').addEventListener('submit', handleStudentLogin);
+            document.getElementById('responsableLoginForm').addEventListener('submit', handleResponsableLogin);
         });
 
-        function logout() {
-            sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            window.location.href = 'index.html';
-        }
-
-        function showPage(pageId, linkElement) {
-            document.querySelectorAll('.page-container').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
-            
-            // Mettre à jour le titre de la page
-            const pageTitles = {
-                'main-dashboard': 'Tableau de Bord',
-                'management-page': 'Filières & Classes',
-                'responsables-page': 'Responsables',
-                'planning-page': 'Planning',
-                'attendance-page': 'Présences',
-                'tools-page': 'Outils'
-            };
-            document.getElementById('page-title').textContent = pageTitles[pageId] || 'Administration';
-
-            // Mettre à jour le style du lien actif dans la sidebar
-            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('bg-gray-200', 'text-gray-700'));
-            if (linkElement) {
-                linkElement.classList.add('bg-gray-200', 'text-gray-700');
-            }
-            
-            if (pageId === 'management-page') {
-                setupAdminManagementPage();
-            } else if (pageId === 'planning-page') {
-                setupPlanningPage();
-            } else if (pageId === 'attendance-page') {
-                setupAttendancePage();
-            } else if (pageId === 'responsables-page') {
-                setupResponsablesPage();
-            } else if (pageId === 'main-dashboard') {
-                loadAdminDashboard();
-            }
-        }
-
-        // NOUVEAU: Initialise la page de gestion
-        function setupAdminManagementPage() {
-            const tabs = document.querySelectorAll('.management-tab');
-            const tabContents = document.querySelectorAll('.management-tab-content');
-
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => {
-                        t.classList.remove('border-indigo-500', 'text-indigo-600');
-                        t.classList.add('border-transparent', 'text-gray-500');
-                    });
-                    tab.classList.add('border-indigo-500', 'text-indigo-600');
-                    tab.classList.remove('border-transparent', 'text-gray-500');
-                    
-                    tabContents.forEach(c => c.classList.add('hidden'));
-                    const targetContent = document.getElementById(tab.dataset.target);
-                    if (targetContent) targetContent.classList.remove('hidden');
-                    
-                    const entityType = tab.dataset.target.split('-')[0];
-                    loadAndRenderEntities(entityType);
-                });
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.add('hidden');
             });
-
-            // Activer le premier onglet par défaut
-            if (tabs.length > 0 && !document.querySelector('.management-tab.border-indigo-500')) {
-                tabs[0].click();
-            }
-
-            setupEntityForm('filiere', {});
-            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
-        }
-
-        async function loadAdminDashboard() {
-            try {
-                const result = await callAdminApi('adminGetDashboardStats');
-                const stats = result.data;
-
-                document.getElementById('stats-student-count').textContent = stats.studentCount;
-                document.getElementById('stats-class-count').textContent = stats.classCount;
-
-                // Render Chart
-                const ctx = document.getElementById('studentsByFiliereChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(stats.studentsByFiliere),
-                        datasets: [{
-                            label: 'Étudiants',
-                            data: Object.values(stats.studentsByFiliere),
-                            backgroundColor: [
-                                'rgba(79, 70, 229, 0.8)',
-                                'rgba(30, 64, 175, 0.8)',
-                                'rgba(124, 58, 237, 0.8)',
-                                'rgba(147, 51, 234, 0.8)',
-                                'rgba(219, 39, 119, 0.8)',
-                            ],
-                            borderColor: '#fff',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { position: 'top' } }
-                    }
-                });
-            } catch (error) {
-                console.error("Erreur de chargement du dashboard:", error);
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
             }
         }
 
-        // NOUVEAU: Gère la soumission des formulaires d'ajout
-        function setupEntityForm(entityType, options) {
-            const form = document.getElementById(`add-${entityType}-form`);
-            if (!form) return;
+        // NOUVEAU: Fonctions pour la modale
+        function openModalWithTemplate(templateId, params) {
+            const template = document.getElementById(templateId);
+            const modalContent = document.getElementById('modal-content');
+            const modalContainer = document.getElementById('modal-container');
 
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const nameInput = document.getElementById(`${entityType}-name`);
-                const name = nameInput.value.trim();
-                if (!name) return;
+            if (!template || !modalContent || !modalContainer) return;
 
-                const payload = { name };
-                if (options.parent) {
-                    const parentSelect = document.getElementById(options.parentSelectId);
-                    payload[`${options.parent}Id`] = parentSelect.value;
-                }
+            const clone = template.content.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
 
-                showSpinner(true);
-                try {
-                    const result = await callAdminApi('adminAddEntity', { entityType, payload });
-                    showModal('Succès', result.message);
-                    nameInput.value = '';
-                    loadAndRenderEntities(entityType); // Recharger la liste
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    showSpinner(false);
-                }
-            });
-        }
-
-        // NOUVEAU: Charge et affiche les listes de filières/classes
-        async function loadAndRenderEntities(entityType) {
-            const listElement = document.getElementById(`${entityType}-list`);
-            if (!listElement) return;
-            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
-
-            try {
-                const result = await callAdminApi('adminGetEntities', { entityType });
-                const entities = result.data;
-                
-                if (entityType === 'filiere') {
-                    const parentSelect = document.getElementById('classe-filiere-select');
-                    if (parentSelect) {
-                        parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
-                            + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
-                    }
-                }
-
-                if (entities.length === 0) {
-                    listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
-                    return;
-                }
-
-                listElement.innerHTML = entities.map(entity => {
-                    const idKey = `ID_${entityType.toUpperCase()}`;
-                    const nameKey = `NOM_${entityType.toUpperCase()}`;
-                    return `<li class="p-3 bg-white border rounded-md flex justify-between items-center"><span>${entity[nameKey]}</span><span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span></li>`;
-                }).join('');
-
-            } catch (error) {
-                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
+            // Appeler la fonction de setup spécifique au formulaire
+            if (templateId === 'class-register-template') {
+                setupClassRegisterForm(params);
+            } else if (templateId === 'attendance-template') {
+                setupAttendanceForm(params);
             }
+
+            modalContainer.classList.remove('hidden');
         }
 
-        // NOUVEAU: Initialise la page de planning
-        function setupPlanningPage() {
-            loadAndRenderPlanning();
-            setupPlanningForm();
+        function closeModal() {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.classList.add('hidden');
+            // Nettoyer l'URL pour enlever les paramètres de la page modale
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
 
-        // NOUVEAU: Charge et affiche le planning
-        async function loadAndRenderPlanning() {
-            const container = document.getElementById('planning-table-container');
-            const classSelect = document.getElementById('course-classe-select');
-            container.innerHTML = '<p>Chargement du planning...</p>';
-
-            try {
-                // Charger les classes pour le formulaire
-                const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-                classSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
-                    + classesResult.data.map(c => `<option value="${c.NOM_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-
-                // Charger le planning
-                const planningResult = await callAdminApi('adminGetPlanning');
-                const courses = planningResult.data;
-
-                if (courses.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun cours planifié.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heures</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                            <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${courses.map(course => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(course.DATE_COURS).toLocaleDateString()}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${course.CLASSE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${course.MATIERE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${course.STATUT}</span></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onclick="handleDeleteCourseClick('${course.ID_COURS}')" class="text-red-600 hover:text-red-900">Supprimer</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Gère la soumission du formulaire de planning
-        function setupPlanningForm() {
-            const form = document.getElementById('add-course-form');
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {
-                    classe: document.getElementById('course-classe-select').value,
-                    matiere: document.getElementById('course-matiere').value,
-                    enseignant: document.getElementById('course-enseignant').value,
-                    date: document.getElementById('course-date').value,
-                    startTime: document.getElementById('course-start-time').value,
-                    endTime: document.getElementById('course-end-time').value,
-                };
-                try {
-                    const result = await callAdminApi('adminAddCourse', { payload });
-                    showModal('Succès', result.message);
-                    form.reset();
-                    loadAndRenderPlanning(); // Recharger la liste
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                }
-            });
-        }
-
-        // NOUVEAU: Initialise la page de présence
-        function setupAttendancePage() {
-            loadAndRenderAttendance();
-        }
-
-        // NOUVEAU: Charge et affiche les données de présence
-        async function loadAndRenderAttendance() {
-            const container = document.getElementById('attendance-table-container');
-            container.innerHTML = '<p>Chargement des données de présence...</p>';
-
-            try {
-                const result = await callAdminApi('adminGetAttendance');
-                const scans = result.data;
-
-                if (scans.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré pour le moment.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Heure</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${scans.map(scan => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(scan.TIMESTAMP).toLocaleString('fr-FR')}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${scan.NOM_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${scan.ID_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.CLASSE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.MATIERE}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Initialise la page des responsables
-        function setupResponsablesPage() {
-            loadAndRenderResponsables();
-            setupResponsableForm();
-        }
-
-        // NOUVEAU: Charge et affiche les responsables
-        async function loadAndRenderResponsables() {
-            const container = document.getElementById('responsables-table-container');
-            container.innerHTML = '<p>Chargement des responsables...</p>';
-            try {
-                const result = await callAdminApi('adminGetResponsables');
-                const responsables = result.data;
-
-                if (responsables.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun responsable assigné.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe Assignée</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${responsables.map(resp => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${resp.NOM_RESPONSABLE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${resp.EMAIL_RESPONSABLE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${resp.ID_CLASSE_FK}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Gère la soumission du formulaire d'ajout de responsable
-        async function setupResponsableForm() {
-            const form = document.getElementById('add-responsable-form');
-            const classSelect = document.getElementById('responsable-classe-select');
-            
-            // Charger les classes dans le dropdown
-            const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-            classSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
-                + classesResult.data.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                const payload = {
-                    name: document.getElementById('responsable-name').value,
-                    email: document.getElementById('responsable-email').value,
-                    password: document.getElementById('responsable-password').value,
-                    classId: classSelect.value,
-                };
-                try {
-                    const result = await callAdminApi('adminAddResponsable', { payload });
-                    showModal('Succès', result.message);
-                    form.reset();
-                    loadAndRenderResponsables(); // Recharger la liste
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                }
-            });
-        }
-
-        // NOUVEAU: Gère le clic sur le bouton de suppression de cours
-        async function handleDeleteCourseClick(courseId) {
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer ce cours (${courseId}) ? Cette action est irréversible.`)) {
+        // NOUVEAU: Fonctions de setup pour les formulaires modaux
+        async function setupClassRegisterForm(params) {
+            const classId = params.get('classId');
+            if (!classId) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Lien d'inscription invalide. ID de classe manquant.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
                 return;
             }
-            showSpinner(true);
+
+            const form = document.getElementById('classRegisterForm');
+            form.querySelector('#classId').value = classId;
+            form.addEventListener('submit', handleClassRegisterSubmit);
+
             try {
-                const result = await callAdminApi('adminDeleteCourse', { courseId });
-                showModal('Succès', result.message);
-                loadAndRenderPlanning(); // Recharger la liste
+                const result = await callApi('getClassDetails', { classId });
+                const details = result.data;
+                document.getElementById('class-name-display').textContent = details.className;
+                const contextEl = document.getElementById('class-context-display');
+                if (contextEl) {
+                    contextEl.textContent = `${details.filiereName} / ${details.universityName}`;
+                }
             } catch (error) {
-                showModal('Erreur', error.message);
+                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
+                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        async function setupAttendanceForm(params) {
+            const classe = params.get('classe');
+            if (!classe) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+                return;
+            }
+
+            const form = document.getElementById('attendanceForm');
+            try {
+                const result = await callApi('getCurrentCourse', { classe: classe });
+                const course = result.data;
+
+                form.querySelector('#classe').value = course.classe;
+                document.getElementById('classe-display').textContent = course.classe;
+                form.querySelector('#matiere').value = course.matiere;
+                document.getElementById('matiere-display').textContent = course.matiere;
+
+                form.addEventListener('submit', handleAttendanceSubmit);
+            } catch (error) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><h2 class="text-xl font-bold text-red-600">Formulaire non disponible</h2><p class="text-gray-600 mt-2">${error.message}</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+            }
+        }
+
+        // --- GESTIONNAIRES DE SOUMISSION ---
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                universityName: form.querySelector('#universityName').value,
+                adminEmail: form.querySelector('#adminEmail').value,
+                adminPassword: form.querySelector('#adminPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('registerSchool', data);
+                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
             } finally {
-                showSpinner(false);
+                setLoading(false, form);
             }
         }
 
-        // Initialisation de la page au chargement
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('.nav-link').click(); // Clique sur le premier lien (Tableau de Bord)
-            loadAdminDashboard();
-        });
-
-        closeModalBtn.onclick = () => modal.classList.add('hidden');
-        window.onclick = (event) => {
-            if (event.target == modal) {
-                modal.classList.add('hidden');
+        async function handleLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                email: form.querySelector('#loginEmail').value,
+                password: form.querySelector('#loginPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('loginSchool', data);
+                // Redirection directe vers admin.html avec le token (universityId)
+                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
             }
         }
 
-        function showSpinner(show) {
-            spinnerOverlay.classList.toggle('hidden', !show);
-        }
-
-        function showModal(title, content) {
-            modalTitle.textContent = title;
-            modalContent.innerHTML = content;
-            modal.classList.remove('hidden');
-        }
-
-        // NOUVEAU: Fonction d'appel API spécifique à l'admin
-        async function callAdminApi(action, data = {}) {
-            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!universityId) {
-                throw new Error('Session administrateur invalide. Veuillez vous reconnecter.');
+        async function handleStudentLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const studentId = form.querySelector('#loginStudentId').value;
+            setLoading(true, form);
+            try {
+                const result = await callApi('studentLogin', { studentId });
+                sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
+                showPage('page-student-dashboard');
+                loadStudentDashboard(result.data.studentId);
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
             }
+        }
+
+        async function handleResponsableLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                email: form.querySelector('#responsableLoginEmail').value,
+                password: form.querySelector('#responsableLoginPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('responsableLogin', data);
+                // Redirection vers responsable.html avec le token
+                window.location.href = `responsable.html?token=${encodeURIComponent(result.token)}`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // NOUVEAU: Gestionnaires de soumission pour les formulaires modaux
+        async function handleClassRegisterSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.querySelector('#studentName').value,
+                studentId: form.querySelector('#studentId').value,
+                email: form.querySelector('#studentEmail').value,
+                classId: form.querySelector('#classId').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('registerStudentInClass', data);
+                // Afficher la confirmation dans la modale
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: form.querySelector('#studentId').value,
+                classe: form.querySelector('#classe').value,
+                matiere: form.querySelector('#matiere').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('recordAttendance', data);
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-8 text-center"><div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100"><span class="text-5xl text-green-600">✓</span></div><h1 class="text-3xl font-bold text-gray-800">Présence Enregistrée</h1><p class="text-gray-600 mt-4 text-lg">${result.message}</p><button onclick="closeModal()" class="mt-8 w-full bg-indigo-600 text-white py-3 rounded-lg">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // --- NOUVEAU: Fonctions pour l'Espace Étudiant ---
+
+        function studentLogout() {
+            sessionStorage.removeItem(STUDENT_SESSION_KEY);
+            // Recharger la page pour revenir au portail
+            window.location.reload();
+        }
+
+        function loadStudentDashboard(studentId) {
+            document.getElementById('student-dashboard-name').textContent = '...';
+            loadStudentInfo(studentId);
+            loadStudentAttendance(studentId);
+            loadPersonalQrCode(studentId);
+            setupQrScanner(studentId);
+        }
+
+        async function loadStudentInfo(studentId) {
+            const form = document.getElementById('studentUpdateForm');
+            try {
+                const result = await callApi('getStudentData', { studentId });
+                const student = result.data;
+                document.getElementById('student-dashboard-name').textContent = student.name;
+                document.getElementById('student-info-name').value = student.name;
+                document.getElementById('student-info-email').value = student.email;
+
+                form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+
+            } catch (error) {
+                displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
+            }
+        }
+
+        async function handleUpdateStudentInfo(e, studentId) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: studentId,
+                name: form.querySelector('#student-info-name').value,
+                email: form.querySelector('#student-info-email').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('updateStudentInfo', data);
+                displayMessageInForm(form, result.message, 'success');
+                document.getElementById('student-dashboard-name').textContent = data.name; // Mettre à jour le nom dans le header
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function loadStudentAttendance(studentId) {
+            const container = document.getElementById('student-attendance-history');
+            container.innerHTML = '<p>Chargement de l\'historique...</p>';
+            try {
+                const result = await callApi('getStudentAttendanceHistory', { studentId });
+                const history = result.data;
+                if (history.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                    return;
+                }
+                const timeline = document.createElement('div');
+                timeline.className = 'space-y-4';
+                timeline.innerHTML = history.map(item => `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                            <span class="text-xl">📘</span>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                        </div>
+                    </div>
+                `).join('');
+                container.innerHTML = '';
+                container.appendChild(timeline);
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        async function loadPersonalQrCode(studentId) {
+            const container = document.getElementById('personal-qr-code');
+            try {
+                const qrData = `ABM-ETU-ID:${studentId}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}`;
+                container.innerHTML = `<img src="${qrApiUrl}" alt="Mon QR Code" class="rounded-lg">`;
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        function setupQrScanner() {
+            const startBtn = document.getElementById('start-scan-btn');
+            const qrReaderResults = document.getElementById("qr-reader-results");
+            const html5QrCode = new Html5Qrcode("qr-reader");
+
+            startBtn.addEventListener('click', () => {
+                startBtn.disabled = true;
+                startBtn.textContent = 'Démarrage...';
+                qrReaderResults.textContent = '';
+
+                const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+                    qrReaderResults.textContent = `Scan réussi ! Redirection...`;
+                    html5QrCode.stop().then(() => {
+                        window.location.href = decodedText;
+                    }).catch(err => console.error("Échec de l'arrêt du scanner", err));
+                };
+                const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+                html5QrCode.start({ facingMode: "environment" }, config, qrCodeSuccessCallback)
+                    .then(() => startBtn.textContent = 'Caméra active')
+                    .catch(err => {
+                        qrReaderResults.innerHTML = `<span class="text-red-500">Erreur caméra: ${err}</span>`;
+                        startBtn.disabled = false;
+                        startBtn.textContent = 'Activer la caméra';
+                    });
+            });
+        }
+
+        // --- FONCTIONS UTILITAIRES ---
+
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
             
             const response = await fetch(WEB_APP_URL, {
-                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data: { ...data, universityId } })
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data })
             });
+
             const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
             return result;
         }
 
-        async function callAdminAction(actionName) {
-            showSpinner(true);
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement.querySelector('.submitBtn');
+            const btnText = formElement.querySelector('.btnText');
+            const btnSpinner = formElement.querySelector('.btnSpinner');
+            if (!submitBtn || !btnText || !btnSpinner) return;
+            
+            submitBtn.disabled = isLoading;
+            btnText.classList.toggle('hidden', isLoading);
+            btnSpinner.classList.toggle('hidden', !isLoading);
+        }
 
-            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!universityId) {
-                showModal('Erreur d\'authentification', '<p class="text-red-600 font-semibold">Votre session a expiré. Veuillez vous reconnecter.</p>');
-                showSpinner(false);
-                // Optionnel: rediriger vers la page de login après un délai
-                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
-                return;
+        function displayMessageInForm(formElement, message, type) {
+            const messageArea = formElement.nextElementSibling; // Assumes messageArea is right after the form
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-lg"><strong class="font-bold">${type === 'success' ? 'Succès !' : 'Erreur !'}</strong><span class="block sm:inline"> ${message}</span></div>`;
+        }
+
+        function renderConfirmationPage(title, message, type = 'success') {
+            showPage('page-confirmation');
+            const iconContainer = document.getElementById('confirmation-icon');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
+
+            if (type === 'success') {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-green-600">✓</span>`;
+            } else {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-red-600">✗</span>`;
             }
-
-            try {
-                const result = await callAdminApi(actionName);
-
-                if (result.success) {
-                    if (result.html) {
-                        showModal('Résultat de l\'opération', result.html);
-                    } else if (result.message) {
-                        showModal('Opération terminée', `<p class="text-green-600 font-semibold">${result.message}</p>`);
-                    }
-                } else {
-                    showModal('Erreur', `<p class="text-red-600 font-semibold">${result.error || 'Une erreur inconnue est survenue.'}</p>`);
-                }
-
-            } catch (error) {
-                console.error('Erreur de communication:', error);
-                showModal('Erreur de communication', `<p class="text-red-600 font-semibold">${error.message}</p>`);
-            } finally {
-                showSpinner(false);
-            }
+            titleEl.textContent = title;
+            messageEl.textContent = message;
         }
     </script>
 
