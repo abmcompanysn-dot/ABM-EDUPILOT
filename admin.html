@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - ABM EduPilote</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .action-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        #modal-content {
+            max-height: 80vh;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
+            <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
+        </header>
+
+        <!-- NOUVEAU: Bouton de déconnexion -->
+        <div class="text-right mb-6">
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+        </div>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Carte 2: Générer les QR Codes -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_qr_codes')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-green-100 text-green-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
+                        <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte 3: Générer les liens d'inscription -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_reg_links')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
+                        <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
+                <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto">
+                    <!-- Content will be injected here -->
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-modal" class="px-4 py-2 bg-gray-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-300">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spinner Overlay -->
+    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
+        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+
+    <script>
+        // ==================================================================
+        // --- CONFIGURATION REQUISE ---
+        // Collez ici l'URL de votre application web Google Apps Script.
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxTw3O6sj6QpkpamwYtFVBrhodUP2W2_3k9T0ZL7NB0NlPraQyZPoAHV3IcYOOKK4rQUg/exec';
+        const ADMIN_SESSION_KEY = 'admin-528cbd38';
+        // ==================================================================
+
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalContent = document.getElementById('modal-content');
+        const closeModalBtn = document.getElementById('close-modal');
+        const spinnerOverlay = document.getElementById('spinner-overlay');
+
+        // NOUVEAU: Gérer l'authentification au chargement de la page
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenFromUrl = urlParams.get('token');
+
+            if (tokenFromUrl) {
+                // Si un token est dans l'URL, on le sauvegarde et on nettoie l'URL
+                sessionStorage.setItem(ADMIN_SESSION_KEY, tokenFromUrl);
+                // Redirige vers la même page sans les paramètres pour une URL propre
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+
+            // Vérifier si on a une session valide
+            const sessionToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (!sessionToken) {
+                // Si pas de token, on redirige vers la page de connexion
+                window.location.href = 'index.html'; 
+            }
+        });
+
+        function logout() {
+            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            window.location.href = 'index.html';
+        }
+
+        closeModalBtn.onclick = () => modal.classList.add('hidden');
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function showSpinner(show) {
+            spinnerOverlay.classList.toggle('hidden', !show);
+        }
+
+        function showModal(title, content) {
+            modalTitle.textContent = title;
+            modalContent.innerHTML = content;
+            modal.classList.remove('hidden');
+        }
+
+        async function callAdminAction(actionName) {
+            showSpinner(true);
+
+            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (!universityId) {
+                showModal('Erreur d\'authentification', '<p class="text-red-600 font-semibold">Votre session a expiré. Veuillez vous reconnecter.</p>');
+                showSpinner(false);
+                // Optionnel: rediriger vers la page de login après un délai
+                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+                return;
+            }
+
+            if (!WEB_APP_URL || WEB_APP_URL.includes('COLLEZ_VOTRE_URL')) {
+                showModal('Erreur de Configuration', '<p class="text-red-600 font-semibold">L\'URL du script n\'est pas configurée dans admin.html.</p>');
+                showSpinner(false);
+                return;
+            }
+
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8',
+                    },
+                    body: JSON.stringify({
+                        action: actionName,
+                        data: {
+                            universityId: universityId
+                        }
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.html) {
+                        showModal('Résultat de l\'opération', result.html);
+                    } else if (result.message) {
+                        showModal('Opération terminée', `<p class="text-green-600 font-semibold">${result.message}</p>`);
+                    }
+                } else {
+                    showModal('Erreur', `<p class="text-red-600 font-semibold">${result.error || 'Une erreur inconnue est survenue.'}</p>`);
+                }
+
+            } catch (error) {
+                console.error('Erreur de communication:', error);
+                showModal('Erreur de communication', `<p class="text-red-600 font-semibold">${error.message}</p>`);
+            } finally {
+                showSpinner(false);
+            }
+        }
+    </script>
+
+</body>
+</html>
