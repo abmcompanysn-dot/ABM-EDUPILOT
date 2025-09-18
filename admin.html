@@ -66,6 +66,126 @@
 
         </main>
     </div>
+    <div id="main-dashboard" class="max-w-4xl mx-auto">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl font-bold text-gray-800">🎓 Panneau d'Administration</h1>
+            <p class="text-gray-600 mt-2">Gérez votre système ABM EduPilote depuis cette interface.</p>
+        </header>
+
+        <!-- NOUVEAU: Bouton de déconnexion -->
+        <div class="text-right mb-6">
+            <button onclick="logout()" class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition-all">Déconnexion</button>
+        </div>
+
+        <main class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- Carte 2: Générer les QR Codes -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_qr_codes')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-green-100 text-green-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h-1m-1-6v1m-1-1H9m12 4h1m-1-1v-1m-1 1h-1m-1-1h-1m-1-1H9m-1 1H7m2 4H7m2 1v1m-1-1v-1m1-1h1m2-1h1m1 1h1m-1 1h-1m-1-1h-1m-1-1h-1m-1-1h-1m-1-1h-1" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Générer les QR Codes</h2>
+                        <p class="text-gray-500 text-sm">Affiche les QR codes pour chaque salle.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carte 3: Générer les liens d'inscription -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="callAdminAction('admin_get_reg_links')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-purple-100 text-purple-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Générer les liens</h2>
+                        <p class="text-gray-500 text-sm">Crée les liens d'inscription par classe.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOUVEAU: Carte pour la gestion des entités -->
+            <div class="action-card bg-white p-6 rounded-xl shadow-md cursor-pointer" onclick="showPage('management-page')">
+                <div class="flex items-center space-x-4">
+                    <div class="bg-indigo-100 text-indigo-600 p-3 rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">Gérer Filières & Classes</h2>
+                        <p class="text-gray-500 text-sm">Ajoutez et consultez vos filières et classes.</p>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- NOUVEAU: Page de gestion des entités -->
+    <div id="management-page" class="max-w-5xl mx-auto hidden">
+        <header class="mb-10">
+            <button onclick="showPage('main-dashboard')" class="text-indigo-600 hover:text-indigo-800 mb-4">&larr; Retour au tableau de bord</button>
+            <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
+            <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-indigo-500 text-indigo-600" data-target="filiere-content">Filières</button>
+                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
+            </nav>
+        </div>
+
+        <!-- Contenu des onglets -->
+        <div id="management-content-container">
+            <!-- Contenu Filières -->
+            <div id="filiere-content" class="management-tab-content">
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
+                        <form id="add-filiere-form" class="mt-4 space-y-4">
+                            <div>
+                                <p class="text-sm text-gray-500">La filière sera ajoutée à votre université.</p>
+                            </div>
+                            <div>
+                                <label for="filiere-name" class="block text-sm font-medium text-gray-700">Nom de la filière</label>
+                                <input type="text" id="filiere-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
+                        </form>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
+                        <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                    </div>
+                </div>
+            </div>
+            <!-- Contenu Classes -->
+            <div id="classe-content" class="management-tab-content hidden">
+                 <div class="grid md:grid-cols-3 gap-8">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
+                        <form id="add-classe-form" class="mt-4 space-y-4">
+                            <div>
+                                <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
+                                <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-indigo-500 sm:text-sm"></select>
+                            </div>
+                            <div>
+                                <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
+                                <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 sm:text-sm">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700">Ajouter</button>
+                        </form>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
+                        <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
@@ -128,6 +248,118 @@
             window.location.href = 'index.html';
         }
 
+        // NOUVEAU: Logique pour afficher les pages
+        function showPage(pageId) {
+            document.getElementById('main-dashboard').classList.add('hidden');
+            document.getElementById('management-page').classList.add('hidden');
+            
+            const page = document.getElementById(pageId);
+            if (page) {
+                page.classList.remove('hidden');
+            }
+
+            if (pageId === 'management-page') {
+                setupAdminManagementPage();
+            }
+        }
+
+        // NOUVEAU: Initialise la page de gestion
+        function setupAdminManagementPage() {
+            const tabs = document.querySelectorAll('.management-tab');
+            const tabContents = document.querySelectorAll('.management-tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => {
+                        t.classList.remove('border-indigo-500', 'text-indigo-600');
+                        t.classList.add('border-transparent', 'text-gray-500');
+                    });
+                    tab.classList.add('border-indigo-500', 'text-indigo-600');
+                    tab.classList.remove('border-transparent', 'text-gray-500');
+                    
+                    tabContents.forEach(c => c.classList.add('hidden'));
+                    const targetContent = document.getElementById(tab.dataset.target);
+                    if (targetContent) targetContent.classList.remove('hidden');
+                    
+                    const entityType = tab.dataset.target.split('-')[0];
+                    loadAndRenderEntities(entityType);
+                });
+            });
+
+            // Activer le premier onglet par défaut
+            if (tabs.length > 0 && !document.querySelector('.management-tab.border-indigo-500')) {
+                tabs[0].click();
+            }
+
+            setupEntityForm('filiere', {});
+            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
+        }
+
+        // NOUVEAU: Gère la soumission des formulaires d'ajout
+        function setupEntityForm(entityType, options) {
+            const form = document.getElementById(`add-${entityType}-form`);
+            if (!form) return;
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const nameInput = document.getElementById(`${entityType}-name`);
+                const name = nameInput.value.trim();
+                if (!name) return;
+
+                const payload = { name };
+                if (options.parent) {
+                    const parentSelect = document.getElementById(options.parentSelectId);
+                    payload[`${options.parent}Id`] = parentSelect.value;
+                }
+
+                showSpinner(true);
+                try {
+                    const result = await callAdminApi('admin_add_entity', { entityType, payload });
+                    showModal('Succès', result.message);
+                    nameInput.value = '';
+                    loadAndRenderEntities(entityType); // Recharger la liste
+                } catch (error) {
+                    showModal('Erreur', error.message);
+                } finally {
+                    showSpinner(false);
+                }
+            });
+        }
+
+        // NOUVEAU: Charge et affiche les listes de filières/classes
+        async function loadAndRenderEntities(entityType) {
+            const listElement = document.getElementById(`${entityType}-list`);
+            if (!listElement) return;
+            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
+
+            try {
+                const result = await callAdminApi('admin_get_entities', { entityType });
+                const entities = result.data;
+                
+                if (entityType === 'filiere') {
+                    const parentSelect = document.getElementById('classe-filiere-select');
+                    if (parentSelect) {
+                        parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
+                            + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
+                    }
+                }
+
+                if (entities.length === 0) {
+                    listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                    return;
+                }
+
+                listElement.innerHTML = entities.map(entity => {
+                    const idKey = `ID_${entityType.toUpperCase()}`;
+                    const nameKey = `NOM_${entityType.toUpperCase()}`;
+                    return `<li class="p-3 bg-white border rounded-md flex justify-between items-center"><span>${entity[nameKey]}</span><span class="text-xs text-gray-400 font-mono">${entity[idKey]}</span></li>`;
+                }).join('');
+
+            } catch (error) {
+                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
+            }
+        }
+
         closeModalBtn.onclick = () => modal.classList.add('hidden');
         window.onclick = (event) => {
             if (event.target == modal) {
@@ -145,6 +377,22 @@
             modal.classList.remove('hidden');
         }
 
+        // NOUVEAU: Fonction d'appel API spécifique à l'admin
+        async function callAdminApi(action, data = {}) {
+            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
+            if (!universityId) {
+                throw new Error('Session administrateur invalide. Veuillez vous reconnecter.');
+            }
+            
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data: { ...data, universityId } })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
+            return result;
+        }
+
         async function callAdminAction(actionName) {
             showSpinner(true);
 
@@ -157,29 +405,8 @@
                 return;
             }
 
-            if (!WEB_APP_URL || WEB_APP_URL.includes('COLLEZ_VOTRE_URL')) {
-                showModal('Erreur de Configuration', '<p class="text-red-600 font-semibold">L\'URL du script n\'est pas configurée dans admin.html.</p>');
-                showSpinner(false);
-                return;
-            }
-
-
             try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8',
-                    },
-                    body: JSON.stringify({
-                        action: actionName,
-                        data: {
-                            universityId: universityId
-                        }
-                    })
-                });
-
-                const result = await response.json();
+                const result = await callAdminApi(actionName);
 
                 if (result.success) {
                     if (result.html) {
