@@ -66,7 +66,7 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col lg:pl-64">
+        <div class="flex-1 flex flex-col">
             <header class="flex justify-between items-center p-4 lg:p-6 bg-white border-b shadow-sm sticky top-0 z-20">
                 <!-- Hamburger Menu for Mobile -->
                 <button id="menu-button" class="lg:hidden text-gray-500 hover:text-violet-600 focus:outline-none">
@@ -102,7 +102,7 @@
 
     <div id="management-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Gestion des Filières et Classes</h1>
+            <h1 class="text-4xl font-bold text-gray-800">Gestion des Filières & Classes</h1>
             <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
         </header>
 
@@ -118,8 +118,8 @@
         <div id="management-content-container">
             <!-- Contenu Filières -->
             <div id="filiere-content" class="management-tab-content">
-                 <div class="grid md:grid-cols-3 gap-8 items-start">
-                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                 <div class="grid lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
                         <form id="add-filiere-form" class="mt-4 space-y-4">
                             <div>
@@ -132,7 +132,7 @@
                             <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter</button>
                         </form>
                     </div>
-                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
                         <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
                     </div>
@@ -140,8 +140,8 @@
             </div>
             <!-- Contenu Classes -->
             <div id="classe-content" class="management-tab-content hidden">
-                 <div class="grid md:grid-cols-3 gap-8 items-start">
-                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                 <div class="grid lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
                         <form id="add-classe-form" class="mt-4 space-y-4">
                             <div>
@@ -155,7 +155,7 @@
                             <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter</button>
                         </form>
                     </div>
-                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
                         <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
                     </div>
@@ -171,9 +171,9 @@
             <p class="text-gray-600 mt-2">Planifiez les cours et consultez l'emploi du temps.</p>
         </header>
 
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid lg:grid-cols-3 gap-8 items-start">
             <!-- Formulaire d'ajout de cours -->
-            <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Cours</h3>
                 <form id="add-course-form" class="space-y-4">
                     <div>
@@ -206,7 +206,7 @@
                 </form>
             </div>
             <!-- Affichage du planning -->
-            <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Planning des Cours</h3>
                 <div id="planning-table-container" class="max-h-[60vh] overflow-y-auto"><p>Chargement du planning...</p></div>
             </div>
@@ -220,9 +220,9 @@
             <p class="text-gray-600 mt-2">Créez des comptes pour les responsables et assignez-les à une classe.</p>
         </header>
 
-        <div class="grid md:grid-cols-3 gap-8">
+        <div class="grid lg:grid-cols-3 gap-8 items-start">
             <!-- Formulaire d'ajout de responsable -->
-            <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Responsable</h3>
                 <form id="add-responsable-form" class="space-y-4">
                     <div>
@@ -248,7 +248,7 @@
                 </form>
             </div>
             <!-- Affichage des responsables -->
-            <div class="md:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Responsables Actuels</h3>
                 <div id="responsables-table-container" class="max-h-[60vh] overflow-y-auto"><p>Chargement des responsables...</p></div>
             </div>
@@ -289,12 +289,16 @@
             <p class="text-gray-600 mt-2">Générez ici vos QR codes de présence et liens d'inscription.</p>
         </header>
         <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les QR Codes de Présence</h3>
+            <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
+                <div class="flex-grow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les QR Codes de Présence</h3>
+                </div>
                 <button class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700" onclick="callAdminAction('adminGetQrCodes')">Lancer la génération</button>
             </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les Liens d'Inscription</h3>
+            <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
+                <div class="flex-grow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les Liens d'Inscription</h3>
+                </div>
                 <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700" onclick="callAdminAction('adminGetRegLinks')">Lancer la génération</button>
             </div>
         </div>
@@ -305,11 +309,11 @@
     </div>
 
     <!-- Modal -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden">
-        <div class="relative top-10 mx-auto p-5 border w-full max-w-4xl shadow-lg rounded-xl bg-white">
+    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="relative bg-white rounded-xl shadow-lg w-full max-w-4xl flex flex-col" style="max-height: 90vh;">
             <div class="mt-3">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
-                <div id="modal-content" class="mt-2 px-7 py-3 overflow-y-auto">
+                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900 px-6 pt-4">Résultat</h3>
+                <div id="modal-content" class="mt-2 px-6 py-4 overflow-y-auto flex-grow">
                     <!-- Content will be injected here -->
                 </div>
                 <div class="items-center px-4 py-3">
@@ -392,6 +396,13 @@
             if (linkElement) {
                 linkElement.classList.remove('text-gray-300');
                 linkElement.classList.add('bg-white', 'text-violet-600', 'font-semibold');
+            }
+
+            // NOUVEAU: Fermer le menu mobile après un clic
+            const sidebar = document.getElementById('sidebar');
+            const menuButton = document.getElementById('menu-button');
+            if (window.getComputedStyle(menuButton).display !== 'none') { // Si on est en vue mobile
+                sidebar.classList.add('-translate-x-full');
             }
             
             // Logique de chargement des pages
@@ -502,7 +513,7 @@
                     // Désactiver le bouton pour éviter les doubles clics
                     e.submitter.disabled = true;
                     const result = await callAdminApi('adminAddEntity', { entityType, payload });
-                    showModal('Succès', result.message);
+                    showModal('Succès', result.message); // La modale s'affiche
                     form.reset(); // Utiliser form.reset() pour vider tous les champs
                     loadAndRenderEntities(entityType); // Recharger la liste
                 } catch (error) {
@@ -518,7 +529,7 @@
         async function loadAndRenderEntities(entityType) {
             const listElement = document.getElementById(`${entityType}-list`);
             if (!listElement) return;
-            listElement.dataset.loaded = 'false'; // Marquer comme non chargé
+            listElement.dataset.loaded = 'false'; // Marquer comme non chargé pour forcer le rechargement si nécessaire
             listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
 
             try {
