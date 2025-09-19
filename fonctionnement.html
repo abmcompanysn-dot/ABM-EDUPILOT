@@ -53,187 +53,190 @@
         </button>
     </div>
 
-    <div id="page-container">
+    <!-- NOUVEAU: Conteneur principal pour la génération PDF -->
+    <div id="page-wrapper">
+        <div class="max-w-5xl mx-auto p-6 sm:p-10">
 
-        <!-- En-tête -->
-        <header class="text-center mb-16">
-            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-24 h-24 mx-auto mb-4 bg-white p-2 rounded-2xl shadow-md">
-            <h1 class="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-[#1C2B5A] to-[#7C3AED] text-transparent bg-clip-text">
-                ABM EduPilote
-            </h1>
-            <p class="text-slate-500 mt-2 text-lg">Le guide d'utilisation pour une gestion simplifiée</p>
-        </header>
+            <!-- En-tête -->
+            <header class="text-center mb-16">
+                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-24 h-24 mx-auto mb-4 bg-white p-2 rounded-2xl shadow-md">
+                <h1 class="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-[#1C2B5A] to-[#7C3AED] text-transparent bg-clip-text">
+                    ABM EduPilote
+                </h1>
+                <p class="text-slate-500 mt-2 text-lg">Le guide d'utilisation pour une gestion simplifiée</p>
+            </header>
 
-        <!-- Introduction -->
-        <section class="mb-12 sm:mb-20 text-center">
-            <h2 class="text-3xl font-bold text-slate-800 mb-4">Transformer la gestion éducative en Afrique</h2>
-            <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed">
-                ABM EduPilote est bien plus qu'une simple application. C'est une solution complète, pensée pour répondre aux défis spécifiques du secteur éducatif africain. Notre mission est de fournir aux écoles, aux responsables et aux étudiants des outils modernes, simples et efficaces pour centraliser l'information, automatiser les tâches et se concentrer sur l'essentiel : l'excellence académique.
-            </p>
-        </section>
+            <!-- Introduction -->
+            <section class="mb-12 sm:mb-20 text-center">
+                <h2 class="text-3xl font-bold text-slate-800 mb-4">Transformer la gestion éducative en Afrique</h2>
+                <p class="max-w-3xl mx-auto text-slate-600 leading-relaxed">
+                    ABM EduPilote est bien plus qu'une simple application. C'est une solution complète, pensée pour répondre aux défis spécifiques du secteur éducatif africain. Notre mission est de fournir aux écoles, aux responsables et aux étudiants des outils modernes, simples et efficaces pour centraliser l'information, automatiser les tâches et se concentrer sur l'essentiel : l'excellence académique.
+                </p>
+            </section>
 
-        <!-- Dédicace et Préambule -->
-        <section class="mb-12 sm:mb-20 bg-violet-50 p-6 sm:p-8 rounded-2xl border border-violet-200">
-            <h2 class="text-3xl font-bold text-slate-800 mb-6 text-center">Préambule & Dédicace</h2>
-            <div class="text-slate-600 space-y-4 text-base leading-relaxed">
-                <p>
-                    Né d'une famille d'enseignants, de père et de mère, j'ai grandi en étant témoin des défis et des difficultés inhérents au secteur de l'éducation. Un jour, après une longue discussion avec mon père, une idée a germé : créer un outil qui pourrait véritablement aider le système éducatif dans sa gestion quotidienne et préparer le terrain pour l'avenir de nos étudiants.
-                </p>
-                <p>
-                    C'est ainsi qu'est né <strong class="text-violet-700">ABM EduPilote</strong>. En tant qu'étudiant en mécatronique à l'ENSETP de l'Université Cheikh Anta Diop de Dakar, j'ai mis à profit mes compétences pour concevoir une solution qui, je l'espère, apportera une contribution significative.
-                </p>
-                <p class="pt-4 border-t border-violet-200 mt-4 italic">
-                    Je dédie cette application à mes parents et à ma famille, pour leur soutien indéfectible et pour m'avoir inspiré cette vocation.
-                </p>
-                <div class="text-right mt-6">
-                    <p class="font-semibold text-slate-700">ATEKOSSI Brunel Mahuzonsou</p>
-                    <p class="text-sm">Développeur chez <strong class="text-violet-700">ABM Company Tech</strong></p>
-                    <p class="text-xs text-slate-400">Septembre 2025</p>
+            <!-- Dédicace et Préambule -->
+            <section class="mb-12 sm:mb-20 bg-violet-50 p-6 sm:p-8 rounded-2xl border border-violet-200">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6 text-center">Préambule & Dédicace</h2>
+                <div class="text-slate-600 space-y-4 text-base leading-relaxed">
+                    <p>
+                        Né d'une famille d'enseignants, de père et de mère, j'ai grandi en étant témoin des défis et des difficultés inhérents au secteur de l'éducation. Un jour, après une longue discussion avec mon père, une idée a germé : créer un outil qui pourrait véritablement aider le système éducatif dans sa gestion quotidienne et préparer le terrain pour l'avenir de nos étudiants.
+                    </p>
+                    <p>
+                        C'est ainsi qu'est né <strong class="text-violet-700">ABM EduPilote</strong>. En tant qu'étudiant en mécatronique à l'ENSETP de l'Université Cheikh Anta Diop de Dakar, j'ai mis à profit mes compétences pour concevoir une solution qui, je l'espère, apportera une contribution significative.
+                    </p>
+                    <p class="pt-4 border-t border-violet-200 mt-4 italic">
+                        Je dédie cette application à mes parents et à ma famille, pour leur soutien indéfectible et pour m'avoir inspiré cette vocation.
+                    </p>
+                    <div class="text-right mt-6">
+                        <p class="font-semibold text-slate-700">ATEKOSSI Brunel Mahuzonsou</p>
+                        <p class="text-sm">Développeur chez <strong class="text-violet-700">ABM Company Tech</strong></p>
+                        <p class="text-xs text-slate-400">Septembre 2025</p>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- NOUVEAU: Section "Premiers Pas" -->
-        <section class="mb-12 sm:mb-20">
-            <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Premiers Pas : Comment se connecter ?</h2>
-            <div class="space-y-8">
-                <!-- Inscrire une école -->
-                <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-violet-500">
-                    <h3 class="text-xl font-bold text-slate-800 mb-3">1. Inscrire une nouvelle École</h3>
-                    <p class="text-slate-600 mb-4">Pour commencer à utiliser ABM EduPilote, l'administrateur doit d'abord enregistrer son établissement.</p>
-                    <ol class="list-decimal list-inside space-y-2 text-slate-600">
-                        <li>Rendez-vous sur la page d'accueil.</li>
-                        <li>Cliquez sur la carte <strong class="text-violet-700">"Inscrire une École"</strong>.</li>
-                        <li>Remplissez le formulaire avec le nom de votre école, votre email et un mot de passe sécurisé.</li>
-                        <li>Cliquez sur "Créer le compte". Votre espace est maintenant prêt !</li>
-                    </ol>
-                </div>
-                <!-- Se connecter -->
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">2. Accès Administrateur</h3>
-                        <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
-                            <li>Sur la page d'accueil, cliquez sur <strong class="text-blue-700">"Accès Admin"</strong>.</li>
-                            <li>Entrez l'email et le mot de passe créés lors de l'inscription.</li>
-                            <li>Vous serez redirigé vers votre tableau de bord complet.</li>
+            <!-- NOUVEAU: Section "Premiers Pas" -->
+            <section class="mb-12 sm:mb-20">
+                <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Premiers Pas : Comment se connecter ?</h2>
+                <div class="space-y-8">
+                    <!-- Inscrire une école -->
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-violet-500">
+                        <h3 class="text-xl font-bold text-slate-800 mb-3">1. Inscrire une nouvelle École</h3>
+                        <p class="text-slate-600 mb-4">Pour commencer à utiliser ABM EduPilote, l'administrateur doit d'abord enregistrer son établissement.</p>
+                        <ol class="list-decimal list-inside space-y-2 text-slate-600">
+                            <li>Rendez-vous sur la page d'accueil.</li>
+                            <li>Cliquez sur la carte <strong class="text-violet-700">"Inscrire une École"</strong>.</li>
+                            <li>Remplissez le formulaire avec le nom de votre école, votre email et un mot de passe sécurisé.</li>
+                            <li>Cliquez sur "Créer le compte". Votre espace est maintenant prêt !</li>
                         </ol>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">3. Accès Responsable</h3>
-                        <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
-                            <li>Sur la page d'accueil, cliquez sur <strong class="text-green-700">"Espace Responsable"</strong>.</li>
-                            <li>Utilisez l'email et le mot de passe fournis par votre administrateur.</li>
-                            <li>Accédez à la gestion de votre classe.</li>
-                        </ol>
-                    </div>
-                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
-                        <h3 class="text-xl font-bold text-slate-800 mb-3">4. Accès Étudiant</h3>
-                        <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
-                            <li>Sur la page d'accueil, cliquez sur <strong class="text-purple-700">"Espace Étudiant"</strong>.</li>
-                            <li>Entrez votre <strong class="text-purple-700">ID Étudiant</strong> unique (fourni lors de votre inscription).</li>
-                            <li>Consultez votre emploi du temps et votre historique.</li>
-                        </ol>
+                    <!-- Se connecter -->
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+                            <h3 class="text-xl font-bold text-slate-800 mb-3">2. Accès Administrateur</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
+                                <li>Sur la page d'accueil, cliquez sur <strong class="text-blue-700">"Accès Admin"</strong>.</li>
+                                <li>Entrez l'email et le mot de passe créés lors de l'inscription.</li>
+                                <li>Vous serez redirigé vers votre tableau de bord complet.</li>
+                            </ol>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+                            <h3 class="text-xl font-bold text-slate-800 mb-3">3. Accès Responsable</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
+                                <li>Sur la page d'accueil, cliquez sur <strong class="text-green-700">"Espace Responsable"</strong>.</li>
+                                <li>Utilisez l'email et le mot de passe fournis par votre administrateur.</li>
+                                <li>Accédez à la gestion de votre classe.</li>
+                            </ol>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
+                            <h3 class="text-xl font-bold text-slate-800 mb-3">4. Accès Étudiant</h3>
+                            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
+                                <li>Sur la page d'accueil, cliquez sur <strong class="text-purple-700">"Espace Étudiant"</strong>.</li>
+                                <li>Entrez votre <strong class="text-purple-700">ID Étudiant</strong> unique (fourni lors de votre inscription).</li>
+                                <li>Consultez votre emploi du temps et votre historique.</li>
+                            </ol>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- Guide par Rôle -->
-        <section>
-            <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Comment utiliser ABM EduPilote ?</h2>
+            <!-- Guide par Rôle -->
+            <section>
+                <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Comment utiliser ABM EduPilote ?</h2>
 
-            <!-- Espace Administrateur -->
-            <div class="mb-12">
-                <div class="p-4 bg-blue-100 text-blue-800 rounded-lg mb-8 flex items-start sm:items-center space-x-4">
-                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-blue-200 text-blue-600 flex items-center justify-center">
-                        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                <!-- Espace Administrateur -->
+                <div class="mb-12">
+                    <div class="p-4 bg-blue-100 text-blue-800 rounded-lg mb-8 flex items-start sm:items-center space-x-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-blue-200 text-blue-600 flex items-center justify-center">
+                            <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Pour l'Administrateur : Le Cerveau Stratégique</h3>
+                            <p class="text-blue-700">Pilotez votre établissement avec une vision à 360° et des outils puissants pour une gestion centralisée et efficace.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-bold">Pour l'Administrateur : Le Cerveau Stratégique</h3>
-                        <p class="text-blue-700">Pilotez votre établissement avec une vision à 360° et des outils puissants pour une gestion centralisée et efficace.</p>
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <div class="feature-card overflow-hidden rounded-lg">
+                            <img src="https://i.postimg.cc/Jz4bHyRC/Acc-s-Admin-Une-image-repr-sentant-la-gestion-l-administration-ou-la-technologie-dans-le-contx.jpg" alt="Tableau de bord Administrateur" class="w-full h-auto object-cover shadow-md border">
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4">Fonctionnalités Clés :</h4>
+                            <ul class="space-y-3 text-slate-600">
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Vue d'ensemble</span><span>: Visualisez les statistiques clés sur le tableau de bord.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Organisation</span><span>: Créez et gérez les filières et les classes.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Planification</span><span>: Supervisez l'emploi du temps de tout l'établissement.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Délégation</span><span>: Créez des comptes pour les responsables de classe.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Automatisation</span><span>: Générez en un clic les QR codes et liens d'inscription.</span></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div class="feature-card overflow-hidden rounded-lg">
-                        <img src="https://i.postimg.cc/Jz4bHyRC/Acc-s-Admin-Une-image-repr-sentant-la-gestion-l-administration-ou-la-technologie-dans-le-contx.jpg" alt="Tableau de bord Administrateur" class="w-full h-auto object-cover shadow-md border">
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold text-slate-800 mb-4">Fonctionnalités Clés :</h4>
-                        <ul class="space-y-3 text-slate-600">
-                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Vue d'ensemble</span><span>: Visualisez les statistiques clés sur le tableau de bord.</span></li>
-                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Organisation</span><span>: Créez et gérez les filières et les classes.</span></li>
-                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Planification</span><span>: Supervisez l'emploi du temps de tout l'établissement.</span></li>
-                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Délégation</span><span>: Créez des comptes pour les responsables de classe.</span></li>
-                            <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Automatisation</span><span>: Générez en un clic les QR codes et liens d'inscription.</span></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Espace Responsable -->
-            <div class="mb-12">
-                <div class="p-4 bg-green-100 text-green-800 rounded-lg mb-8 flex items-start sm:items-center space-x-4">
-                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-green-200 text-green-600 flex items-center justify-center">
-                        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                <!-- Espace Responsable -->
+                <div class="mb-12">
+                    <div class="p-4 bg-green-100 text-green-800 rounded-lg mb-8 flex items-start sm:items-center space-x-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-green-200 text-green-600 flex items-center justify-center">
+                            <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Pour le Responsable : Le Pilote de la Classe</h3>
+                            <p class="text-green-700">Gagnez en autonomie et en efficacité. Gérez le quotidien de votre classe avec des outils conçus pour vous simplifier la vie.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-bold">Pour le Responsable : Le Pilote de la Classe</h3>
-                        <p class="text-green-700">Gagnez en autonomie et en efficacité. Gérez le quotidien de votre classe avec des outils conçus pour vous simplifier la vie.</p>
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <div class="feature-card overflow-hidden rounded-lg">
+                            <img src="https://i.postimg.cc/PJHQJ26d/espace-reesponsabledes-etudiants-de-classe.jpg" alt="Tableau de bord Responsable" class="w-full h-auto object-cover shadow-md border">
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4">Bénéfices et Outils :</h4>
+                            <ul class="space-y-3 text-slate-600">
+                                <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-24 shrink-0">Autonomie</span><span>: Proposez, confirmez ou annulez les cours de votre classe.</span></li>
+                                <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-24 shrink-0">Simplicité</span><span>: Générez et partagez le lien d'inscription et le QR code de présence en un clic.</span></li>
+                                <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-24 shrink-0">Efficacité</span><span>: Concentrez-vous sur l'enseignement, pas sur l'administratif.</span></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div class="feature-card overflow-hidden rounded-lg">
-                        <img src="https://i.postimg.cc/PJHQJ26d/espace-reesponsabledes-etudiants-de-classe.jpg" alt="Tableau de bord Responsable" class="w-full h-auto object-cover shadow-md border">
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold text-slate-800 mb-4">Bénéfices et Outils :</h4>
-                        <ul class="space-y-3 text-slate-600">
-                            <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-24 shrink-0">Autonomie</span><span>: Proposez, confirmez ou annulez les cours de votre classe.</span></li>
-                            <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-24 shrink-0">Simplicité</span><span>: Générez et partagez le lien d'inscription et le QR code de présence en un clic.</span></li>
-                            <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-24 shrink-0">Efficacité</span><span>: Concentrez-vous sur l'enseignement, pas sur l'administratif.</span></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Espace Étudiant -->
-            <div class="mb-12">
-                <div class="p-4 bg-purple-100 text-purple-800 rounded-lg mb-8 flex items-start sm:items-center space-x-4">
-                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-purple-200 text-purple-600 flex items-center justify-center">
-                        <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 14v4m-4-2v4m8-6v4" /></svg>
+                <!-- Espace Étudiant -->
+                <div class="mb-12">
+                    <div class="p-4 bg-purple-100 text-purple-800 rounded-lg mb-8 flex items-start sm:items-center space-x-4">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-purple-200 text-purple-600 flex items-center justify-center">
+                            <svg class="h-7 w-7" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 14l9-5-9-5-9 5 9 5z" /><path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /><path stroke-linecap="round" stroke-linejoin="round" d="M12 14v4m-4-2v4m8-6v4" /></svg>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold">Pour l'Étudiant : L'Acteur de sa Réussite</h3>
+                            <p class="text-purple-700">Prenez le contrôle de votre parcours académique avec un espace personnel qui centralise toutes vos informations essentielles.</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="text-2xl font-bold">Pour l'Étudiant : L'Acteur de sa Réussite</h3>
-                        <p class="text-purple-700">Prenez le contrôle de votre parcours académique avec un espace personnel qui centralise toutes vos informations essentielles.</p>
+                    <div class="grid lg:grid-cols-2 gap-8 items-center">
+                        <div class="feature-card overflow-hidden rounded-lg">
+                            <img src="https://i.postimg.cc/Cx0pYgC2/photo-de-espcae-tudiant-africain.jpg" alt="Tableau de bord Étudiant" class="w-full h-auto object-cover shadow-md border">
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-slate-800 mb-4">Vos Avantages :</h4>
+                            <ul class="space-y-3 text-slate-600">
+                                <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-44 shrink-0">Information centralisée</span><span>: Accédez à votre emploi du temps et à votre historique de présence en un seul clic.</span></li>
+                                <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-44 shrink-0">Autonomie</span><span>: Mettez à jour vos informations personnelles (nom, email) à tout moment.</span></li>
+                                <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-44 shrink-0">Simplicité</span><span>: Pointez votre présence en utilisant simplement votre ID étudiant.</span></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-                <div class="grid lg:grid-cols-2 gap-8 items-center">
-                    <div class="feature-card overflow-hidden rounded-lg">
-                        <img src="https://i.postimg.cc/Cx0pYgC2/photo-de-espcae-tudiant-africain.jpg" alt="Tableau de bord Étudiant" class="w-full h-auto object-cover shadow-md border">
-                    </div>
-                    <div>
-                        <h4 class="text-xl font-bold text-slate-800 mb-4">Vos Avantages :</h4>
-                        <ul class="space-y-3 text-slate-600">
-                            <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-44 shrink-0">Information centralisée</span><span>: Accédez à votre emploi du temps et à votre historique de présence en un seul clic.</span></li>
-                            <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-44 shrink-0">Autonomie</span><span>: Mettez à jour vos informations personnelles (nom, email) à tout moment.</span></li>
-                            <li class="flex items-start"><span class="text-purple-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-44 shrink-0">Simplicité</span><span>: Pointez votre présence en utilisant simplement votre ID étudiant.</span></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
 
-        </section>
+            </section>
 
-        <!-- Vision & Avenir -->
-        <section class="mb-12 sm:mb-20 bg-slate-800 text-white p-8 rounded-2xl">
-            <h2 class="text-3xl font-bold mb-6 text-center">Vision & Avenir</h2>
-            <p class="max-w-3xl mx-auto text-slate-300 leading-relaxed text-center">
-                ABM EduPilote n'est que le début. Nous travaillons sans relâche pour intégrer de nouvelles fonctionnalités qui révolutionneront encore davantage le secteur éducatif : intelligence artificielle pour des parcours personnalisés, modules de paiement des frais de scolarité, communication intégrée entre parents, professeurs et administration, et bien plus encore. Notre ambition est de créer un écosystème éducatif complet, connecté et tourné vers l'avenir.
-            </p>
-        </section>
+            <!-- Vision & Avenir -->
+            <section class="mb-12 sm:mb-20 bg-slate-800 text-white p-8 rounded-2xl">
+                <h2 class="text-3xl font-bold mb-6 text-center">Vision & Avenir</h2>
+                <p class="max-w-3xl mx-auto text-slate-300 leading-relaxed text-center">
+                    ABM EduPilote n'est que le début. Nous travaillons sans relâche pour intégrer de nouvelles fonctionnalités qui révolutionneront encore davantage le secteur éducatif : intelligence artificielle pour des parcours personnalisés, modules de paiement des frais de scolarité, communication intégrée entre parents, professeurs et administration, et bien plus encore. Notre ambition est de créer un écosystème éducatif complet, connecté et tourné vers l'avenir.
+                </p>
+            </section>
+        </div>
 
         <!-- Footer (identique à la page d'accueil) -->
-        <footer id="contact" class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] text-white py-12 w-full mt-16 -mx-6 sm:-mx-10 -mb-6 sm:-mb-10 rounded-2xl">
+        <footer id="contact" class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] text-white py-12 w-full mt-16">
             <div class="max-w-6xl mx-auto px-4">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Informations Entreprise -->
@@ -301,8 +304,6 @@
             </div>
         </footer>
 
-    </div>
-
     <!-- MODAL ABM COMPANY -->
     <div id="abm-company-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 hidden z-50" onclick="closeAbmModal()">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
@@ -326,7 +327,7 @@
 
     <script>
         function downloadPDF() {
-            const element = document.getElementById('page-container');
+            const element = document.getElementById('page-wrapper');
             const opt = {
                 margin:       0.5,
                 filename:     'Guide_Utilisation_ABM_EduPilote.pdf',
