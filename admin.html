@@ -514,6 +514,12 @@
                     const result = await callAdminApi('adminAddEntity', { entityType, payload });
                     await loadAndRenderEntities(entityType); // Recharger la liste D'ABORD
                     showModal('Succès', result.message); // La modale s'affiche
+
+                    // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
+                    if (entityType === 'classe') {
+                        refreshClassDropdowns();
+                    }
+
                     form.reset(); // Utiliser form.reset() pour vider tous les champs
                 } catch (error) {
                     showModal('Erreur', error.message);
@@ -522,6 +528,23 @@
                     if (e.submitter) e.submitter.disabled = false;
                 }
             };
+        }
+
+        /**
+         * NOUVEAU: Rafraîchit les listes déroulantes de classes sur les pages Planning et Responsables.
+         * Cette fonction est appelée après l'ajout d'une nouvelle classe.
+         */
+        async function refreshClassDropdowns() {
+            try {
+                const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
+                const classes = classesResult.data;
+                const optionsHtml = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
+                const optionsHtmlByName = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.NOM_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
+
+                document.getElementById('responsable-classe-select').innerHTML = optionsHtml;
+                document.getElementById('course-classe-select').innerHTML = optionsHtmlByName;
+                console.log('Listes déroulantes des classes mises à jour.');
+            } catch (error) { console.error("Erreur lors du rafraîchissement des listes de classes:", error); }
         }
 
         // NOUVEAU: Charge et affiche les listes de filières/classes
@@ -876,10 +899,29 @@
                 } else {
                     loadAndRenderEntities(entityType);
                 }
+                loadAdminDashboard(); // NOUVEAU: Rafraîchit les statistiques du tableau de bord
+                reloadCurrentPageData(); // NOUVEAU: Rafraîchit la vue actuelle
             } catch (error) {
                 showModal('Erreur', error.message);
             } finally {
                 showSpinner(false);
+            }
+        }
+
+        /**
+         * NOUVEAU: Rafraîchit les données de la page actuellement visible.
+         * Utile après une suppression pour mettre à jour la liste.
+         */
+        function reloadCurrentPageData() {
+            const currentPageId = document.querySelector('.page-container:not(.hidden)').id;
+            if (currentPageId === 'students-page') {
+                loadAndRenderStudents();
+            } else if (currentPageId === 'responsables-page') {
+                loadAndRenderResponsables();
+            } else if (currentPageId === 'management-page') {
+                const currentTab = document.querySelector('.management-tab.border-violet-500');
+                const entityType = currentTab.dataset.target.split('-')[0];
+                loadAndRenderEntities(entityType);
             }
         }
 
@@ -906,6 +948,7 @@
             // Pré-charger les données pour le formulaire d'ajout de classe
             loadAndRenderEntities('filiere');
             // Activer le premier onglet de la page de management
+            // La ligne ci-dessous est déplacée dans setupAdminManagementPage pour éviter une erreur
             document.querySelector('.management-tab').click();
 
             loadAdminDashboard();
