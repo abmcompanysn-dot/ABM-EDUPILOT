@@ -150,7 +150,8 @@
             try {
                 const result = await callApi('updateStudentInfo', data);
                 displayMessageInForm(form, result.message, 'success');
-                document.getElementById('student-dashboard-name').textContent = data.name;
+                // Recharger les informations pour s'assurer que tout est à jour
+                loadStudentInfo(studentId);
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
