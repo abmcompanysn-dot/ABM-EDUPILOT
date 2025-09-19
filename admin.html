@@ -102,7 +102,7 @@
 
     <div id="management-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">🏛️ Gestion des Entités</h1>
+            <h1 class="text-4xl font-bold text-gray-800">Gestion des Filières et Classes</h1>
             <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
         </header>
 
@@ -118,7 +118,7 @@
         <div id="management-content-container">
             <!-- Contenu Filières -->
             <div id="filiere-content" class="management-tab-content">
-                 <div class="grid md:grid-cols-3 gap-8">
+                 <div class="grid md:grid-cols-3 gap-8 items-start">
                     <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
                         <form id="add-filiere-form" class="mt-4 space-y-4">
@@ -140,7 +140,7 @@
             </div>
             <!-- Contenu Classes -->
             <div id="classe-content" class="management-tab-content hidden">
-                 <div class="grid md:grid-cols-3 gap-8">
+                 <div class="grid md:grid-cols-3 gap-8 items-start">
                     <div class="md:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
                         <form id="add-classe-form" class="mt-4 space-y-4">
@@ -428,15 +428,14 @@
                     const targetContent = document.getElementById(tab.dataset.target);
                     if (targetContent) targetContent.classList.remove('hidden');
                     
+                    // OPTIMISATION: Ne recharger que si la liste n'a pas déjà été chargée
                     const entityType = tab.dataset.target.split('-')[0];
-                    loadAndRenderEntities(entityType);
+                    const listElement = document.getElementById(`${entityType}-list`);
+                    if (listElement && listElement.dataset.loaded !== 'true') {
+                        loadAndRenderEntities(entityType);
+                    }
                 });
             });
-
-            // Activer le premier onglet par défaut
-            if (tabs.length > 0 && !document.querySelector('.management-tab.border-violet-500')) {
-                tabs[0].click();
-            }
 
             setupEntityForm('filiere', {});
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
@@ -504,7 +503,7 @@
                     e.submitter.disabled = true;
                     const result = await callAdminApi('adminAddEntity', { entityType, payload });
                     showModal('Succès', result.message);
-                    nameInput.value = '';
+                    form.reset(); // Utiliser form.reset() pour vider tous les champs
                     loadAndRenderEntities(entityType); // Recharger la liste
                 } catch (error) {
                     showModal('Erreur', error.message);
@@ -519,6 +518,7 @@
         async function loadAndRenderEntities(entityType) {
             const listElement = document.getElementById(`${entityType}-list`);
             if (!listElement) return;
+            listElement.dataset.loaded = 'false'; // Marquer comme non chargé
             listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
 
             try {
@@ -550,6 +550,7 @@
                             </li>`;
                 }).join('');
 
+                listElement.dataset.loaded = 'true'; // Marquer comme chargé
             } catch (error) {
                 listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
             }
@@ -891,6 +892,12 @@
         // Initialisation de la page au chargement
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelector('.nav-link').click(); // Clique sur le premier lien (Tableau de Bord)
+
+            // Pré-charger les données pour le formulaire d'ajout de classe
+            loadAndRenderEntities('filiere');
+            // Activer le premier onglet de la page de management
+            document.querySelector('.management-tab').click();
+
             loadAdminDashboard();
         });
 
