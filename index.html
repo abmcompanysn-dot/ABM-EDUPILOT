@@ -37,7 +37,12 @@
         .panel {
             border-radius: 1rem; /* 16px */ background: linear-gradient(180deg, #ffffff, #fbfdff); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
-        /* Styles pour le nouveau carrousel, si nécessaire */
+        /* Styles pour le menu hamburger */
+        .hamburger-button { display: flex; flex-direction: column; justify-content: space-around; width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 50; }
+        .hamburger-line { width: 24px; height: 2px; background-color: white; border-radius: 10px; transition: all 0.3s linear; position: relative; transform-origin: 1px; }
+        .hamburger-button.open .hamburger-line:nth-child(1) { transform: rotate(45deg); }
+        .hamburger-button.open .hamburger-line:nth-child(2) { opacity: 0; transform: translateX(20px); }
+        .hamburger-button.open .hamburger-line:nth-child(3) { transform: rotate(-45deg); }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
@@ -45,7 +50,7 @@
 <body class="bg-violet-50">
 
     <!-- NOUVELLE BARRE DE NAVIGATION -->
-    <header id="main-header" class="sticky top-0 w-full z-30 bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg transition-all duration-300">
+    <header id="main-header" class="sticky top-0 w-full z-40 bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg transition-all duration-300">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="px-4 sm:px-6 lg:px-8 w-full">
                 <div class="flex items-center justify-between h-16 md:h-20">
@@ -84,6 +89,30 @@
             </div>
         </div>
     </header>
+
+    <!-- NOUVEAU: Menu mobile -->
+    <div id="mobile-menu" class="md:hidden fixed inset-0 bg-gray-800 bg-opacity-95 z-50 hidden flex-col items-center justify-center">
+        <div class="flex flex-col items-center">
+            <!-- Logo dans le menu mobile -->
+            <a href="index.html" class="flex items-center space-x-3 mb-12">
+                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-12 h-12 bg-white rounded-md">
+                <div>
+                    <span class="text-white font-bold text-2xl">ABM EduPilote</span>
+                </div>
+            </a>
+            <ul class="flex flex-col items-center text-white space-y-8">
+                <li><a href="index.html" class="text-2xl font-medium hover:text-violet-300">Accueil</a></li>
+                <li><a href="fonctionnement.html" class="text-2xl font-medium hover:text-violet-300">Comment ça marche ?</a></li>
+                <li><a href="#features" class="text-2xl font-medium hover:text-violet-300">Fonctionnalités</a></li>
+                <li><a href="#contact" class="text-2xl font-medium hover:text-violet-300">Contact</a></li>
+                <li>
+                    <a href="#app-container" class="mt-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-6 py-3 text-center">
+                        <span>Se Connecter</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
 
     <!-- NOUVEAU: Grand Carrousel d'Ouverture -->
     <section id="hero-carousel" class="relative w-full h-[calc(100vh-80px)] overflow-hidden shadow-lg bg-gray-800">
@@ -990,6 +1019,21 @@
                 prev();
                 clearInterval(autoSlideInterval);
                 autoSlideInterval = setInterval(next, 8000);
+            });
+
+            // NOUVEAU: Logique du menu hamburger
+            const hamburgerBtn = document.getElementById('hamburger-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerBtn.classList.toggle('open');
+                mobileMenu.classList.toggle('hidden');
+                mobileMenu.classList.toggle('flex');
+            });
+            // Fermer le menu en cliquant sur un lien
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburgerBtn.click();
+                });
             });
 
             autoSlideInterval = setInterval(next, 8000); // Défilement automatique toutes les 8 secondes
