@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Espace Étudiant - ABM EduPilote</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root{ --bg:#f5f3ff; --muted:#6b7280; --card-gap:1.5rem; --radius:14px; }
+        html,body{ height:100%; background:var(--bg); font-family: 'Inter', sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        main#app-container{ width:100%; max-width:1200px; margin:32px auto; padding:16px; }
+        .panel{ border-radius:12px; background:linear-gradient(180deg,#ffffff,#fbfdff); box-shadow: 0 6px 18px rgba(15,23,42,.04); }
+        input:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,.08); border-color: rgba(99,102,241,.9); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center space-x-3">
+                    <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white p-1 rounded-md">
+                    <div>
+                        <a href="index.html" class="text-white font-semibold text-lg">ABM EduPilote</a>
+                        <p class="text-xs text-violet-300 -mt-0.5">Espace Étudiant</p>
+                    </div>
+                </div>
+                <nav>
+                    <button onclick="studentLogout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main id="app-container">
+        <!-- TABLEAU DE BORD ÉTUDIANT -->
+        <section id="page-student-dashboard">
+            <div class="panel p-6 lg:p-8">
+                <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Bonjour, <span id="student-dashboard-name">Chargement...</span></h1>
+                        <p class="text-sm text-gray-500 mt-1">Bienvenue dans votre espace personnel.</p>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Colonne 1 -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mes Informations</h3>
+                            <form id="studentUpdateForm" class="space-y-4">
+                                <div>
+                                    <label for="student-info-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
+                                    <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <div class="text-center">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Mon QR Code d'Identification</h4>
+                                    <div id="personal-qr-code" class="mx-auto w-40 h-40 bg-gray-50 rounded-lg flex items-center justify-center">
+                                        <p class="text-xs text-gray-500">Chargement...</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label for="student-info-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="student-info-email" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md font-semibold flex items-center justify-center gap-3">
+                                    <span class="btnText">Mettre à jour</span>
+                                    <span class="btnSpinner hidden">Sauvegarde...</span>
+                                </button>
+                            </form>
+                            <div class="messageArea mt-3 text-center" aria-live="polite"></div>
+                        </div>
+                    </div>
+
+                    <!-- Colonne 2: Emploi du temps et Historique -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mon Emploi du Temps</h3>
+                            <div id="student-schedule-container" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'emploi du temps...</p></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Historique de mes Présences</h3>
+                            <div id="student-attendance-history" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'historique...</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // --- CONFIGURATION ---
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysStq480_wKltbsJiYdKbQZxgfXZ-XMFkGmaWr8bQW6GYxQ7atbBLKwiqAckgtHztwqQ/exec';
+        const STUDENT_SESSION_KEY = 'abm_student_session';
+
+        // --- AUTHENTIFICATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+            if (studentSessionId) {
+                loadStudentDashboard(studentSessionId);
+            } else {
+                window.location.href = 'index.html'; 
+            }
+        });
+
+        // --- Fonctions pour l'Espace Étudiant ---
+        function studentLogout() {
+            sessionStorage.removeItem(STUDENT_SESSION_KEY);
+            window.location.href = 'index.html';
+        }
+
+        function loadStudentDashboard(studentId) {
+            document.getElementById('student-dashboard-name').textContent = '...';
+            loadStudentInfo(studentId);
+            loadStudentAttendance(studentId);
+            loadPersonalQrCode(studentId);
+            loadStudentSchedule(studentId); // NOUVEAU
+        }
+
+        async function loadStudentInfo(studentId) {
+            const form = document.getElementById('studentUpdateForm');
+            try {
+                const result = await callApi('getStudentData', { studentId });
+                const student = result.data;
+                document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
+                document.getElementById('student-info-name').value = student.name || '';
+                document.getElementById('student-info-email').value = student.email || '';
+                form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+            } catch (error) {
+                displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
+            }
+        }
+
+        async function handleUpdateStudentInfo(e, studentId) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: studentId,
+                name: form.querySelector('#student-info-name').value,
+                email: form.querySelector('#student-info-email').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('updateStudentInfo', data);
+                displayMessageInForm(form, result.message, 'success');
+                document.getElementById('student-dashboard-name').textContent = data.name;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function loadStudentAttendance(studentId) {
+            const container = document.getElementById('student-attendance-history');
+            container.innerHTML = '<p>Chargement de l\'historique...</p>';
+            try {
+                const result = await callApi('getStudentAttendanceHistory', { studentId });
+                const history = result.data;
+                if (!history || history.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                    return;
+                }
+                const timeline = document.createElement('div');
+                timeline.className = 'space-y-4';
+                timeline.innerHTML = history.map(item => `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                        </div>
+                    </div>
+                `).join('');
+                container.innerHTML = '';
+                container.appendChild(timeline);
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        async function loadPersonalQrCode(studentId) {
+            const container = document.getElementById('personal-qr-code');
+            try {
+                const qrData = `ABM-ETU-ID:${studentId}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}`;
+                container.innerHTML = `<img src="${qrApiUrl}" alt="Mon QR Code d'identification" class="rounded-lg">`;
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // NOUVEAU: Charge et affiche l'emploi du temps de l'étudiant
+        async function loadStudentSchedule(studentId) {
+            const container = document.getElementById('student-schedule-container');
+            container.innerHTML = '<p class="text-gray-500">Chargement de l\'emploi du temps...</p>';
+            try {
+                const result = await callApi('getStudentSchedule', { studentId });
+                const courses = result.data;
+
+                if (!courses || courses.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour votre classe.</p>';
+                    return;
+                }
+
+                const scheduleHtml = courses.map(course => {
+                    const statusColor = course.STATUT === 'Confirmé' ? 'bg-green-100 text-green-800' : (course.STATUT === 'Annulé' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+                    const statusIcon = course.STATUT === 'Confirmé' ? '✅' : (course.STATUT === 'Annulé' ? '❌' : '⏳');
+                    return `
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-semibold text-gray-800">${course.MATIERE}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                </div>
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${statusIcon} ${course.STATUT}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `<div class="space-y-4">${scheduleHtml}</div>`;
+
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // --- FONCTIONS UTILITAIRES ---
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
+            return result;
+        }
+
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement ? formElement.querySelector('.submitBtn') : null;
+            const btnText = formElement ? formElement.querySelector('.btnText') : null;
+            const btnSpinner = formElement ? formElement.querySelector('.btnSpinner') : null;
+            if (!submitBtn) return;
+            submitBtn.disabled = isLoading;
+            if (btnText) btnText.classList.toggle('hidden', isLoading);
+            if (btnSpinner) btnSpinner.classList.toggle('hidden', !isLoading);
+        }
+
+        function displayMessageInForm(formElement, message, type) {
+            let messageArea = formElement.parentElement.querySelector('.messageArea') || formElement.nextElementSibling;
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
+        }
+    </script>
+
+</body>
+</html>
