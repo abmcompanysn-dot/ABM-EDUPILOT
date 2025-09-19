@@ -641,17 +641,6 @@
         }
         function safe$(id){ return document.getElementById(id); }
 
-        function toggleVisibility(el, show){
-            if(!el) return;
-            el.classList.toggle('hidden', !show);
-        }
-
-        // --- Configuration d'origine (intacte) ---
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysStq480_wKltbsJiYdKbQZxgfXZ-XMFkGmaWr8bQW6GYxQ7atbBLKwiqAckgtHztwqQ/exec';
-
-        const ADMIN_SESSION_KEY = 'abm_admin_session';
-        const STUDENT_SESSION_KEY = 'abm_student_session';
-
         // --- ROUTEUR SIMPLE (préservé, légèrement encapsulé) ---
         document.addEventListener('DOMContentLoaded', () => {
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
