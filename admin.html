@@ -27,11 +27,6 @@
             font-family: 'Poppins', sans-serif;
         }
     </style>
-    <style>
-        /* NOUVEAU: Style pour l'animation de surveillance */
-        .polling-indicator::after { content: ' .'; animation: dots 1.5s steps(5, end) infinite; }
-        @keyframes dots { from, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 40% { color: #6b7280; text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); } 60% { text-shadow: .25em 0 0 #6b7280, .5em 0 0 rgba(0,0,0,0); } 80%, to { text-shadow: .25em 0 0 #6b7280, .5em 0 0 #6b7280; } }
-    </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
 </head>
 <body>
@@ -414,9 +409,6 @@
             // Cela rend la navigation vers l'onglet "Classes" plus rapide.
             loadAndRenderEntities('filiere');
 
-            // NOUVEAU: Arrêter tous les minuteurs de surveillance si l'utilisateur quitte la page
-            window.addEventListener('beforeunload', () => stopAllPolling());
-
             // NOUVEAU: Charger les données pour le nouveau tableau de bord interactif
             loadInteractiveDashboard();
 
@@ -477,9 +469,6 @@
                 loadInteractiveDashboard(); // NOUVEAU
             }
         }
-
-        // NOUVEAU: Variable globale pour stocker les minuteurs de surveillance
-        let pollingIntervals = {};
 
         // ANCIENNE FONCTION DE DASHBOARD (pour les stats)
         async function loadAdminDashboard() {}
@@ -545,9 +534,6 @@
                     };
                 });
 
-                // Arrêter les anciens minuteurs avant d'en créer de nouveaux
-                stopAllPolling();
-
                 container.innerHTML = filiereData.map(f => `
                     <div onclick="showFiliereDetails('${f.ID_FILIERE}', '${f.NOM_FILIERE}')" class="action-card bg-white p-6 rounded-lg shadow-sm cursor-pointer">
                         <h3 class="text-xl font-bold text-violet-700 truncate">${f.NOM_FILIERE}</h3>
@@ -562,21 +548,12 @@
                                     <p class="text-xs">Étudiants</p>
                                 </div>
                             </div>` : `
-                            <div class="mt-4 text-center text-gray-500 text-sm" id="poll-status-${f.ID_FILIERE}">
-                                <div class="text-orange-600 bg-orange-100 border border-orange-200 rounded-md p-3">
-                                    <p class="font-semibold">Veuillez ajouter une classe.</p>
-                                    <p class="text-xs mt-1">Sinon, cette filière sera supprimée dans <strong id="timer-${f.ID_FILIERE}">5:00</strong>.</p>
-                                </div>
+                            <div class="mt-4 text-center text-gray-500 text-sm p-3 bg-gray-50 rounded-md">
+                                <p>Aucune classe trouvée.</p>
                             </div>
                         `}
                     </div>
                 `).join('');
-
-                // Démarrer la surveillance pour les filières sans classes
-                filiereData.forEach(f => {
-                    // CORRECTION: On ne lance la surveillance que si la filière n'a pas de classe ET qu'une date de création est bien présente.
-                    if (f.classCount === 0 && f.DATE_CREATION) startPollingForFiliere(f.ID_FILIERE, f.DATE_CREATION);
-                });
 
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur de chargement: ${error.message}</p>`;
@@ -861,24 +838,24 @@
                 listElement.innerHTML = '';
                 
                 if (entities.length === 0) {
-                    listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                    itemsHtml = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                } else {
+                    itemsHtml = entities.map(entity => {
+                        const idKey = `ID_${entityType.toUpperCase()}`;
+                        const nameKey = `NOM_${entityType.toUpperCase()}`;
+                        return `<li class="p-3 bg-white border rounded-md flex justify-between items-center">
+                                    <div>
+                                        <span class="font-medium">${entity[nameKey]}</span>
+                                        <span class="block text-xs text-gray-400 font-mono">${entity[idKey]}</span>
+                                    </div>
+                                    <button onclick="handleDeleteEntity('${entityType}', '${entity[idKey]}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
+                                </li>`;
+                    }).join('');
                 }
-                
-                const itemsHtml = entities.map(entity => {
-                    const idKey = `ID_${entityType.toUpperCase()}`;
-                    const nameKey = `NOM_${entityType.toUpperCase()}`;
-                    return `<li class="p-3 bg-white border rounded-md flex justify-between items-center">
-                                <div>
-                                    <span class="font-medium">${entity[nameKey]}</span>
-                                    <span class="block text-xs text-gray-400 font-mono">${entity[idKey]}</span>
-                                </div>
-                                <button onclick="handleDeleteEntity('${entityType}', '${entity[idKey]}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
-                            </li>`;
-                }).join('');
                 
                 // Insérer le nouveau contenu
                 // Utiliser innerHTML une seule fois est plus performant
-                listElement.innerHTML = itemsHtml || '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                listElement.innerHTML = itemsHtml;
                 
                 listElement.dataset.loaded = 'true'; // Marquer comme chargé
             } catch (error) {
@@ -1396,63 +1373,6 @@
             } else {
                 alert("Le partage n'est pas supporté sur ce navigateur. Veuillez copier le lien manuellement.");
             }
-        }
-
-        // NOUVEAU: Démarre la surveillance pour une filière spécifique
-        function startPollingForFiliere(filiereId, creationDateStr) {
-            if (pollingIntervals[filiereId]) return; // Déjà en cours de surveillance
-
-            // CORRECTION: S'assurer que la date est correctement interprétée, même si le format est inattendu.
-            const creationDate = new Date(creationDateStr);
-            if (isNaN(creationDate.getTime())) {
-                console.error(`Date de création invalide pour la filière ${filiereId}:`, creationDateStr);
-                return; // On ne lance pas le timer si la date est invalide.
-            }
-            const creationTime = creationDate.getTime();
-            const endTime = creationTime + 5 * 60 * 1000; // 5 minutes après la création
-
-            const timerElement = document.getElementById(`timer-${filiereId}`);
-            if (!timerElement) return;
-
-            console.log(`Démarrage de la surveillance et du timer pour la filière ${filiereId}`);
-
-            pollingIntervals[filiereId] = setInterval(async () => {
-                const now = new Date().getTime();
-                const timeLeft = endTime - now;
-
-                if (timeLeft <= 0) {
-                    // Le temps est écoulé, on arrête le timer et on recharge le dashboard.
-                    // Le backend se chargera de la suppression à la prochaine lecture.
-                    console.log(`Timer écoulé pour ${filiereId}. Rechargement du dashboard.`);
-                    clearInterval(pollingIntervals[filiereId]);
-                    delete pollingIntervals[filiereId];
-                    loadInteractiveDashboard();
-                    return;
-                }
-
-                // Mettre à jour l'affichage du timer
-                const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-
-                // Vérifier si une classe a été ajoutée (on ne le fait que toutes les 20 secondes pour limiter les appels)
-                if (Math.floor(timeLeft / 1000) % 20 === 0) {
-                    const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-                    const hasClasses = classesResult.data.some(c => c.ID_FILIERE_FK === filiereId);
-                    if (hasClasses) {
-                        console.log(`Classe détectée pour ${filiereId}. Arrêt de la surveillance.`);
-                        clearInterval(pollingIntervals[filiereId]);
-                        delete pollingIntervals[filiereId];
-                        loadInteractiveDashboard();
-                    }
-                }
-            }, 1000); // Le timer se met à jour toutes les secondes
-        }
-
-        // NOUVEAU: Arrête toutes les surveillances en cours
-        function stopAllPolling() {
-            Object.values(pollingIntervals).forEach(clearInterval);
-            pollingIntervals = {};
         }
 
         // NOUVEAU: Fonction d'appel API spécifique à l'admin
