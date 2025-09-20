@@ -671,6 +671,7 @@
                     const result = await callAdminApi('adminAddCourse', { payload });
                     showModal('Succès', result.message);
                     form.reset();
+                    loadAdminDashboard(); // NOUVEAU: Rafraîchir les statistiques
                     loadAndRenderPlanning(); // Recharger la liste
                 } catch (error) {
                     showModal('Erreur', error.message);
@@ -805,6 +806,7 @@
                     const result = await callAdminApi('adminAddResponsable', { payload });
                     showModal('Succès', result.message);
                     form.reset();
+                    loadAdminDashboard(); // NOUVEAU: Rafraîchir les statistiques
                     loadAndRenderResponsables(); // Recharger la liste
                 } catch (error) {
                     showModal('Erreur', error.message);
@@ -913,15 +915,28 @@
          * Utile après une suppression pour mettre à jour la liste.
          */
         function reloadCurrentPageData() {
-            const currentPageId = document.querySelector('.page-container:not(.hidden)').id;
-            if (currentPageId === 'students-page') {
+            const currentPage = document.querySelector('.page-container:not(.hidden)');
+            if (!currentPage) return;
+            const currentPageId = currentPage.id;
+
+            console.log(`Background refresh for: ${currentPageId}`); // Pour le débogage
+
+            if (currentPageId === 'main-dashboard') {
+                loadAdminDashboard();
+            } else if (currentPageId === 'students-page') {
                 loadAndRenderStudents();
             } else if (currentPageId === 'responsables-page') {
                 loadAndRenderResponsables();
             } else if (currentPageId === 'management-page') {
                 const currentTab = document.querySelector('.management-tab.border-violet-500');
-                const entityType = currentTab.dataset.target.split('-')[0];
-                loadAndRenderEntities(entityType);
+                if (currentTab) {
+                    const entityType = currentTab.dataset.target.split('-')[0];
+                    loadAndRenderEntities(entityType);
+                }
+            } else if (currentPageId === 'planning-page') {
+                loadAndRenderPlanning();
+            } else if (currentPageId === 'attendance-page') {
+                loadAndRenderAttendance();
             }
         }
 
