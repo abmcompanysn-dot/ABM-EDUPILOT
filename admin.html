@@ -574,7 +574,8 @@
 
                 // Démarrer la surveillance pour les filières sans classes
                 filiereData.forEach(f => {
-                    if (f.classCount === 0) startPollingForFiliere(f.ID_FILIERE, f.DATE_CREATION);
+                    // CORRECTION: On ne lance la surveillance que si la filière n'a pas de classe ET qu'une date de création est bien présente.
+                    if (f.classCount === 0 && f.DATE_CREATION) startPollingForFiliere(f.ID_FILIERE, f.DATE_CREATION);
                 });
 
             } catch (error) {
