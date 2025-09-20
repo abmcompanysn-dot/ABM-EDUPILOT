@@ -79,59 +79,59 @@
 
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-violet-50 p-6">
                 
-    <!-- NOUVEAU: Tableau de bord interactif -->
-    <div id="main-dashboard" class="page-container space-y-8">
-        <div>
-            <h2 class="text-3xl font-bold text-gray-800">Vue d'ensemble des Filières</h2>
-            <p class="text-gray-500 mt-1">Cliquez sur une filière pour voir les classes associées.</p>
-        </div>
-        <div id="filiere-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <!-- Les cartes des filières seront injectées ici -->
-            <p>Chargement des filières...</p>
-        </div>
-    </div>
+                <!-- NOUVEAU: Tableau de bord interactif -->
+                <div id="main-dashboard" class="page-container space-y-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Vue d'ensemble des Filières</h2>
+                        <p class="text-gray-500 mt-1">Cliquez sur une filière pour voir les classes associées.</p>
+                    </div>
+                    <div id="filiere-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- Les cartes des filières seront injectées ici -->
+                        <p>Chargement des filières...</p>
+                    </div>
+                </div>
 
-    <!-- NOUVEAU: Vue des classes d'une filière -->
-    <div id="filiere-details-page" class="page-container hidden space-y-6">
-        <button onclick="showPage('main-dashboard')" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux filières</button>
-        <h2 id="filiere-details-title" class="text-3xl font-bold text-gray-800">Classes de la filière...</h2>
-        <div id="class-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- La liste des classes sera injectée ici -->
-        </div>
-    </div>
+                <!-- NOUVEAU: Vue des classes d'une filière -->
+                <div id="filiere-details-page" class="page-container hidden space-y-6">
+                    <button onclick="showPage('main-dashboard')" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux filières</button>
+                    <h2 id="filiere-details-title" class="text-3xl font-bold text-gray-800">Classes de la filière...</h2>
+                    <div id="class-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- La liste des classes sera injectée ici -->
+                    </div>
+                </div>
 
-    <!-- NOUVEAU: Vue des étudiants d'une classe -->
-    <div id="class-details-page" class="page-container hidden space-y-6">
-        <div class="flex flex-wrap gap-4 items-center justify-between">
-            <button id="back-to-classes-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux classes</button>
-            <h2 id="class-details-title" class="text-3xl font-bold text-gray-800">Étudiants de la classe...</h2>
-        </div>
-        <div id="student-list-container" class="bg-white p-6 rounded-lg shadow-sm">
-            <!-- La liste des étudiants sera injectée ici -->
-        </div>
-    </div>
+                <!-- NOUVEAU: Vue des étudiants d'une classe -->
+                <div id="class-details-page" class="page-container hidden space-y-6">
+                    <div class="flex flex-wrap gap-4 items-center justify-between">
+                        <button id="back-to-classes-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux classes</button>
+                        <h2 id="class-details-title" class="text-3xl font-bold text-gray-800">Étudiants de la classe...</h2>
+                    </div>
+                    <div id="student-list-container" class="bg-white p-6 rounded-lg shadow-sm">
+                        <!-- La liste des étudiants sera injectée ici -->
+                    </div>
+                </div>
 
-    <!-- NOUVEAU: Vue du profil étudiant -->
-    <div id="student-profile-page" class="page-container hidden space-y-8">
-        <button id="back-to-student-list-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour à la liste des étudiants</button>
-        
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <div id="student-profile-header">
-                <!-- Le header du profil sera injecté ici -->
-            </div>
-        </div>
+                <!-- NOUVEAU: Vue du profil étudiant -->
+                <div id="student-profile-page" class="page-container hidden space-y-8">
+                    <button id="back-to-student-list-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour à la liste des étudiants</button>
+                    
+                    <div class="bg-white p-6 rounded-lg shadow-sm">
+                        <div id="student-profile-header">
+                            <!-- Le header du profil sera injecté ici -->
+                        </div>
+                    </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">Historique des Présences</h3>
-                <div id="student-profile-attendance" class="max-h-[60vh] overflow-y-auto pr-2"></div>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">Emploi du Temps de la Classe</h3>
-                <div id="student-profile-schedule" class="max-h-[60vh] overflow-y-auto pr-2"></div>
-            </div>
-        </div>
-    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Historique des Présences</h3>
+                            <div id="student-profile-attendance" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow-sm">
+                            <h3 class="text-xl font-bold text-gray-800 mb-4">Emploi du Temps de la Classe</h3>
+                            <div id="student-profile-schedule" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+                        </div>
+                    </div>
+                </div>
 
     <div id="management-page" class="page-container hidden">
         <header class="mb-10">
@@ -465,11 +465,12 @@
             } else if (pageId === 'students-page') {
                 setupStudentsPage();
             } else if (pageId === 'main-dashboard') {
-                loadAdminDashboard();
                 loadInteractiveDashboard(); // NOUVEAU
             }
         }
 
+        // ANCIENNE FONCTION DE DASHBOARD (pour les stats)
+        async function loadAdminDashboard() {}
         // NOUVEAU: Initialise la page de gestion
         function setupAdminManagementPage() {
             document.querySelector('.management-tab').click(); // Active le premier onglet
@@ -500,17 +501,6 @@
 
             setupEntityForm('filiere', {});
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
-        }
-
-        // ANCIENNE FONCTION DE DASHBOARD (pour les stats)
-        async function loadAdminDashboard() {
-            try {
-                const result = await callAdminApi('adminGetDashboardStats');
-                const stats = result.data;
-                // Cette fonction peut être étendue pour afficher d'autres stats si besoin
-            } catch (error) {
-                console.error("Erreur de chargement du dashboard:", error);
-            }
         }
 
         // NOUVEAU: Charge les données pour le tableau de bord interactif
@@ -634,7 +624,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${s.EMAIL}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button onclick="showStudentAttendance('${s.ID_ETUDIANT}', '${s.NOM_COMPLET}')" class="text-violet-600 hover:text-violet-900">Voir Présences</button>
-                                    <button onclick="showStudentProfile('${s.ID_ETUDIANT}', '${s.ID_CLASSE_FK}', '${className}', '${filiereId}', '${filiereName}')" class="ml-4 text-blue-600 hover:text-blue-900">Voir Profil Complet</button>
+                                    <button onclick="showStudentProfile('${s.ID_ETUDIANT}', '${classId}', '${className}', '${filiereId}', '${filiereName}')" class="ml-4 text-blue-600 hover:text-blue-900">Voir Profil Complet</button>
                                 </td>
                             </tr>
                         `).join('')}
@@ -696,7 +686,7 @@
                 const { student, attendanceHistory, schedule } = result.data;
 
                 // Afficher l'en-tête
-                headerContainer.innerHTML = `
+                headerContainer.innerHTML = /*html*/`
                     <h2 class="text-3xl font-bold text-gray-800">${student.NOM_COMPLET}</h2>
                     <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
                         <span><strong>ID:</strong> <span class="font-mono">${student.ID_ETUDIANT}</span></span>
@@ -710,7 +700,7 @@
                 if (attendanceHistory.length === 0) {
                     attendanceContainer.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
                 } else {
-                    attendanceContainer.innerHTML = `
+                    attendanceContainer.innerHTML = /*html*/`
                         <div class="space-y-4">
                         ${attendanceHistory.map(item => `
                             <div class="flex items-center space-x-4">
@@ -729,7 +719,7 @@
                 if (schedule.length === 0) {
                     scheduleContainer.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour cette classe.</p>';
                 } else {
-                    scheduleContainer.innerHTML = `
+                    scheduleContainer.innerHTML = /*html*/`
                         <div class="space-y-3">
                         ${schedule.map(course => `
                             <div class="p-3 bg-gray-50 rounded-md border">
@@ -1159,7 +1149,7 @@
                 } else {
                     loadAndRenderEntities(entityType);
                 }
-                loadAdminDashboard(); // NOUVEAU: Rafraîchit les statistiques du tableau de bord
+                loadInteractiveDashboard(); // NOUVEAU: Rafraîchit les statistiques du tableau de bord
                 reloadCurrentPageData(); // NOUVEAU: Rafraîchit la vue actuelle
             } catch (error) {
                 showModal('Erreur', error.message);
@@ -1180,7 +1170,7 @@
             console.log(`Background refresh for: ${currentPageId}`); // Pour le débogage
 
             if (currentPageId === 'main-dashboard') {
-                loadAdminDashboard();
+                loadInteractiveDashboard();
             } else if (currentPageId === 'students-page') {
                 loadAndRenderStudents();
             } else if (currentPageId === 'responsables-page') {
