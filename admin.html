@@ -682,8 +682,20 @@
             scheduleContainer.innerHTML = '';
 
             try {
-                const result = await callAdminApi('adminGetStudentProfile', { studentId });
-                const { student, attendanceHistory, schedule } = result.data;
+                // AMÉLIORATION: On fait 3 appels séparés et fiables au lieu d'un seul qui échoue.
+                const [profileResult, attendanceResult, scheduleResult] = await Promise.all([
+                    callAdminApi('adminGetStudentProfile', { studentId }), // Récupère les infos de base
+                    callApi('getStudentAttendanceHistory', { studentId }), // Récupère les présences (fonction fiable)
+                    callApi('getStudentSchedule', { studentId }) // Récupère l'emploi du temps (fonction fiable)
+                ]);
+
+                if (!profileResult.success || !profileResult.data || !profileResult.data.student) {
+                    throw new Error(profileResult.error || "Impossible de charger les informations de base de l'étudiant.");
+                }
+
+                const student = profileResult.data.student;
+                const attendanceHistory = attendanceResult.success ? attendanceResult.data : [];
+                const schedule = scheduleResult.success ? scheduleResult.data : [];
 
                 // Afficher l'en-tête
                 headerContainer.innerHTML = /*html*/`
