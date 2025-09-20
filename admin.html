@@ -169,7 +169,7 @@
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
-                            <button onclick="showExportOptions('filieres')" class="text-sm bg-violet-100 text-violet-700 font-semibold py-1 px-3 rounded-md hover:bg-violet-200">Exporter la liste</button>
+                            <button id="export-filieres-btn" class="text-sm bg-violet-100 text-violet-700 font-semibold py-1 px-3 rounded-md hover:bg-violet-200">Exporter la liste</button>
                         </div>
                         <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
                     </div>
@@ -195,7 +195,7 @@
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
-                            <button onclick="showExportOptions('classes')" class="text-sm bg-violet-100 text-violet-700 font-semibold py-1 px-3 rounded-md hover:bg-violet-200">Exporter la liste</button>
+                            <button id="export-classes-btn" class="text-sm bg-violet-100 text-violet-700 font-semibold py-1 px-3 rounded-md hover:bg-violet-200">Exporter la liste</button>
                         </div>
                         <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
                     </div>
@@ -411,6 +411,10 @@
             // Cela rend la navigation vers l'onglet "Classes" plus rapide.
             loadAndRenderEntities('filiere');
             
+            // NOUVEAU: Attacher les gestionnaires d'événements pour les exports
+            document.getElementById('export-filieres-btn').onclick = () => showExportOptions('filieres');
+            document.getElementById('export-classes-btn').onclick = () => showExportOptions('classes');
+
             // NOUVEAU: Charger les données pour le nouveau tableau de bord interactif
             loadInteractiveDashboard();
 
