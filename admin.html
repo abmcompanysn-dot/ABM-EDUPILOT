@@ -1323,9 +1323,9 @@
             const title = button.dataset.title;
 
             if (action === 'download') {
-                downloadQrCode(url, filename);
+                downloadQrCodeAsImage(url, filename); // CORRECTION: Utiliser la nouvelle fonction
             } else if (action === 'share') {
-                shareQrCode(url, title, filename);
+                shareQrCode(url, title);
             }
         }
 
@@ -1333,7 +1333,7 @@
         async function downloadQrCode(qrUrl, fileName) {
             try {
                 const response = await fetch(qrUrl);
-                const blob = await response.blob();
+                const blob = await response.blob(); // Le blob est déjà une image
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none'; a.href = url; a.download = fileName;
@@ -1345,10 +1345,28 @@
             }
         }
 
-        async function shareQrCode(qrUrl, title, fileName) {
+        // NOUVEAU: Fonction améliorée pour télécharger le QR code en tant qu'image PNG
+        async function downloadQrCodeAsImage(qrUrl, fileName) {
+            try {
+                const response = await fetch(qrUrl);
+                const blob = await response.blob();
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName || 'qrcode.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                console.error('Erreur de téléchargement du QR Code:', error);
+                alert("Le téléchargement a échoué. Veuillez essayer de maintenir le doigt sur l'image pour la sauvegarder.");
+            }
+        }
+
+        async function shareQrCode(qrUrl, title) {
             try {
                 if (navigator.share) {
-                    await navigator.share({ title: title, text: 'Voici le QR code (ouvrez le lien pour voir l\'image).', url: qrUrl });
+                    await navigator.share({ title: title, text: 'Voici le QR code de présence (ouvrez le lien pour voir l\'image).', url: qrUrl });
                 } else {
                     alert("Le partage n'est pas supporté. Vous pouvez télécharger l'image et la partager manuellement.");
                 }
@@ -1358,12 +1376,58 @@
             }
         }
 
-        // NOUVEAU: Helper pour générer le HTML pour le PDF
+        // NOUVEAU: Helper pour générer le HTML pour le PDF (anciennement _internal_generateHtmlForPdf)
         async function generateHtmlForPdf(exportType, options) {
-            // Cette fonction est maintenant définie plus bas, avec les autres fonctions d'aide.
-            // Le code est déplacé pour une meilleure organisation.
-            // La logique reste la même.
-            return _internal_generateHtmlForPdf(exportType, options);
+            let data, headers, title, pdfFileName;
+            let dataResult;
+
+            switch (exportType) {
+                case 'filieres':
+                    dataResult = await callAdminApi('adminGetEntities', { entityType: 'filiere' });
+                    data = dataResult.data;
+                    headers = ['ID Filière', 'Nom de la Filière'];
+                    title = "Liste des Filières";
+                    pdfFileName = `filières.pdf`;
+                    break;
+                case 'classes':
+                    dataResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
+                    data = dataResult.data;
+                    headers = ['ID Classe', 'Nom de la Classe', 'ID Filière'];
+                    title = "Liste des Classes";
+                    pdfFileName = `classes.pdf`;
+                    break;
+                case 'attendance_class':
+                    dataResult = await callAdminApi('adminGetAttendance');
+                    data = dataResult.data.filter(scan => scan.CLASSE === options.className);
+                    headers = ['Date & Heure', 'ID Étudiant', 'Nom Étudiant', 'Matière'];
+                    title = `Liste de Présence - Classe ${options.className}`;
+                    pdfFileName = `presences_${options.className.replace(/\s/g, '_')}.pdf`;
+                    break;
+                default: throw new Error("Type d'exportation PDF non supporté.");
+            }
+
+            if (!data || data.length === 0) throw new Error("Aucune donnée à exporter.");
+
+            let htmlContent = `<div style="padding: 20px; font-family: Arial, sans-serif;"><h1 style="text-align: center; color: #4F46E5;">${title}</h1><p style="text-align: center; color: #6B7280; font-size: 12px;">Exporté le ${new Date().toLocaleString('fr-FR')}</p><table style="width: 100%; border-collapse: collapse; margin-top: 20px;"><thead><tr style="background-color: #4F46E5; color: white;">${headers.map(h => `<th style="padding: 8px; border: 1px solid #ddd;">${h}</th>`).join('')}</tr></thead><tbody>`;
+
+            data.forEach(item => {
+                htmlContent += `<tr style="border-bottom: 1px solid #eee;">`;
+                switch (exportType) {
+                    case 'filieres':
+                        htmlContent += `<td style="padding: 8px; border: 1px solid #ddd;">${item.ID_FILIERE}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.NOM_FILIERE}</td>`;
+                        break;
+                    case 'classes':
+                        htmlContent += `<td style="padding: 8px; border: 1px solid #ddd;">${item.ID_CLASSE}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.NOM_CLASSE}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.ID_FILIERE_FK}</td>`;
+                        break;
+                    case 'attendance_class':
+                        htmlContent += `<td style="padding: 8px; border: 1px solid #ddd;">${new Date(item.TIMESTAMP).toLocaleString('fr-FR')}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.ID_ETUDIANT}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.NOM_ETUDIANT}</td><td style="padding: 8px; border: 1px solid #ddd;">${item.MATIERE}</td>`;
+                        break;
+                }
+                htmlContent += `</tr>`;
+            });
+
+            htmlContent += `</tbody></table></div>`;
+            return { htmlContent, pdfFileName };
         }
 
         // NOUVEAU: Fonction d'appel API spécifique à l'admin
