@@ -169,7 +169,7 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
                         </div>
-                        <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                        <div id="filiere-list-container" class="max-h-[70vh] overflow-y-auto"><ul id="filiere-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
                     </div>
                 </div>
             </div>
@@ -194,7 +194,7 @@
                         <div class="flex justify-between items-center mb-4">
                             <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
                         </div>
-                        <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
+                        <div id="classe-list-container" class="max-h-[70vh] overflow-y-auto"><ul id="classe-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
                     </div>
                 </div>
             </div>
@@ -810,6 +810,7 @@
         // NOUVEAU: Charge et affiche les listes de filières/classes
         async function loadAndRenderEntities(entityType) {
             const listElement = document.getElementById(`${entityType}-list`);
+            const listContainer = document.getElementById(`${entityType}-list-container`);
             if (!listElement) return;
             listElement.dataset.loaded = 'false'; // Marquer comme non chargé pour forcer le rechargement si nécessaire
             listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
