@@ -1,644 +1,364 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Espace Responsable - ABM EduPilote</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Espace Étudiant - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
-        body { 
+        :root{ --bg:#f5f3ff; --muted:#6b7280; --card-gap:1.5rem; --radius:14px; }
+        html,body{ height:100%; background:var(--bg); font-family: 'Inter', sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        main#app-container{ width:100%; max-width:1200px; margin:32px auto; padding:16px; }
+        .panel{ border-radius:12px; background:linear-gradient(180deg,#ffffff,#fbfdff); box-shadow: 0 6px 18px rgba(15,23,42,.04); }
+        /* NOUVEAU: Style pour la carte étudiant à télécharger */
+        #student-card-generator {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f3ff; /* bg-violet-50 */
+            background: white;
         }
+        input:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,.08); border-color: rgba(99,102,241,.9); }    
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
-<body class="bg-violet-50">
+<body class="antialiased">
 
+    <!-- HEADER -->
     <header class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between py-4">
                 <div class="flex items-center space-x-3">
-                    <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white p-1 rounded-md" />
+                    <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white p-1 rounded-md">
                     <div>
                         <a href="index.html" class="text-white font-semibold text-lg">ABM EduPilote</a>
-                        <p class="text-xs text-violet-300 -mt-0.5">Espace Responsable</p>
+                        <p class="text-xs text-violet-300 -mt-0.5">Espace Étudiant</p>
                     </div>
                 </div>
-                <nav><button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button></nav>
+                <nav>
+                    <button onclick="studentLogout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
+                </nav>
             </div>
         </div>
     </header>
 
-    <main id="dashboard-container" class="max-w-6xl mx-auto p-4 sm:p-8">
-        <!-- NOUVEAU: Interface à onglets -->
-        <div class="mb-6 border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-violet-500 text-violet-600" data-target="planning-content">
-                    Planning
-                </button>
-                <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="students-content">
-                    Étudiants de la classe
-                </button>
-                <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="attendance-content">
-                    Historique des Présences
-                </button>
-            </nav>
-        </div>
+    <!-- MAIN -->
+    <main id="app-container">
+        <!-- TABLEAU DE BORD ÉTUDIANT -->
+        <section id="page-student-dashboard">
+            <div class="panel p-6 lg:p-8">
+                <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Bonjour, <span id="student-dashboard-name">Chargement...</span></h1>
+                        <p class="text-sm text-gray-500 mt-1">Bienvenue dans votre espace personnel.</p>
+                    </div>
+                </header>
 
-        <div id="planning-content" class="tab-content grid md:grid-cols-3 gap-8">
-            <div class="md:col-span-1 space-y-8">
-                <!-- Formulaire d'ajout de cours -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Planifier un Cours</h3>
-                    <form id="add-course-form" class="space-y-4">
-                        <div>
-                            <label for="course-matiere" class="block text-sm font-medium text-gray-700">Matière</label>
-                            <input type="text" id="course-matiere" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label>
-                            <input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="course-date" class="block text-sm font-medium text-gray-700">Date du cours</label>
-                            <input type="date" id="course-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="course-start-time" class="block text-sm font-medium text-gray-700">Heure Début</label>
-                                <input type="time" id="course-start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label for="course-end-time" class="block text-sm font-medium text-gray-700">Heure Fin</label>
-                                <input type="time" id="course-end-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter au planning</button>
-                    </form>
-                </div>
-                <!-- Génération de lien -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Lien d'Inscription</h3>
-                    <p class="text-sm text-gray-600 mb-4">Partagez ce lien pour que les étudiants s'inscrivent à votre classe.</p>
-                    <button onclick="generateRegLink()" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Générer le lien</button>
-                    <div id="reg-link-container" class="mt-4 hidden text-center">
-                        <input type="text" id="reg-link-input" readonly class="w-full bg-gray-100 px-3 py-2 border border-gray-300 rounded-md">
-                        <div class="flex justify-center gap-2 mt-2">
-                            <button onclick="copyToClipboard('reg-link-input')" class="text-sm bg-gray-600 text-white py-1 px-3 rounded-md hover:bg-gray-700">Copier</button>
-                            <button onclick="shareLink(document.getElementById('reg-link-input').value, 'Lien d\'inscription')" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">Partager</button>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Colonne 1 -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mes Informations</h3>
+                            <form id="studentUpdateForm" class="space-y-4">
+                                <div>
+                                    <label for="student-info-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
+                                    <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <div class="text-center">
+                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Mon QR Code d'Identification</h4>
+                                    <div id="personal-qr-code" class="mx-auto w-40 h-40 bg-gray-50 rounded-lg flex items-center justify-center">
+                                        <p class="text-xs text-gray-500">Chargement...</p>
+                                    </div>
+                                </div>
+                                <!-- NOUVEAU: Bouton de téléchargement de la carte -->
+                                <div class="mt-4">
+                                    <button onclick="downloadStudentCard()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
+                                        <i class="fas fa-id-card"></i> Télécharger ma carte</button>
+                                </div>
+
+                                <div>
+                                    <label for="student-info-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="student-info-email" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md font-semibold flex items-center justify-center gap-3">
+                                    <span class="btnText">Mettre à jour</span>
+                                    <span class="btnSpinner hidden">Sauvegarde...</span>
+                                </button>
+                            </form>
+                            <div class="messageArea mt-3 text-center" aria-live="polite"></div>
                         </div>
                     </div>
-                </div>
-                <!-- NOUVEAU: Génération QR Code -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">QR Code de Présence</h3>
-                    <p class="text-sm text-gray-600 mb-4">Affichez ce QR code pour que les étudiants puissent pointer leur présence.</p>
-                    <button onclick="generateAttendanceQrCode()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Générer le QR Code</button>
-                    <div id="qr-code-container" class="mt-4 hidden text-center">
-                        <img id="qr-code-img" src="" alt="QR Code de présence" class="mx-auto w-full max-w-[250px] rounded-lg border">
-                        <div class="flex justify-center gap-2 mt-4">
-                            <button id="qr-download-btn" class="text-sm bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Télécharger</button>
-                            <button id="qr-share-btn" class="text-sm bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Partager</button>
+
+                    <!-- Colonne 2: Emploi du temps et Historique -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mon Emploi du Temps</h3>
+                            <div id="student-schedule-container" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'emploi du temps...</p></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Historique de mes Présences</h3>
+                            <div id="student-attendance-history" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'historique...</p></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-sm">
-                <div class="mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Planning de la Classe</h3>
-                    <p id="class-name-header" class="text-sm text-gray-500">Gestion de la classe : Chargement...</p>
-                </div>
-                <div id="planning-table-container" class="max-h-[70vh] overflow-x-auto pr-2"><p>Chargement du planning...</p></div>
-            </div>
-        </div>
-
-        <!-- NOUVEAU: Contenu pour la liste des étudiants -->
-        <div id="students-content" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Liste des Étudiants de la Classe</h3>
-            <div id="students-list-container" class="max-h-[70vh] overflow-x-auto pr-2"><p>Chargement de la liste des étudiants...</p></div>
-        </div>
-
-        <!-- NOUVEAU: Contenu pour l'historique des présences -->
-        <div id="attendance-content" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Historique des Présences de la Classe</h3>
-            <div id="attendance-list-container" class="max-h-[70vh] overflow-x-auto pr-2"><p>Chargement de l'historique...</p></div>
-        </div>
+        </section>
     </main>
 
-    <!-- NOUVEAU: Bouton flottant pour le scanner -->
-    <button id="scan-qr-btn" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code Étudiant">
-        <i class="fas fa-qrcode text-2xl"></i>
-    </button>
-
-    <!-- NOUVEAU: Conteneur pour le scanner QR Code -->
-    <div id="qr-scanner-container" class="fixed inset-0 bg-black/80 flex-col items-center justify-center p-4 hidden z-50">
-        <p class="text-white text-lg mb-4 font-medium">Scanner le QR Code de l'étudiant</p>
-        <div id="qr-reader" class="w-full max-w-sm bg-gray-800 rounded-lg overflow-hidden border-4 border-violet-500 shadow-lg"></div>
-        <button id="close-scanner-btn" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
-    </div>
-
-
-    <!-- Modal et Spinner (copiés de admin.html pour la cohérence) -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md flex flex-col" style="max-height: 90vh;">
-            <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
+    <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
+    <div id="student-card-generator" class="w-[320px] h-[500px] fixed -left-[9999px] top-0 shadow-2xl flex flex-col">
+        <!-- Bandeau supérieur -->
+        <div class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] p-4 text-center">
+            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mx-auto bg-white p-1 rounded-lg" alt="Logo">
+            <h3 class="text-white font-bold text-xl mt-2" style="font-family: 'Poppins', sans-serif;">ABM EduPilote</h3>
+        </div>
+        
+        <!-- Contenu principal -->
+        <div class="p-5 flex-grow flex flex-col items-center text-center bg-white">
+            <!-- Placeholder pour photo -->
+            <div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center border-4 border-violet-100 mb-4">
+                <i class="fas fa-user text-5xl text-gray-400"></i>
             </div>
-            <div id="modal-content" class="flex-grow overflow-y-auto p-6"></div>
-            <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                <button id="close-modal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Fermer</button>
+
+            <!-- Informations -->
+            <p id="card-student-name" class="text-2xl font-bold text-gray-800" style="font-family: 'Poppins', sans-serif;"></p>
+            <p id="card-student-id" class="font-mono text-sm text-gray-500"></p>
+            <p id="card-university-filiere" class="text-sm text-gray-600 mt-2"></p>
+
+            <!-- QR Code -->
+            <div class="mt-auto pt-4">
+                <div id="card-qr-code" class="w-28 h-28 bg-white p-1 rounded-md mx-auto"></div>
+                <p class="text-xs text-gray-400 mt-2">Scanner pour vérifier</p>
             </div>
         </div>
-    </div>
-    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-violet-500"></div>
+
+        <!-- Bandeau inférieur -->
+        <div class="bg-violet-700 p-1"></div>
     </div>
 
     <script>
+        // --- CONFIGURATION ---
         // --- AUTHENTIFICATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tokenFromUrl = urlParams.get('token');
-
-            if (tokenFromUrl) {
-                sessionStorage.setItem(RESPONSABLE_SESSION_KEY, tokenFromUrl);
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-
-            const sessionToken = sessionStorage.getItem(RESPONSABLE_SESSION_KEY);
-            if (!sessionToken) {
-                window.location.href = 'index.html'; 
+            const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+            if (studentSessionId) {
+                loadStudentDashboard(studentSessionId);
+                // NOUVEAU: Réactivation du rafraîchissement automatique en arrière-plan
+                setInterval(() => {
+                    console.log('Refreshing student data in background...');
+                    // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
+                    loadStudentDashboard(studentSessionId, false); 
+                }, 90000); // Rafraîchit toutes les 90 secondes
             } else {
-                loadDashboard();
-                setupAddCourseForm(); // NOUVEAU: Initialiser le formulaire une seule fois
-                setupScanner(); // NOUVEAU: Initialiser le scanner
+                window.location.href = 'index.html'; 
             }
         });
 
-        // NOUVEAU: Logique des onglets
-        document.querySelectorAll('.resp-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.resp-tab').forEach(t => {
-                    t.classList.remove('border-violet-500', 'text-violet-600');
-                    t.classList.add('border-transparent', 'text-gray-500');
-                });
-                tab.classList.add('border-violet-500', 'text-violet-600');
-                tab.classList.remove('border-transparent', 'text-gray-500');
+        // --- Fonctions pour l'Espace Étudiant ---
+        function studentLogout() 
+        {
+            sessionStorage.removeItem(STUDENT_SESSION_KEY);
+            window.location.href = 'index.html';
+        }
 
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
-                const targetContent = document.getElementById(tab.dataset.target);
-                if (targetContent) {
-                    targetContent.classList.remove('hidden');
-                    // NOUVEAU: Charger les données de l'onglet cliqué seulement si nécessaire
-                    if (tab.dataset.target === 'students-content' && !targetContent.dataset.loaded) {
-                        loadClassStudents();
-                        targetContent.dataset.loaded = 'true';
-                    }
-                    if (tab.dataset.target === 'attendance-content' && !targetContent.dataset.loaded) {
-                        loadClassAttendance();
-                        targetContent.dataset.loaded = 'true';
-                    }
+        function loadStudentDashboard(studentId, isInitialLoad = true) {
+            document.getElementById('student-dashboard-name').textContent = '...';
+            loadStudentInfo(studentId);
+            loadStudentAttendance(studentId);
+            loadStudentSchedule(studentId);
+            // Le QR code est statique, pas besoin de le recharger à chaque fois, sauf au premier chargement
+            if (isInitialLoad) {
+                loadPersonalQrCode(studentId);
+            }
+        }
+
+        async function loadStudentInfo(studentId) {
+            const form = document.getElementById('studentUpdateForm');
+            try {
+                const result = await callApi('getStudentData', { studentId });
+                const student = result.data;
+                document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
+                document.getElementById('student-info-name').value = student.name || '';
+                document.getElementById('student-info-email').value = student.email || '';
+                form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+            } catch (error) {
+                displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
+            }
+        }
+
+        async function handleUpdateStudentInfo(e, studentId) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: studentId,
+                name: form.querySelector('#student-info-name').value,
+                email: form.querySelector('#student-info-email').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('updateStudentInfo', data);
+                displayMessageInForm(form, result.message, 'success');
+                // Recharger les informations pour s'assurer que tout est à jour
+                loadStudentInfo(studentId);
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // NOUVEAU: Génère et télécharge la carte étudiant
+        async function downloadStudentCard() {
+            showSpinner(true); // Utilisation d'un spinner global simple
+            try {
+                const studentId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+                // Récupérer les infos à jour
+                const result = await callApi('getPublicStudentProfile', { studentId });
+                const student = result.data.student;
+
+                // Remplir le template de la carte
+                document.getElementById('card-student-name').textContent = student.NOM_COMPLET;
+                document.getElementById('card-student-id').textContent = student.ID_ETUDIANT;
+                document.getElementById('card-university-filiere').textContent = `${student.NOM_FILIERE} / ${student.NOM_UNIVERSITE || 'Université'}`;
+                
+                // Générer le QR code pour la carte
+                const qrData = `ABM-ETU-ID:${studentId}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=128x128&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
+                document.getElementById('card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
+
+                // Attendre que l'image du QR code soit chargée
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                // Utiliser html2pdf pour convertir le div en image
+                const element = document.getElementById('student-card-generator');
+                const opt = { filename: `carte-etudiant-${studentId}.png`, image: { type: 'png', quality: 1.0 }, html2canvas: { scale: 3, useCORS: true } };
+                
+                await html2pdf().set(opt).from(element).save();
+
+            } catch (error) {
+                alert(`Erreur lors de la génération de la carte : ${error.message}`);
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        async function loadStudentAttendance(studentId) {
+            const container = document.getElementById('student-attendance-history');
+            container.innerHTML = '<p>Chargement de l\'historique...</p>';
+            try {
+                const result = await callApi('getStudentAttendanceHistory', { studentId });
+                const history = result.data;
+                if (!history || history.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                    return;
                 }
-            });
-        });
-
-        // ... (le reste du code est déplacé pour une meilleure organisation)
-
-        function renderPlanning(courses) {
-            const container = document.getElementById('planning-table-container');
-            if (courses.length === 0) {
-                container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour cette classe.</p>';
-                return;
-            }
-
-            // Création de la timeline
-            const timeline = document.createElement('div');
-            timeline.className = 'space-y-6';
-            timeline.innerHTML = courses.map(course => {
-                const statusColor = course.STATUT === 'Confirmé' ? 'bg-green-100 text-green-800' : (course.STATUT === 'Annulé' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
-                const statusIcon = course.STATUT === 'Confirmé' ? '✅' : (course.STATUT === 'Annulé' ? '❌' : '⏳');
-                return `
-                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="font-semibold text-gray-800">${course.MATIERE}</p>
-                                <p class="text-sm text-gray-500">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                                <p class="text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                            </div>
-                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${statusIcon} ${course.STATUT}</span>
+                const timeline = document.createElement('div');
+                timeline.className = 'space-y-4';
+                timeline.innerHTML = history.map(item => `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600">
+                            <i class="fas fa-check"></i>
                         </div>
-                        <div class="mt-4 pt-4 border-t border-gray-200 text-sm space-x-4">
-                            ${course.STATUT !== 'Confirmé' ? `<button onclick="updateStatus('${course.ID_COURS}', 'Confirmé')" class="font-medium text-green-600 hover:text-green-900">Confirmer</button>` : ''}
-                            ${course.STATUT !== 'Annulé' ? `<button onclick="updateStatus('${course.ID_COURS}', 'Annulé')" class="font-medium text-red-600 hover:text-red-900">Annuler</button>` : ''}
-                            <button onclick="deleteCourse('${course.ID_COURS}')" class="font-medium text-gray-500 hover:text-red-900">Supprimer</button>
+                        <div>
+                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
                         </div>
                     </div>
-                `;
-            }).join('');
-
-            container.innerHTML = '';
-            container.appendChild(timeline);
-        }
-
-        function setupAddCourseForm() {
-            const form = document.getElementById('add-course-form');
-            // Remplacer addEventListener par onsubmit pour éviter les listeners multiples
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const payload = {
-                    matiere: document.getElementById('course-matiere').value,
-                    enseignant: document.getElementById('course-enseignant').value,
-                    date: document.getElementById('course-date').value,
-                    startTime: document.getElementById('course-start-time').value,
-                    endTime: document.getElementById('course-end-time').value,
-                };
-                showSpinner(true);
-                try {
-                    e.submitter.disabled = true;
-                    const result = await callResponsableApi('responsableAddCourse', { payload });
-                    showModal('Succès', result.message);
-                    form.reset();
-                    loadDashboard(true); // Recharger avec spinner
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    showSpinner(false);
-                    if (e.submitter) e.submitter.disabled = false;
-                }
-            };
-        }
-
-        async function updateStatus(courseId, status) {
-            if (!confirm(`Voulez-vous vraiment ${status.toLowerCase()} ce cours ?`)) return;
-            showSpinner(true);
-            try {
-                const result = await callResponsableApi('responsableUpdateCourseStatus', { courseId, status });
-                showModal('Succès', result.message);
-                loadDashboard(true); // Recharger avec spinner
-            } catch (error) {
-                showModal('Erreur', error.message);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Gère la suppression d'un cours
-        async function deleteCourse(courseId) {
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer ce cours ? Cette action est irréversible.`)) return;
-            showSpinner(true);
-            try {
-                const result = await callResponsableApi('responsableDeleteCourse', { courseId });
-                showModal('Succès', result.message);
-                loadDashboard(true); // Recharger avec spinner
-            } catch (error) {
-                showModal('Erreur', error.message);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        async function generateRegLink() {
-            showSpinner(true);
-            try {
-                const result = await callResponsableApi('responsableGetRegLink');
-                const container = document.getElementById('reg-link-container');
-                const input = document.getElementById('reg-link-input');
-                input.value = result.data.url;
-                container.classList.remove('hidden');
-                // The copy/share is now handled by dedicated buttons
-                showModal('Succès', 'Le lien d\'inscription a été généré.');
-            } catch (error) {
-                showModal('Erreur', error.message);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Génère le QR code de présence pour la classe
-        async function generateAttendanceQrCode() {
-            showSpinner(true);
-            try {
-                const result = await callResponsableApi('responsableGetQrCode');
-                const { qrCodeUrl, className } = result.data;
-
-                const container = document.getElementById('qr-code-container');
-                const img = document.getElementById('qr-code-img'); 
-                const downloadBtn = document.getElementById('qr-download-btn');
-                const shareBtn = document.getElementById('qr-share-btn');
-
-                img.src = qrCodeUrl;
-                downloadBtn.onclick = () => downloadQrCode(qrCodeUrl, `qr-code-presence-${className}.png`);
-                
-                shareBtn.onclick = () => shareQrCode(qrCodeUrl, `QR Code de présence pour ${className}`, `qr-code-presence-${className}.png`);
-
-                container.classList.remove('hidden');
-                showModal('Succès', 'Le QR Code de présence a été généré.');
-            } catch (error) {
-                showModal('Erreur', error.message);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // Fonctions utilitaires pour copier et partager
-        function copyToClipboard(inputId) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-            const textToCopy = input.value;
-            if (navigator.clipboard) { // L'API moderne du presse-papiers
-                navigator.clipboard.writeText(textToCopy).then(() => { showModal('Succès', 'Lien copié dans le presse-papiers !'); }, () => { showModal('Erreur', 'La copie a échoué.'); });
-            } else {
-                input.select();
-                input.setSelectionRange(0, 99999);
-                try {
-                    document.execCommand('copy');
-                    showModal('Copié !', 'Le lien a été copié dans le presse-papiers (mode de compatibilité).');
-                } catch (err) {
-                    showModal('Erreur', 'La copie a échoué. Veuillez le faire manuellement.');
-                }
-            }
-        }
-
-        async function shareLink(url, title) {
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: title, text: 'Utilisez ce lien pour vous inscrire à la classe.', url: url });
-                } catch (error) {
-                    console.error('Erreur de partage:', error);
-                }
-            } else {
-                showModal('Non supporté', 'Le partage n\'est pas supporté sur ce navigateur. Veuillez copier le lien manuellement.');
-            }
-        }
-
-        // NOUVEAU: Fonction de téléchargement du QR Code (identique à admin.html)
-        async function downloadQrCode(qrUrl, fileName) {
-            try {
-                showSpinner(true);
-                const response = await fetch(qrUrl);
-                const blob = await response.blob(); // Récupère l'image en tant que données binaires
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName || 'qrcode.png';
-                link.click();
-                URL.revokeObjectURL(link.href);
-            } catch (error) {
-                console.error('Erreur de téléchargement du QR Code:', error);
-                showModal("Erreur", "Le téléchargement a échoué. Veuillez essayer de maintenir le doigt sur l'image pour la sauvegarder.");
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // Les fonctions shareQrCode et downloadQrCode sont maintenant globales (définies dans admin.html ou un script partagé)
-        // et n'ont pas besoin d'être redéfinies ici.
-
-        async function shareQrCode(qrUrl, title, fileName) {
-            try {
-                showSpinner(true);
-                // Tenter de partager en tant que fichier d'abord
-                if (navigator.share && navigator.canShare) {
-                    const response = await fetch(qrUrl, { cache: 'no-cache' }); // Forcer le re-téléchargement pour le partage
-                    const blob = await response.blob();
-                    const file = new File([blob], fileName, { type: 'image/png' });
-                    if (navigator.canShare({ files: [file] })) {
-                        await navigator.share({ title: title, text: 'Voici le QR code de présence.', files: [file] });
-                        return; // Success
-                    }
-                }
-                // Fallback: partager l'URL de l'image
-                if (navigator.share) {
-                    await navigator.share({ title: title, text: 'Voici le QR code de présence (ouvrez le lien pour voir l\'image).', url: qrUrl });
-                    return;
-                }
-                showModal('Non supporté', 'Le partage n\'est pas supporté. Veuillez télécharger l\'image manuellement.');
-            } catch (error) {
-                console.error('Erreur de partage:', error);
-                showModal('Erreur', `Une erreur est survenue lors du partage: ${error.message}`);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Charge et affiche la liste des étudiants de la classe
-        async function loadClassStudents() {
-            const container = document.getElementById('students-list-container');
-            container.innerHTML = '<p>Chargement de la liste des étudiants...</p>';
-            try {
-                const result = await callResponsableApi('responsableGetStudents');
-                const students = result.data;
-
-                if (students.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun étudiant n\'est inscrit dans cette classe pour le moment.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom Complet</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${students.map(student => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.NOM_COMPLET}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${student.ID_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.EMAIL}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
+                `).join('');
                 container.innerHTML = '';
-                container.appendChild(table);
+                container.appendChild(timeline);
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
         }
 
-        // NOUVEAU: Charge et affiche l'historique des présences de la classe
-        async function loadClassAttendance() {
-            const container = document.getElementById('attendance-list-container');
-            container.innerHTML = '<p>Chargement de l\'historique des présences...</p>';
+        async function loadPersonalQrCode(studentId) {
+            const container = document.getElementById('personal-qr-code');
             try {
-                const result = await callResponsableApi('responsableGetAttendance');
-                const scans = result.data;
-
-                if (scans.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré pour cette classe.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Heure</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${scans.map(scan => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(scan.TIMESTAMP).toLocaleString('fr-FR')}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${scan.NOM_ETUDIANT} (${scan.ID_ETUDIANT})</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.MATIERE}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
+                const qrData = `ABM-ETU-ID:${studentId}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}`;
+                container.innerHTML = `<img src="${qrApiUrl}" alt="Mon QR Code d'identification" class="rounded-lg">`;
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
         }
 
-        // NOUVEAU: Logique du Scanner QR Code pour le responsable
-        function setupScanner() {
-            const scanQrBtn = document.getElementById('scan-qr-btn');
-            const scannerContainer = document.getElementById('qr-scanner-container');
-            const closeScannerBtn = document.getElementById('close-scanner-btn');
-            let html5QrCode = null;
+        // NOUVEAU: Charge et affiche l'emploi du temps de l'étudiant
+        async function loadStudentSchedule(studentId) {
+            const container = document.getElementById('student-schedule-container');
+            container.innerHTML = '<p class="text-gray-500">Chargement de l\'emploi du temps...</p>';
+            try {
+                const result = await callApi('getStudentSchedule', { studentId });
+                const courses = result.data;
 
-            function onScanSuccess(decodedText, decodedResult) {
-                console.log(`Code scanné = ${decodedText}`);
-                if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().catch(err => console.error("Erreur à l'arrêt du scanner.", err));
+                if (!courses || courses.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour votre classe.</p>';
+                    return;
                 }
-                scannerContainer.classList.add('hidden');
 
-                if (decodedText.startsWith("ABM-ETU-ID:")) {
-                    const studentId = decodedText.split(':')[1];
-                    // AMÉLIORATION: Demander confirmation avant de pointer
-                    confirmAndMarkStudentPresent(studentId);
-                } else {
-                    showModal("QR Code Invalide", "Ce QR code ne semble pas être un code d'identification d'étudiant valide pour cette application.");
-                }
-            }
-
-            async function confirmAndMarkStudentPresent(studentId) {
-                showSpinner(true);
-                try {
-                    const courseResult = await callResponsableApi('responsableGetCurrentCourse');
-                    const studentResult = await callResponsableApi('responsableGetStudentDetails', { studentId });
-                    const studentName = studentResult.data.studentName;
-                    const courseName = courseResult.data.matiere;
-
-                    const confirmationHtml = `
-                        <p class="text-center">Voulez-vous marquer <strong>${studentName}</strong> (${studentId}) comme présent(e) au cours de <strong>${courseName}</strong> ?</p>
-                        <button onclick="markStudentPresent('${studentId}'); closeModal();" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Oui, Confirmer la Présence</button>
+                const scheduleHtml = courses.map(course => {
+                    const statusColor = course.STATUT === 'Confirmé' ? 'bg-green-100 text-green-800' : (course.STATUT === 'Annulé' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+                    const statusIcon = course.STATUT === 'Confirmé' ? '✅' : (course.STATUT === 'Annulé' ? '❌' : '⏳');
+                    return `
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-semibold text-gray-800">${course.MATIERE}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                </div>
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${statusIcon} ${course.STATUT}</span>
+                            </div>
+                        </div>
                     `;
-                    showModal('Confirmation de Pointage', confirmationHtml, true);
-                } catch (error) {
-                    showModal("Erreur de Confirmation", error.message);
-                } finally {
-                    showSpinner(false);
-                }
-            }
+                }).join('');
 
-            scanQrBtn.addEventListener('click', () => {
-                scannerContainer.classList.remove('hidden');
-                scannerContainer.classList.add('flex');
-                if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, () => {})
-                .catch(err => {
-                    showModal("Erreur Caméra", "Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
-                    scannerContainer.classList.add('hidden');
-                });
-            });
+                container.innerHTML = `<div class="space-y-4">${scheduleHtml}</div>`;
 
-            closeScannerBtn.addEventListener('click', () => {
-                if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop();
-                scannerContainer.classList.add('hidden');
-            });
-        }
-
-        // NOUVEAU: Fonction pour marquer un étudiant présent via scan
-        async function markStudentPresent(studentId) {
-            showSpinner(true);
-            try {
-                const result = await callResponsableApi('scanStudentForAttendance', { studentId });
-                showModal('Présence Confirmée', result.message);
             } catch (error) {
-                showModal('Erreur de Pointage', error.message);
-            } finally {
-                showSpinner(false);
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
         }
 
         // --- FONCTIONS UTILITAIRES ---
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalContent = document.getElementById('modal-content');
-        const closeModalBtn = document.getElementById('close-modal');
-        const spinnerOverlay = document.getElementById('spinner-overlay');
-
-        closeModalBtn.onclick = () => modal.classList.add('hidden');
-        modal.onclick = (event) => {
-            if (event.target == modal) modal.classList.add('hidden');
-        }
-
-        function showSpinner(show) {
-            spinnerOverlay.classList.toggle('hidden', !show);
-        }
-
-        function showModal(title, content, rawHtml = false) {
-            modalTitle.textContent = title;
-            if (rawHtml) {
-                modalContent.innerHTML = content;
-            } else {
-                modalContent.innerHTML = `<p>${content}</p>`;
-            }
-            modal.classList.remove('hidden');
-        }
-
-        async function callResponsableApi(action, data = {}) {
-            const responsableId = sessionStorage.getItem(RESPONSABLE_SESSION_KEY);
-            if (!responsableId) {
-                throw new Error('Session responsable invalide. Veuillez vous reconnecter.');
-            }
-            
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
             const response = await fetch(WEB_APP_URL, {
                 method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data: { ...data, responsableId } })
+                body: JSON.stringify({ action, data })
             });
             const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
             return result;
         }
-    </script>
-    <script>
-        // --- LOGIQUE DE LA PAGE (réorganisée) ---
-        function logout() {
-            sessionStorage.removeItem(RESPONSABLE_SESSION_KEY);
-            window.location.href = 'index.html';
+
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement ? formElement.querySelector('.submitBtn') : null;
+            const btnText = formElement ? formElement.querySelector('.btnText') : null;
+            const btnSpinner = formElement ? formElement.querySelector('.btnSpinner') : null;
+            if (!submitBtn) return;
+            submitBtn.disabled = isLoading;
+            if (btnText) btnText.classList.toggle('hidden', isLoading);
+            if (btnSpinner) btnSpinner.classList.toggle('hidden', !isLoading);
         }
 
-        async function loadDashboard(showSpinnerOnLoad = true) {
-            if (showSpinnerOnLoad) showSpinner(true);
-            try {
-                const result = await callResponsableApi('responsableGetDashboardData');
-                const { className, courses } = result.data;
-                document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
-                renderPlanning(courses);
-            } catch (error) {
-                showModal('Erreur', `Impossible de charger le tableau de bord: ${error.message}`);
-            } finally {
-                if (showSpinnerOnLoad) showSpinner(false);
-            }
+        function displayMessageInForm(formElement, message, type) {
+            let messageArea = formElement.parentElement.querySelector('.messageArea') || formElement.nextElementSibling;
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
+        }
+
+        // Spinner global simple
+        function showSpinner(show) {
+            // Pour l'instant, on peut utiliser un simple log ou une future implémentation de spinner
+            console.log(`Spinner: ${show}`);
         }
     </script>
 
