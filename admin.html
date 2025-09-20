@@ -1433,8 +1433,16 @@
 
                 if (decodedText.startsWith("ABM-ETU-ID:")) {
                     const studentId = decodedText.split(':')[1];
-                    markStudentPresentByAdmin(studentId);
+                    // CORRECTION: Au lieu de marquer présent, on affiche le profil complet.
+                    callAdminApi('adminGetStudentProfile', { studentId })
+                        .then(result => {
+                            const student = result.data.student;
+                            showStudentProfile(student.ID_ETUDIANT, student.ID_CLASSE_FK, student.NOM_CLASSE, student.ID_FILIERE_FK, student.NOM_FILIERE);
+                        })
+                        .catch(err => showModal('Erreur', `Impossible de trouver le profil de l'étudiant. ${err.message}`));
                 } else {
+                    // Si ce n'est pas un QR code étudiant, on ne fait rien dans l'interface admin.
+                    // On pourrait éventuellement gérer les QR codes de présence ou d'inscription ici aussi.
                     showModal("QR Code Invalide", "Ce QR code ne semble pas être un code d'identification d'étudiant valide pour cette application.");
                 }
             }
