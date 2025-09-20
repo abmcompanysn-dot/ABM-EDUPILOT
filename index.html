@@ -2,8 +2,28 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <!-- SEO Meta Tags -->
+    <title>ABM EduPilote - Gestion Universitaire Simplifiée pour l'Afrique</title>
+    <meta name="description" content="Découvrez ABM EduPilote, la plateforme de gestion universitaire tout-en-un. Simplifiez l'administration, le suivi des présences par QR code, et la communication.">
+    <meta name="keywords" content="gestion universitaire, ERP éducation, suivi présence, QR code, Sénégal, Afrique, logiciel école, plateforme éducative, ABM Company">
+    <meta name="author" content="ABM Company Tech">
+    <link rel="canonical" href="https://abm-edupilote.netlify.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abm-edupilote.netlify.app/">
+    <meta property="og:title" content="ABM EduPilote - Gestion Universitaire Simplifiée pour l'Afrique">
+    <meta property="og:description" content="La solution moderne pour la gestion des étudiants, des plannings et des présences. Conçue pour les défis du système éducatif africain.">
+    <meta property="og:image" content="https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://abm-edupilote.netlify.app/">
+    <meta property="twitter:title" content="ABM EduPilote - Gestion Universitaire Simplifiée pour l'Afrique">
+    <meta property="twitter:description" content="La solution moderne pour la gestion des étudiants, des plannings et des présences.">
+    <meta property="twitter:image" content="https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ABM EduPilote - Portail</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -67,9 +87,9 @@
                     <!-- Navigation Desktop -->
                     <nav class="hidden md:flex md:grow">
                         <ul class="flex grow justify-end flex-wrap items-center">
-                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="index.html">Accueil</a></li>
-                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="fonctionnement.html">Comment ça marche ?</a></li>
-                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="#features">Fonctionnalités</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="index.html">Accueil</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="fonctionnement.html">Comment ça marche ?</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="mentions-legales.html">Mentions Légales</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="#contact">Contact</a></li>
                             <li>
                                 <a href="#app-container" onclick="document.getElementById('app-container').scrollIntoView({ behavior: 'smooth' });" class="ml-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-5 py-2.5 text-center">
@@ -103,7 +123,7 @@
             <ul class="flex flex-col items-center text-white space-y-8">
                 <li><a href="index.html" class="text-2xl font-medium hover:text-violet-300">Accueil</a></li>
                 <li><a href="fonctionnement.html" class="text-2xl font-medium hover:text-violet-300">Comment ça marche ?</a></li>
-                <li><a href="#features" class="text-2xl font-medium hover:text-violet-300">Fonctionnalités</a></li>
+                <li><a href="mentions-legales.html" class="text-2xl font-medium hover:text-violet-300">Mentions Légales</a></li>
                 <li><a href="#contact" class="text-2xl font-medium hover:text-violet-300">Contact</a></li>
                 <li>
                     <a href="#app-container" class="mt-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-6 py-3 text-center">
@@ -119,22 +139,22 @@
         <!-- Slides container -->
         <div id="carousel-slides" class="flex transition-transform duration-700 ease-in-out h-full">
             <!-- Slide 1 -->
-            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');">
+            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');" role="group" aria-label="Slide 1 sur 3">
                 <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
                     <div class="text-center text-white p-8 max-w-3xl">
                         <h2 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">L'éducation, l'arme la plus puissante.</h2>
                         <p class="text-xl md:text-2xl italic opacity-90">"L'éducation est l'arme la plus puissante que vous puissiez utiliser pour changer le monde."</p>
-                        <cite class="block mt-4 text-lg">- Nelson Mandela</cite>
+                        <cite class="block mt-4 text-lg not-italic">- Nelson Mandela</cite>
                     </div>
                 </div>
             </div>
             <!-- Slide 2 -->
-            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg');">
+            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg');" role="group" aria-label="Slide 2 sur 3">
                  <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
                     <div class="text-center text-white p-8 max-w-3xl">
                         <h2 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Simplifiez la gestion, maximisez l'apprentissage.</h2>
                         <p class="text-xl md:text-2xl italic opacity-90">"Avec ABM EduPilote, la technologie est au service de l'éducation pour un avenir plus brillant."</p>
-                        <cite class="block mt-4 text-lg">- ABM EduPilote</cite>
+                        <cite class="block mt-4 text-lg not-italic">- ABM EduPilote</cite>
                     </div>
                 </div>
             </div>
@@ -144,7 +164,7 @@
                     <div class="text-center text-white p-8 max-w-3xl">
                         <h2 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Investir dans la connaissance.</h2>
                         <p class="text-xl md:text-2xl italic opacity-90">"Investir dans la connaissance rapporte toujours les meilleurs intérêts."</p>
-                        <cite class="block mt-4 text-lg">- Benjamin Franklin</cite>
+                        <cite class="block mt-4 text-lg not-italic">- Benjamin Franklin</cite>
                     </div>
                 </div>
             </div>
@@ -167,7 +187,7 @@
     
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <!-- Carte pour les administrateurs existants -->
-                    <div onclick="showPage('page-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer">
+                    <div onclick="showPage('page-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace administrateur">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/Jz4bHyRC/Acc-s-Admin-Une-image-repr-sentant-la-gestion-l-administration-ou-la-technologie-dans-le-contx.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -178,7 +198,7 @@
                     </div>
     
                     <!-- Carte pour les nouvelles écoles -->
-                    <div onclick="showPage('page-register')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer">
+                    <div onclick="showPage('page-register')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Inscrire une nouvelle école">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/fLBsLgCN/Carte-Inscrire-une-cole-Une-image-d-une-fa-ade-d-universit-ou-d-un-campus.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -189,7 +209,7 @@
                     </div>
                     
                     <!-- NOUVEAU: Carte pour les responsables -->
-                    <div onclick="showPage('page-responsable-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer">
+                    <div onclick="showPage('page-responsable-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace responsable">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/PJHQJ26d/espace-reesponsabledes-etudiants-de-classe.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -200,7 +220,7 @@
                     </div>
                     
                     <!-- NOUVEAU: Carte pour l'espace étudiant -->
-                    <div onclick="showPage('page-student-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer">
+                    <div onclick="showPage('page-student-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace étudiant">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/Cx0pYgC2/photo-de-espcae-tudiant-africain.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
