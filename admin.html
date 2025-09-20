@@ -779,6 +779,7 @@
                     // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
                     if (entityType === 'classe') {
                         refreshClassDropdowns();
+                        loadInteractiveDashboard(); // AMÉLIORATION: Rafraîchir le tableau de bord
                     }
 
                     form.reset(); // Utiliser form.reset() pour vider tous les champs
@@ -796,7 +797,7 @@
          * Cette fonction est appelée après l'ajout d'une nouvelle classe.
          */
         async function refreshClassDropdowns() {
-            try {
+            try { // On ne met pas de spinner ici car c'est une action de fond
                 const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
                 const classes = classesResult.data;
                 const optionsHtml = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
@@ -822,7 +823,7 @@
                 
                 if (entityType === 'filiere') {
                     const parentSelect = document.getElementById('classe-filiere-select');
-                    if (parentSelect) {
+                    if (parentSelect) { // On met à jour la liste déroulante des filières dans l'onglet "Classes"
                         parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
                             + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
                     }
@@ -1158,21 +1159,36 @@
             if (!confirm(`Êtes-vous sûr de vouloir supprimer ${typeName} (${entityId}) ? Cette action est irréversible.`)) {
                 return;
             }
+            
             showSpinner(true);
             try {
                 const result = await callAdminApi('adminDeleteEntity', { entityType, entityId });
+                // Si la suppression réussit, on met à jour l'interface
                 if (entityType === 'student') {
                     await loadAndRenderStudents();
                 } else if (entityType === 'responsable') {
                     await loadAndRenderResponsables();
                 } else {
                     await loadAndRenderEntities(entityType);
+                    if (entityType === 'classe') await refreshClassDropdowns(); // Mettre à jour les listes déroulantes
                 }
                 await loadInteractiveDashboard(); // On attend que le tableau de bord soit rafraîchi
-                await reloadCurrentPageData(); // On attend que la vue actuelle soit rafraîchie
                 showModal('Succès', result.message); // Le message de succès s'affiche en dernier
             } catch (error) {
-                showModal('Erreur', error.message);
+                // AMÉLIORATION: Gérer la suppression en cascade pour les filières
+                if (entityType === 'filiere' && error.message.includes("classe(s) sont rattachées")) {
+                    if (confirm(error.message)) { // Affiche l'erreur et demande confirmation
+                        // L'utilisateur a confirmé, on relance la suppression avec l'option cascade
+                        const cascadeResult = await callAdminApi('adminDeleteEntity', { entityType, entityId, cascade: true });
+                        await loadAndRenderEntities('filiere'); // Recharger la liste des filières
+                        await loadAndRenderEntities('classe');  // Recharger aussi la liste des classes
+                        await loadInteractiveDashboard(); // Mettre à jour le tableau de bord
+                        showModal('Succès', cascadeResult.message);
+                    }
+                } else {
+                    // Afficher les autres erreurs normalement
+                    showModal('Erreur', error.message);
+                }
             } finally {
                 showSpinner(false);
             }
