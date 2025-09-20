@@ -107,28 +107,28 @@
     </main>
 
     <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
-    <div id="student-card-generator" class="w-[350px] h-[220px] fixed -left-[9999px] top-0 p-5 flex flex-col justify-between rounded-xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284] text-white" style="font-family: 'Inter', sans-serif;">
+    <div id="student-card-generator" class="w-[350px] h-[220px] fixed -left-[9999px] top-0 p-5 flex flex-col justify-between rounded-xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284] text-white" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
         <!-- En-tête de la carte -->
         <div class="flex justify-between items-start">
-            <span class="text-xs font-bold opacity-70">CARTE ÉTUDIANT</span>
+            <div class="flex items-center gap-3">
+                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-10 h-10" alt="Logo">
+                <span class="text-xs font-bold opacity-70 tracking-wider">CARTE ÉTUDIANT</span>
+            </div>
             <!-- "Puce" QR Code -->
-            <div class="w-16 h-16 bg-gradient-to-br from-yellow-300 to-yellow-500 p-1 rounded-md shadow-md">
+            <div class="w-14 h-14 bg-gradient-to-br from-yellow-300 to-yellow-500 p-1 rounded-md shadow-md">
                 <div id="card-qr-code" class="w-full h-full bg-white"></div>
             </div>
         </div>
 
         <!-- Informations principales -->
-        <div class="text-left">
-            <p id="card-student-id" class="font-mono text-xl tracking-widest"></p>
+        <div class="text-left mt-auto">
+            <p id="card-student-id" class="font-mono text-xl tracking-widest" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);"></p>
         </div>
 
         <!-- Pied de la carte -->
-        <div class="flex justify-between items-end">
-            <div class="text-left">
-                <p id="card-student-name" class="font-semibold uppercase tracking-wide"></p>
-                <p id="card-university-filiere" class="text-xs opacity-70"></p>
-            </div>
-            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-14 h-auto" alt="Logo">
+        <div class="text-left mt-2">
+            <p id="card-student-name" class="font-semibold uppercase tracking-wide text-base"></p>
+            <p id="card-university-filiere" class="text-xs opacity-70 mt-1"></p>
         </div>
     </div>
 
@@ -257,7 +257,7 @@
                 // Utiliser html2canvas pour générer l'image
                 const canvas = await html2canvas(element, {
                     useCORS: true,      // Pour charger les images externes (logo, QR)
-                    backgroundColor: null, // Pour capturer le fond en dégradé
+                    backgroundColor: 'transparent', // Pour capturer le fond en dégradé
                     scale: 3            // Augmente la résolution pour une meilleure qualité
                 });
                 const dataUrl = canvas.toDataURL('image/png');
