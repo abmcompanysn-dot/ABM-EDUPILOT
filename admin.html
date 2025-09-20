@@ -827,13 +827,15 @@
                             + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
                     }
                 }
-
+                
+                // Vider la liste actuelle pour la reconstruire
+                listElement.innerHTML = '';
+                
                 if (entities.length === 0) {
                     listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
-                    return;
                 }
-
-                listElement.innerHTML = entities.map(entity => {
+                
+                const itemsHtml = entities.map(entity => {
                     const idKey = `ID_${entityType.toUpperCase()}`;
                     const nameKey = `NOM_${entityType.toUpperCase()}`;
                     return `<li class="p-3 bg-white border rounded-md flex justify-between items-center">
@@ -844,7 +846,11 @@
                                 <button onclick="handleDeleteEntity('${entityType}', '${entity[idKey]}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
                             </li>`;
                 }).join('');
-
+                
+                // Insérer le nouveau contenu
+                // Utiliser innerHTML une seule fois est plus performant
+                listElement.innerHTML = itemsHtml || '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                
                 listElement.dataset.loaded = 'true'; // Marquer comme chargé
             } catch (error) {
                 listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
