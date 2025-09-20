@@ -334,13 +334,10 @@
         // Fonctions utilitaires pour copier et partager
         function copyToClipboard(inputId) {
             const input = document.getElementById(inputId);
+            if (!input) return;
             const textToCopy = input.value;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(() => {
-                    showModal('Copié !', 'Le lien a été copié dans le presse-papiers.');
-                }, () => {
-                    showModal('Erreur', 'La copie a échoué.');
-                });
+            if (navigator.clipboard) { // L'API moderne du presse-papiers
+                navigator.clipboard.writeText(textToCopy).then(() => { showModal('Succès', 'Lien copié dans le presse-papiers !'); }, () => { showModal('Erreur', 'La copie a échoué.'); });
             } else {
                 input.select();
                 input.setSelectionRange(0, 99999);
@@ -348,7 +345,7 @@
                     document.execCommand('copy');
                     showModal('Copié !', 'Le lien a été copié dans le presse-papiers (mode de compatibilité).');
                 } catch (err) {
-                    showModal('Erreur', 'La copie a échoué.');
+                    showModal('Erreur', 'La copie a échoué. Veuillez le faire manuellement.');
                 }
             }
         }
@@ -356,16 +353,31 @@
         async function shareLink(url, title) {
             if (navigator.share) {
                 try {
-                    await navigator.share({
-                        title: title,
-                        text: 'Voici un lien à partager.',
-                        url: url,
-                    });
+                    await navigator.share({ title: title, text: 'Utilisez ce lien pour vous inscrire à la classe.', url: url });
                 } catch (error) {
                     console.error('Erreur de partage:', error);
                 }
             } else {
-                showModal('Non supporté', 'Le partage web n\'est pas supporté sur ce navigateur. Veuillez copier le lien.');
+                showModal('Non supporté', 'Le partage n\'est pas supporté sur ce navigateur. Veuillez copier le lien manuellement.');
+            }
+        }
+
+        // NOUVEAU: Fonction de téléchargement du QR Code (identique à admin.html)
+        async function downloadQrCode(qrUrl, fileName) {
+            try {
+                showSpinner(true);
+                const response = await fetch(qrUrl);
+                const blob = await response.blob(); // Récupère l'image en tant que données binaires
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName || 'qrcode.png';
+                link.click();
+                URL.revokeObjectURL(link.href);
+            } catch (error) {
+                console.error('Erreur de téléchargement du QR Code:', error);
+                showModal("Erreur", "Le téléchargement a échoué. Veuillez essayer de maintenir le doigt sur l'image pour la sauvegarder.");
+            } finally {
+                showSpinner(false);
             }
         }
 
@@ -377,7 +389,7 @@
                 showSpinner(true);
                 // Tenter de partager en tant que fichier d'abord
                 if (navigator.share && navigator.canShare) {
-                    const response = await fetch(qrUrl);
+                    const response = await fetch(qrUrl, { cache: 'no-cache' }); // Forcer le re-téléchargement pour le partage
                     const blob = await response.blob();
                     const file = new File([blob], fileName, { type: 'image/png' });
                     if (navigator.canShare({ files: [file] })) {
@@ -393,7 +405,7 @@
                 showModal('Non supporté', 'Le partage n\'est pas supporté. Veuillez télécharger l\'image manuellement.');
             } catch (error) {
                 console.error('Erreur de partage:', error);
-                showModal('Erreur', 'Une erreur est survenue lors du partage.');
+                showModal('Erreur', `Une erreur est survenue lors du partage: ${error.message}`);
             } finally {
                 showSpinner(false);
             }
