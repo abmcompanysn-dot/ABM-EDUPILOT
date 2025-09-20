@@ -102,7 +102,7 @@
                     <div id="qr-code-container" class="mt-4 hidden text-center">
                         <img id="qr-code-img" src="" alt="QR Code de présence" class="mx-auto w-full max-w-[250px] rounded-lg border">
                         <div class="flex justify-center gap-2 mt-4">
-                            <a id="qr-download-link" href="#" download="qr-code-presence.png" class="text-sm bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 no-underline">Télécharger</a>
+                            <button id="qr-download-btn" class="text-sm bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Télécharger</button>
                             <button id="qr-share-btn" class="text-sm bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Partager</button>
                         </div>
                     </div>
@@ -313,13 +313,12 @@
                 const { qrCodeUrl, className } = result.data;
 
                 const container = document.getElementById('qr-code-container');
-                const img = document.getElementById('qr-code-img');
-                const downloadLink = document.getElementById('qr-download-link');
+                const img = document.getElementById('qr-code-img'); 
+                const downloadBtn = document.getElementById('qr-download-btn');
                 const shareBtn = document.getElementById('qr-share-btn');
 
                 img.src = qrCodeUrl;
-                downloadLink.href = qrCodeUrl;
-                downloadLink.download = `qr-code-presence-${className}.png`;
+                downloadBtn.onclick = () => downloadQrCode(qrCodeUrl, `qr-code-presence-${className}.png`);
                 
                 shareBtn.onclick = () => shareQrCode(qrCodeUrl, `QR Code de présence pour ${className}`, `qr-code-presence-${className}.png`);
 
@@ -332,7 +331,7 @@
             }
         }
 
-        // NOUVEAU: Fonctions utilitaires pour copier et partager
+        // Fonctions utilitaires pour copier et partager
         function copyToClipboard(inputId) {
             const input = document.getElementById(inputId);
             const textToCopy = input.value;
@@ -370,52 +369,31 @@
             }
         }
 
+        // Les fonctions shareQrCode et downloadQrCode sont maintenant globales (définies dans admin.html ou un script partagé)
+        // et n'ont pas besoin d'être redéfinies ici.
+
         async function shareQrCode(qrUrl, title, fileName) {
             try {
                 showSpinner(true);
-                // Attempt to share as a file first
+                // Tenter de partager en tant que fichier d'abord
                 if (navigator.share && navigator.canShare) {
                     const response = await fetch(qrUrl);
                     const blob = await response.blob();
-                    const file = new File([blob], fileName, { type: blob.type });
+                    const file = new File([blob], fileName, { type: 'image/png' });
                     if (navigator.canShare({ files: [file] })) {
                         await navigator.share({ title: title, text: 'Voici le QR code de présence.', files: [file] });
                         return; // Success
                     }
                 }
-                // Fallback to sharing the URL
+                // Fallback: partager l'URL de l'image
                 if (navigator.share) {
                     await navigator.share({ title: title, text: 'Voici le QR code de présence (ouvrez le lien pour voir l\'image).', url: qrUrl });
-                    return; // Success
+                    return;
                 }
-                // If nothing works
-                showModal('Non supporté', 'Le partage n\'est pas supporté. Veuillez télécharger l\'image et la partager manuellement.');
+                showModal('Non supporté', 'Le partage n\'est pas supporté. Veuillez télécharger l\'image manuellement.');
             } catch (error) {
                 console.error('Erreur de partage:', error);
                 showModal('Erreur', 'Une erreur est survenue lors du partage.');
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Helper pour télécharger un fichier de manière programmatique
-        async function downloadFile(url, fileName) {
-            try {
-                showSpinner(true);
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const blobUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = blobUrl;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(blobUrl);
-                a.remove();
-            } catch (error) {
-                console.error('Download error:', error);
-                showModal('Erreur', "Le téléchargement a échoué. Sur mobile, essayez de maintenir le doigt sur l'image pour la sauvegarder.");
             } finally {
                 showSpinner(false);
             }
