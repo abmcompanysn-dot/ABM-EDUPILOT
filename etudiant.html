@@ -107,28 +107,30 @@
     </main>
 
     <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
-    <div id="student-card-generator" class="w-[340px] h-[214px] fixed -left-[9999px] top-0 p-6 flex flex-col justify-between rounded-2xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284] text-white" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+    <div id="student-card-generator" class="w-[340px] h-[214px] fixed -left-[9999px] top-0 p-6 text-white relative overflow-hidden flex flex-col rounded-2xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284]" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+        <!-- Motifs décoratifs en fond -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
+
         <!-- En-tête de la carte -->
         <div class="flex justify-between items-start mb-4">
             <div>
                 <h2 id="card-university-name" class="text-lg font-bold">UNIVERSITÉ</h2>
                 <p class="text-sm opacity-90">CARTE ÉTUDIANTE</p>
             </div>
+            <div class="text-right">
+                <p class="text-xs opacity-75">2024-2025</p>
+            </div>
         </div>
 
-        <!-- Logo à la place de la puce -->
+        <!-- Logo ABM (à la place de la puce) -->
         <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mb-2" alt="Logo">
 
         <!-- Informations étudiant -->
         <div class="space-y-1 mt-auto">
-            <p id="card-student-name" class="font-semibold uppercase tracking-wide text-base"></p>
-            <p id="card-university-filiere" class="text-xs opacity-70 mt-1"></p>
-            <p id="card-student-id" class="text-xs opacity-75"></p>
-        </div>
-
-        <!-- QR Code -->
-        <div id="card-qr-code" class="absolute bottom-4 right-4 bg-white p-1.5 rounded-md shadow-md w-14 h-14">
-            <!-- Le QR code sera injecté ici -->
+            <p id="card-student-name" class="text-base font-semibold tracking-wide"></p>
+            <p id="card-university-filiere" class="text-xs opacity-90"></p>
+            <p id="card-student-id" class="text-xs opacity-75 font-mono"></p>
         </div>
     </div>
 
