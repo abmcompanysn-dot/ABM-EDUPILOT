@@ -15,6 +15,7 @@
         }
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="bg-violet-50">
@@ -130,6 +131,19 @@
         </div>
     </main>
 
+    <!-- NOUVEAU: Bouton flottant pour le scanner -->
+    <button id="scan-qr-btn" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code Étudiant">
+        <i class="fas fa-qrcode text-2xl"></i>
+    </button>
+
+    <!-- NOUVEAU: Conteneur pour le scanner QR Code -->
+    <div id="qr-scanner-container" class="fixed inset-0 bg-black/80 flex-col items-center justify-center p-4 hidden z-50">
+        <p class="text-white text-lg mb-4 font-medium">Scanner le QR Code de l'étudiant</p>
+        <div id="qr-reader" class="w-full max-w-sm bg-gray-800 rounded-lg overflow-hidden border-4 border-violet-500 shadow-lg"></div>
+        <button id="close-scanner-btn" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
+    </div>
+
+
     <!-- Modal et Spinner (copiés de admin.html pour la cohérence) -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md flex flex-col" style="max-height: 90vh;">
@@ -163,6 +177,7 @@
             } else {
                 loadDashboard();
                 setupAddCourseForm(); // NOUVEAU: Initialiser le formulaire une seule fois
+                setupScanner(); // NOUVEAU: Initialiser le scanner
             }
         });
 
@@ -488,6 +503,58 @@
                 container.appendChild(table);
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // NOUVEAU: Logique du Scanner QR Code pour le responsable
+        function setupScanner() {
+            const scanQrBtn = document.getElementById('scan-qr-btn');
+            const scannerContainer = document.getElementById('qr-scanner-container');
+            const closeScannerBtn = document.getElementById('close-scanner-btn');
+            let html5QrCode = null;
+
+            function onScanSuccess(decodedText, decodedResult) {
+                console.log(`Code scanné = ${decodedText}`);
+                if (html5QrCode && html5QrCode.isScanning) {
+                    html5QrCode.stop().catch(err => console.error("Erreur à l'arrêt du scanner.", err));
+                }
+                scannerContainer.classList.add('hidden');
+
+                if (decodedText.startsWith("ABM-ETU-ID:")) {
+                    const studentId = decodedText.split(':')[1];
+                    markStudentPresent(studentId);
+                } else {
+                    showModal("QR Code Invalide", "Ce QR code ne semble pas être un code d'identification d'étudiant valide pour cette application.");
+                }
+            }
+
+            scanQrBtn.addEventListener('click', () => {
+                scannerContainer.classList.remove('hidden');
+                scannerContainer.classList.add('flex');
+                if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, () => {})
+                .catch(err => {
+                    showModal("Erreur Caméra", "Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+                    scannerContainer.classList.add('hidden');
+                });
+            });
+
+            closeScannerBtn.addEventListener('click', () => {
+                if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop();
+                scannerContainer.classList.add('hidden');
+            });
+        }
+
+        // NOUVEAU: Fonction pour marquer un étudiant présent via scan
+        async function markStudentPresent(studentId) {
+            showSpinner(true);
+            try {
+                const result = await callResponsableApi('scanStudentForAttendance', { studentId });
+                showModal('Présence Confirmée', result.message);
+            } catch (error) {
+                showModal('Erreur de Pointage', error.message);
+            } finally {
+                showSpinner(false);
             }
         }
 
