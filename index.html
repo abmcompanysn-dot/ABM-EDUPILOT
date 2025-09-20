@@ -1128,14 +1128,14 @@
 
                 if (decodedText.startsWith("ABM-ETU-ID:")) {
                     const studentId = decodedText.split(':')[1];
-                    // Appeler l'API pour obtenir les détails de l'étudiant
-                    callApi('getStudentProfileForAdmin', { studentId, universityId: 'public' }) // 'public' pour bypasser la vérification admin
+                    // NOUVEAU: Appeler la fonction publique dédiée
+                    callApi('getPublicStudentProfile', { studentId })
                         .then(result => {
                             const student = result.data.student;
                             const params = new URLSearchParams();
                             params.set('name', student.NOM_COMPLET);
                             params.set('email', student.EMAIL);
-                            params.set('className', student.NOM_CLASSE);
+                            params.set('class', student.NOM_CLASSE);
                             params.set('filiereName', student.NOM_FILIERE);
                             openModalWithTemplate('student-profile-template', params);
                         })
