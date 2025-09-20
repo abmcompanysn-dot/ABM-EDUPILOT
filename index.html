@@ -475,6 +475,21 @@
         </div>
     </template>
 
+    <!-- NOUVEAU: Template pour afficher le profil étudiant après scan -->
+    <template id="student-profile-template">
+        <div class="p-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Profil Étudiant</h1>
+            <div class="mt-6 text-left space-y-3 bg-gray-50 p-4 rounded-lg border">
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Nom:</strong> <span id="profile-scan-name" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Email:</strong> <span id="profile-scan-email" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Classe:</strong> <span id="profile-scan-class" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Filière:</strong> <span id="profile-scan-filiere" class="text-gray-800"></span></p>
+            </div>
+            <button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button>
+        </div>
+    </template>
+
+
     <!-- MODAL ABM COMPANY -->
     <div id="abm-company-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 hidden z-50" onclick="closeAbmModal()">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
@@ -777,6 +792,11 @@
                 setupClassRegisterForm(params);
             } else if (templateId === 'attendance-template') {
                 setupAttendanceForm(params);
+            } else if (templateId === 'student-profile-template') {
+                // NOUVEAU: Logique pour remplir le profil étudiant
+                document.getElementById('profile-scan-name').textContent = params.get('name');
+                document.getElementById('profile-scan-email').textContent = params.get('email');
+                setupAttendanceForm(params);
             }
 
             modalContainer.classList.remove('hidden');
@@ -787,6 +807,10 @@
             const modalContainer = document.getElementById('modal-container');
             modalContainer.classList.add('hidden');
             document.getElementById('hero-carousel').style.display = 'block'; // Réafficher le carrousel
+            // NOUVEAU: Vider le contenu de la modale pour éviter les conflits
+            const modalContent = document.getElementById('modal-content');
+            if (modalContent) modalContent.innerHTML = '';
+
             modalContainer.setAttribute('aria-hidden','true');
             window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -810,6 +834,10 @@
                 const details = result.data;
                 document.getElementById('class-name-display').textContent = details.className || '(Nom indisponible)';
                 const contextEl = document.getElementById('class-context-display');
+                // NOUVEAU: Remplir le profil étudiant scanné
+                document.getElementById('profile-scan-class').textContent = details.className || 'N/A';
+                document.getElementById('profile-scan-filiere').textContent = details.filiereName || 'N/A';
+
                 if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
             } catch (error) {
                 document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
@@ -1098,7 +1126,21 @@
                 const params = url.searchParams;
                 const page = params.get('page');
 
-                if (page === 'class-register' || page === 'attendance') {
+                if (decodedText.startsWith("ABM-ETU-ID:")) {
+                    const studentId = decodedText.split(':')[1];
+                    // Appeler l'API pour obtenir les détails de l'étudiant
+                    callApi('getStudentProfileForAdmin', { studentId, universityId: 'public' }) // 'public' pour bypasser la vérification admin
+                        .then(result => {
+                            const student = result.data.student;
+                            const params = new URLSearchParams();
+                            params.set('name', student.NOM_COMPLET);
+                            params.set('email', student.EMAIL);
+                            params.set('className', student.NOM_CLASSE);
+                            params.set('filiereName', student.NOM_FILIERE);
+                            openModalWithTemplate('student-profile-template', params);
+                        })
+                        .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
+                } else if (page === 'class-register' || page === 'attendance') {
                     // Ouvrir la modale directement au lieu de suivre le lien
                     openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
                 } else {
