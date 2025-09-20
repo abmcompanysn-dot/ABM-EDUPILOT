@@ -364,6 +364,13 @@
                 sidebar.classList.toggle('-translate-x-full');
             });
 
+            // NOUVEAU: Initialisation propre de la page
+            // On clique sur le premier lien de navigation pour afficher le tableau de bord par défaut.
+            document.querySelector('.nav-link').click();
+            // On pré-charge les données des filières en arrière-plan pour que le formulaire d'ajout de classe soit prêt.
+            // Cela rend la navigation vers l'onglet "Classes" plus rapide.
+            loadAndRenderEntities('filiere');
+
         });
 
         function logout() {
@@ -512,7 +519,7 @@
                     // Désactiver le bouton pour éviter les doubles clics
                     e.submitter.disabled = true;
                     const result = await callAdminApi('adminAddEntity', { entityType, payload });
-                    loadAndRenderEntities(entityType); // Recharger la liste D'ABORD
+                    await loadAndRenderEntities(entityType); // CORRECTION: On attend que la liste soit rechargée
                     showModal('Succès', result.message); // La modale s'affiche
 
                     // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
