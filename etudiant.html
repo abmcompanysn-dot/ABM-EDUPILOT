@@ -105,23 +105,33 @@
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
             if (studentSessionId) {
                 loadStudentDashboard(studentSessionId);
+                // NOUVEAU: Réactivation du rafraîchissement automatique en arrière-plan
+                setInterval(() => {
+                    console.log('Refreshing student data in background...');
+                    // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
+                    loadStudentDashboard(studentSessionId, false); 
+                }, 90000); // Rafraîchit toutes les 90 secondes
             } else {
                 window.location.href = 'index.html'; 
             }
         });
 
         // --- Fonctions pour l'Espace Étudiant ---
-        function studentLogout() {
+        function studentLogout() 
+        {
             sessionStorage.removeItem(STUDENT_SESSION_KEY);
             window.location.href = 'index.html';
         }
 
-        function loadStudentDashboard(studentId) {
+        function loadStudentDashboard(studentId, isInitialLoad = true) {
             document.getElementById('student-dashboard-name').textContent = '...';
             loadStudentInfo(studentId);
             loadStudentAttendance(studentId);
-            loadPersonalQrCode(studentId);
-            loadStudentSchedule(studentId); // NOUVEAU
+            loadStudentSchedule(studentId);
+            // Le QR code est statique, pas besoin de le recharger à chaque fois, sauf au premier chargement
+            if (isInitialLoad) {
+                loadPersonalQrCode(studentId);
+            }
         }
 
         async function loadStudentInfo(studentId) {
