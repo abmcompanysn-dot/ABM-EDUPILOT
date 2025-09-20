@@ -77,26 +77,58 @@
 
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-violet-50 p-6">
                 
-    <div id="main-dashboard" class="page-container">
-        <!-- Stat Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h4 class="text-gray-500 font-medium">Total Étudiants</h4>
-                <p id="stats-student-count" class="text-3xl font-bold text-violet-600">...</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h4 class="text-gray-500 font-medium">Total Classes</h4>
-                <p id="stats-class-count" class="text-3xl font-bold text-violet-600">...</p>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h4 class="text-gray-500 font-medium">Présences Aujourd'hui</h4>
-                <p class="text-3xl font-bold text-violet-600">N/A</p>
+    <!-- NOUVEAU: Tableau de bord interactif -->
+    <div id="main-dashboard" class="page-container space-y-8">
+        <div>
+            <h2 class="text-3xl font-bold text-gray-800">Vue d'ensemble des Filières</h2>
+            <p class="text-gray-500 mt-1">Cliquez sur une filière pour voir les classes associées.</p>
+        </div>
+        <div id="filiere-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Les cartes des filières seront injectées ici -->
+            <p>Chargement des filières...</p>
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Vue des classes d'une filière -->
+    <div id="filiere-details-page" class="page-container hidden space-y-6">
+        <button onclick="showPage('main-dashboard')" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux filières</button>
+        <h2 id="filiere-details-title" class="text-3xl font-bold text-gray-800">Classes de la filière...</h2>
+        <div id="class-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- La liste des classes sera injectée ici -->
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Vue des étudiants d'une classe -->
+    <div id="class-details-page" class="page-container hidden space-y-6">
+        <div class="flex flex-wrap gap-4 items-center justify-between">
+            <button id="back-to-classes-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux classes</button>
+            <h2 id="class-details-title" class="text-3xl font-bold text-gray-800">Étudiants de la classe...</h2>
+            <button id="download-attendance-class-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">Télécharger les Présences</button>
+        </div>
+        <div id="student-list-container" class="bg-white p-6 rounded-lg shadow-sm">
+            <!-- La liste des étudiants sera injectée ici -->
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Vue du profil étudiant -->
+    <div id="student-profile-page" class="page-container hidden space-y-8">
+        <button id="back-to-student-list-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour à la liste des étudiants</button>
+        
+        <div class="bg-white p-6 rounded-lg shadow-sm">
+            <div id="student-profile-header">
+                <!-- Le header du profil sera injecté ici -->
             </div>
         </div>
-        <!-- Chart -->
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Répartition des Étudiants par Filière</h3>
-            <canvas id="studentsByFiliereChart"></canvas>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Historique des Présences</h3>
+                <div id="student-profile-attendance" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Emploi du Temps de la Classe</h3>
+                <div id="student-profile-schedule" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+            </div>
         </div>
     </div>
 
@@ -133,7 +165,10 @@
                         </form>
                     </div>
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
+                            <button onclick="handleDownload('filieres')" class="text-sm bg-violet-100 text-violet-700 font-semibold py-1 px-3 rounded-md hover:bg-violet-200">Télécharger la liste</button>
+                        </div>
                         <ul id="filiere-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
                     </div>
                 </div>
@@ -156,7 +191,10 @@
                         </form>
                     </div>
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
+                            <button onclick="handleDownload('classes')" class="text-sm bg-violet-100 text-violet-700 font-semibold py-1 px-3 rounded-md hover:bg-violet-200">Télécharger la liste</button>
+                        </div>
                         <ul id="classe-list" class="mt-4 space-y-2 max-h-96 overflow-y-auto"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul>
                     </div>
                 </div>
@@ -370,6 +408,10 @@
             // On pré-charge les données des filières en arrière-plan pour que le formulaire d'ajout de classe soit prêt.
             // Cela rend la navigation vers l'onglet "Classes" plus rapide.
             loadAndRenderEntities('filiere');
+            
+            // NOUVEAU: Charger les données pour le nouveau tableau de bord interactif
+            loadInteractiveDashboard();
+
 
         });
 
@@ -390,7 +432,8 @@
                 'planning-page': 'Planning',
                 'attendance-page': 'Présences',
                 'tools-page': 'Outils',
-                'students-page': 'Étudiants'
+                'students-page': 'Étudiants',
+                'student-profile-page': 'Profil Étudiant' // NOUVEAU
             };
             document.getElementById('page-title').textContent = pageTitles[pageId] || 'Administration';
 
@@ -424,11 +467,13 @@
                 setupStudentsPage();
             } else if (pageId === 'main-dashboard') {
                 loadAdminDashboard();
+                loadInteractiveDashboard(); // NOUVEAU
             }
         }
 
         // NOUVEAU: Initialise la page de gestion
         function setupAdminManagementPage() {
+            document.querySelector('.management-tab').click(); // Active le premier onglet
             const tabs = document.querySelectorAll('.management-tab');
             const tabContents = document.querySelectorAll('.management-tab-content');
 
@@ -458,41 +503,249 @@
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
         }
 
+        // ANCIENNE FONCTION DE DASHBOARD (pour les stats)
         async function loadAdminDashboard() {
             try {
                 const result = await callAdminApi('adminGetDashboardStats');
                 const stats = result.data;
-
-                document.getElementById('stats-student-count').textContent = stats.studentCount;
-                document.getElementById('stats-class-count').textContent = stats.classCount;
-
-                // Render Chart
-                const ctx = document.getElementById('studentsByFiliereChart').getContext('2d');
-                new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: Object.keys(stats.studentsByFiliere),
-                        datasets: [{
-                            label: 'Étudiants',
-                            data: Object.values(stats.studentsByFiliere),
-                            backgroundColor: [
-                                'rgba(79, 70, 229, 0.8)',
-                                'rgba(30, 64, 175, 0.8)',
-                                'rgba(124, 58, 237, 0.8)',
-                                'rgba(147, 51, 234, 0.8)',
-                                'rgba(219, 39, 119, 0.8)',
-                            ],
-                            borderColor: '#fff',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: { legend: { position: 'top' } }
-                    }
-                });
+                // Cette fonction peut être étendue pour afficher d'autres stats si besoin
             } catch (error) {
                 console.error("Erreur de chargement du dashboard:", error);
+            }
+        }
+
+        // NOUVEAU: Charge les données pour le tableau de bord interactif
+        async function loadInteractiveDashboard() {
+            const container = document.getElementById('filiere-cards-container');
+            container.innerHTML = '<p>Chargement des filières...</p>';
+            try {
+                const [filieresResult, classesResult, studentsResult] = await Promise.all([
+                    callAdminApi('adminGetEntities', { entityType: 'filiere' }),
+                    callAdminApi('adminGetEntities', { entityType: 'classe' }),
+                    callAdminApi('adminGetStudents')
+                ]);
+
+                const filieres = filieresResult.data;
+                const classes = classesResult.data;
+                const students = studentsResult.data;
+
+                if (filieres.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucune filière n\'a été créée. Allez dans l\'onglet "Filières & Classes" pour commencer.</p>';
+                    return;
+                }
+
+                const filiereData = filieres.map(filiere => {
+                    const classesInFiliere = classes.filter(c => c.ID_FILIERE_FK === filiere.ID_FILIERE);
+                    const studentsInFiliere = students.filter(s => s.ID_FILIERE_FK === filiere.ID_FILIERE);
+                    return {
+                        ...filiere,
+                        classCount: classesInFiliere.length,
+                        studentCount: studentsInFiliere.length
+                    };
+                });
+
+                container.innerHTML = filiereData.map(f => `
+                    <div onclick="showFiliereDetails('${f.ID_FILIERE}', '${f.NOM_FILIERE}')" class="action-card bg-white p-6 rounded-lg shadow-sm cursor-pointer">
+                        <h3 class="text-xl font-bold text-violet-700 truncate">${f.NOM_FILIERE}</h3>
+                        <div class="mt-4 flex justify-between text-gray-600">
+                            <div class="text-center">
+                                <p class="text-2xl font-bold">${f.classCount}</p>
+                                <p class="text-xs">Classes</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-2xl font-bold">${f.studentCount}</p>
+                                <p class="text-xs">Étudiants</p>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur de chargement: ${error.message}</p>`;
+            }
+        }
+
+        // NOUVEAU: Affiche la vue détaillée d'une filière
+        async function showFiliereDetails(filiereId, filiereName) {
+            showPage('filiere-details-page');
+            document.getElementById('filiere-details-title').textContent = `Classes de la filière : ${filiereName}`;
+            const container = document.getElementById('class-list-container');
+            container.innerHTML = '<p>Chargement des classes...</p>';
+
+            try {
+                const [classesResult, studentsResult] = await Promise.all([
+                    callAdminApi('adminGetEntities', { entityType: 'classe' }),
+                    callAdminApi('adminGetStudents')
+                ]);
+                const classes = classesResult.data.filter(c => c.ID_FILIERE_FK === filiereId);
+                const students = studentsResult.data;
+
+                if (classes.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucune classe dans cette filière.</p>';
+                    return;
+                }
+
+                container.innerHTML = classes.map(c => {
+                    const studentCount = students.filter(s => s.ID_CLASSE_FK === c.ID_CLASSE).length;
+                    return `
+                        <div onclick="showClassDetails('${c.ID_CLASSE}', '${c.NOM_CLASSE}', '${filiereId}', '${filiereName}')" class="action-card bg-white p-5 rounded-lg shadow-sm cursor-pointer">
+                            <h4 class="text-lg font-semibold text-gray-800">${c.NOM_CLASSE}</h4>
+                            <p class="text-gray-500 mt-2">${studentCount} étudiant(s)</p>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // NOUVEAU: Affiche la vue détaillée d'une classe
+        async function showClassDetails(classId, className, filiereId, filiereName) {
+            showPage('class-details-page');
+            document.getElementById('class-details-title').textContent = `Étudiants de : ${className}`;
+            document.getElementById('download-attendance-class-btn').onclick = () => handleDownload('attendance_class', { classId, className });
+            document.getElementById('back-to-classes-btn').onclick = () => showFiliereDetails(filiereId, filiereName);
+            const container = document.getElementById('student-list-container');
+            container.innerHTML = '<p>Chargement des étudiants...</p>';
+
+            try {
+                const studentsResult = await callAdminApi('adminGetStudents');
+                const students = studentsResult.data.filter(s => s.ID_CLASSE_FK === classId);
+
+                if (students.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun étudiant inscrit dans cette classe.</p>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'min-w-full divide-y divide-gray-200';
+                table.innerHTML = `
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Étudiant</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                            <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        ${students.map(s => `
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${s.NOM_COMPLET}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_ETUDIANT}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${s.EMAIL}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                    <button onclick="showStudentAttendance('${s.ID_ETUDIANT}', '${s.NOM_COMPLET}')" class="text-violet-600 hover:text-violet-900">Voir Présences</button>
+                                    <button onclick="showStudentProfile('${s.ID_ETUDIANT}', '${s.ID_CLASSE_FK}', '${c.NOM_CLASSE}', '${filiereId}', '${filiereName}')" class="ml-4 text-blue-600 hover:text-blue-900">Voir Profil Complet</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+                container.innerHTML = '';
+                container.appendChild(table);
+
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // NOUVEAU: Affiche l'historique de présence d'un étudiant dans une modale
+        async function showStudentAttendance(studentId, studentName) {
+            showSpinner(true);
+            try {
+                const result = await callApi('getStudentAttendanceHistory', { studentId });
+                const history = result.data;
+                let contentHtml;
+
+                if (history.length === 0) {
+                    contentHtml = '<p class="text-center text-gray-500">Aucun pointage enregistré pour cet étudiant.</p>';
+                } else {
+                    contentHtml = '<ul class="space-y-3">';
+                    history.forEach(item => {
+                        contentHtml += `
+                            <li class="p-3 bg-gray-50 rounded-md border">
+                                <p class="font-semibold">${item.MATIERE}</p>
+                                <p class="text-sm text-gray-600">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}</p>
+                            </li>
+                        `;
+                    });
+                    contentHtml += '</ul>';
+                }
+                showModal(`Historique de présence de ${studentName}`, contentHtml);
+            } catch (error) {
+                showModal('Erreur', `<p class="text-red-500">${error.message}</p>`);
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // NOUVEAU: Affiche la page de profil complète d'un étudiant
+        async function showStudentProfile(studentId, classId, className, filiereId, filiereName) {
+            showPage('student-profile-page');
+            // Configurer le bouton de retour
+            document.getElementById('back-to-student-list-btn').onclick = () => showClassDetails(classId, className, filiereId, filiereName);
+
+            const headerContainer = document.getElementById('student-profile-header');
+            const attendanceContainer = document.getElementById('student-profile-attendance');
+            const scheduleContainer = document.getElementById('student-profile-schedule');
+            headerContainer.innerHTML = '<p>Chargement du profil...</p>';
+            attendanceContainer.innerHTML = '';
+            scheduleContainer.innerHTML = '';
+
+            try {
+                const result = await callAdminApi('adminGetStudentProfile', { studentId });
+                const { student, attendanceHistory, schedule } = result.data;
+
+                // Afficher l'en-tête
+                headerContainer.innerHTML = `
+                    <h2 class="text-3xl font-bold text-gray-800">${student.NOM_COMPLET}</h2>
+                    <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
+                        <span><strong>ID:</strong> <span class="font-mono">${student.ID_ETUDIANT}</span></span>
+                        <span><strong>Email:</strong> ${student.EMAIL}</span>
+                        <span><strong>Classe:</strong> ${student.NOM_CLASSE}</span>
+                        <span><strong>Filière:</strong> ${student.NOM_FILIERE}</span>
+                    </div>
+                `;
+
+                // Afficher l'historique des présences
+                if (attendanceHistory.length === 0) {
+                    attendanceContainer.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                } else {
+                    attendanceContainer.innerHTML = `
+                        <div class="space-y-4">
+                        ${attendanceHistory.map(item => `
+                            <div class="flex items-center space-x-4">
+                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600"><i class="fas fa-check"></i></div>
+                                <div>
+                                    <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                                    <p class="text-xs text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                                </div>
+                            </div>
+                        `).join('')}
+                        </div>
+                    `;
+                }
+
+                // Afficher l'emploi du temps
+                if (schedule.length === 0) {
+                    scheduleContainer.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour cette classe.</p>';
+                } else {
+                    scheduleContainer.innerHTML = `
+                        <div class="space-y-3">
+                        ${schedule.map(course => `
+                            <div class="p-3 bg-gray-50 rounded-md border">
+                                <p class="font-semibold text-sm">${course.MATIERE}</p>
+                                <p class="text-xs text-gray-600">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                <p class="text-xs text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            </div>
+                        `).join('')}
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                headerContainer.innerHTML = `<p class="text-red-500">Erreur lors du chargement du profil: ${error.message}</p>`;
             }
         }
 
@@ -963,18 +1216,6 @@
                 icon.classList.add('fa-eye');
             }
         }
-        // Initialisation de la page au chargement
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelector('.nav-link').click(); // Clique sur le premier lien (Tableau de Bord)
-
-            // Pré-charger les données pour le formulaire d'ajout de classe
-            loadAndRenderEntities('filiere');
-            // Activer le premier onglet de la page de management
-            // La ligne ci-dessous est déplacée dans setupAdminManagementPage pour éviter une erreur
-            document.querySelector('.management-tab').click();
-
-            loadAdminDashboard();
-        });
 
         closeModalBtn.onclick = () => modal.classList.add('hidden');
         window.onclick = (event) => {
@@ -1006,6 +1247,21 @@
             });
             const result = await response.json();
             if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
+            return result;
+        }
+
+        // NOUVEAU: Fonction d'appel API générique (sans token admin)
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data })
+            });
+
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
             return result;
         }
 
