@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Espace Étudiant - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
-    <!-- CORRECTION: Remplacement de la librairie par une plus robuste -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image-more/2.9.6/dom-to-image-more.min.js" integrity="sha512-PZPs1N51Yg3/iYCD0e/n/qj/v/0e3xLuaoFvj/1b/i+b+vjXfDs3YgL1z/l2a+bL/xQfD0m+cZgA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- CORRECTION FINALE: Utilisation de html2canvas, une librairie plus robuste pour les styles complexes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVYepjy/cUgB8urhLgpAZmJ3Xlq+g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -256,8 +256,16 @@
                 const element = document.getElementById('student-card-generator');
                 if (!element) throw new Error("L'élément de la carte est introuvable.");
 
-                // CORRECTION: Utiliser domtoimage pour générer une image PNG
-                const dataUrl = await domtoimage.toPng(element, { quality: 0.98 });
+                // CORRECTION FINALE: Utiliser html2canvas qui gère mieux les dégradés
+                if (typeof html2canvas === 'undefined') {
+                    throw new Error("La librairie de génération d'image (html2canvas) n'a pas pu être chargée. Vérifiez votre connexion internet.");
+                }
+                const canvas = await html2canvas(element, {
+                    useCORS: true, // Permet de charger les images externes (logo, QR code)
+                    backgroundColor: null, // Capture le fond de l'élément, y compris le dégradé
+                    scale: 2 // Améliore la qualité de l'image
+                });
+                const dataUrl = canvas.toDataURL('image/png');
                 const link = document.createElement('a');
                 link.download = `carte-etudiant-${studentId}.png`; // Nom du fichier
                 link.href = dataUrl;
