@@ -318,13 +318,22 @@
         // NOUVEAU: Fonctions utilitaires pour copier et partager
         function copyToClipboard(inputId) {
             const input = document.getElementById(inputId);
-            input.select();
-            input.setSelectionRange(0, 99999);
-            try {
-                document.execCommand('copy');
-                showModal('Copié !', 'Le lien a été copié dans le presse-papiers.');
-            } catch (err) {
-                showModal('Erreur', 'Impossible de copier le lien.');
+            const textToCopy = input.value;
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showModal('Copié !', 'Le lien a été copié dans le presse-papiers.');
+                }, () => {
+                    showModal('Erreur', 'La copie a échoué.');
+                });
+            } else {
+                input.select();
+                input.setSelectionRange(0, 99999);
+                try {
+                    document.execCommand('copy');
+                    showModal('Copié !', 'Le lien a été copié dans le presse-papiers (mode de compatibilité).');
+                } catch (err) {
+                    showModal('Erreur', 'La copie a échoué.');
+                }
             }
         }
 
@@ -345,28 +354,51 @@
         }
 
         async function shareQrCode(qrUrl, title, fileName) {
-            if (!navigator.share || !navigator.canShare) {
-                showModal('Non supporté', 'Le partage de fichiers n\'est pas supporté sur ce navigateur.');
-                return;
-            }
             try {
                 showSpinner(true);
-                const response = await fetch(qrUrl);
-                const blob = await response.blob();
-                const file = new File([blob], fileName, { type: blob.type });
-
-                if (navigator.canShare({ files: [file] })) {
-                    await navigator.share({
-                        title: title,
-                        text: 'Voici le QR code de présence.',
-                        files: [file]
-                    });
-                } else {
-                    showModal('Non supporté', 'Impossible de partager ce type de fichier.');
+                // Attempt to share as a file first
+                if (navigator.share && navigator.canShare) {
+                    const response = await fetch(qrUrl);
+                    const blob = await response.blob();
+                    const file = new File([blob], fileName, { type: blob.type });
+                    if (navigator.canShare({ files: [file] })) {
+                        await navigator.share({ title: title, text: 'Voici le QR code de présence.', files: [file] });
+                        return; // Success
+                    }
                 }
+                // Fallback to sharing the URL
+                if (navigator.share) {
+                    await navigator.share({ title: title, text: 'Voici le QR code de présence (ouvrez le lien pour voir l\'image).', url: qrUrl });
+                    return; // Success
+                }
+                // If nothing works
+                showModal('Non supporté', 'Le partage n\'est pas supporté. Veuillez télécharger l\'image et la partager manuellement.');
             } catch (error) {
                 console.error('Erreur de partage:', error);
                 showModal('Erreur', 'Une erreur est survenue lors du partage.');
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // NOUVEAU: Helper pour télécharger un fichier de manière programmatique
+        async function downloadFile(url, fileName) {
+            try {
+                showSpinner(true);
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = blobUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(blobUrl);
+                a.remove();
+            } catch (error) {
+                console.error('Download error:', error);
+                showModal('Erreur', "Le téléchargement a échoué. Sur mobile, essayez de maintenir le doigt sur l'image pour la sauvegarder.");
             } finally {
                 showSpinner(false);
             }
