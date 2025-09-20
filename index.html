@@ -394,6 +394,19 @@
 
     </main>
 
+    <!-- NOUVEAU: Bouton flottant pour le scanner -->
+    <button id="scan-qr-btn" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code">
+        <i class="fas fa-qrcode text-2xl"></i>
+    </button>
+
+    <!-- NOUVEAU: Conteneur pour le scanner QR Code -->
+    <div id="qr-scanner-container" class="fixed inset-0 bg-black/80 flex-col items-center justify-center p-4 hidden z-50">
+        <p class="text-white text-lg mb-4 font-medium">Veuillez centrer le QR Code dans le cadre</p>
+        <div id="qr-reader" class="w-full max-w-sm bg-gray-800 rounded-lg overflow-hidden border-4 border-violet-500 shadow-lg"></div>
+        <button id="close-scanner-btn" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
+    </div>
+
+
     <!-- MODAL GENERIQUE -->
     <div id="modal-container" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50" aria-hidden="true">
         <div id="modal-content" class="panel w-full max-w-lg overflow-hidden"></div>
@@ -1057,6 +1070,64 @@
             });
 
             autoSlideInterval = setInterval(next, 8000); // Défilement automatique toutes les 8 secondes
+        });
+
+        // --- NOUVEAU: Logique du Scanner QR Code Intégré ---
+        const scanQrBtn = document.getElementById('scan-qr-btn');
+        const scannerContainer = document.getElementById('qr-scanner-container');
+        const closeScannerBtn = document.getElementById('close-scanner-btn');
+
+        let html5QrCode = null;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Code scanné = ${decodedText}`);
+
+            // Arrêter le scanner
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    scannerContainer.classList.add('hidden');
+                }).catch(err => {
+                    console.error("Impossible d'arrêter le scanner.", err);
+                    scannerContainer.classList.add('hidden');
+                });
+            }
+
+            try {
+                // Analyser l'URL scannée
+                const url = new URL(decodedText);
+                const params = url.searchParams;
+                const page = params.get('page');
+
+                if (page === 'class-register' || page === 'attendance') {
+                    // Ouvrir la modale directement au lieu de suivre le lien
+                    openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
+                } else {
+                    alert("QR Code non reconnu par l'application : " + decodedText);
+                }
+            } catch (e) {
+                console.error("URL invalide ou erreur de traitement:", e);
+                alert("QR Code invalide : " + decodedText);
+            }
+        }
+
+        function onScanFailure(error) { /* Ignorer les échecs pour continuer à scanner */ }
+
+        scanQrBtn.addEventListener('click', () => {
+            scannerContainer.classList.remove('hidden');
+            scannerContainer.classList.add('flex'); // pour le centrage
+
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+            
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
+            .catch(err => {
+                alert("Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+                scannerContainer.classList.add('hidden');
+            });
+        });
+
+        closeScannerBtn.addEventListener('click', () => {
+            if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop();
+            scannerContainer.classList.add('hidden');
         });
         // fin du script
     </script>
