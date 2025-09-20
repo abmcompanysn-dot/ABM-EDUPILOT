@@ -1240,6 +1240,81 @@
             modal.classList.remove('hidden');
         }
 
+        // NOUVEAU: Fonction pour fermer la modale principale
+        function closeModal() {
+            modal.classList.add('hidden');
+        }
+
+        // NOUVEAU: Fonctions pour l'exportation de données (CSV/PDF)
+        function showExportOptions(exportType, options = {}) {
+            const modalContent = `
+                <div class="text-center">
+                    <h3 class="text-lg font-medium text-gray-900 mb-6">Choisir le format d'exportation</h3>
+                    <div class="flex justify-center gap-4">
+                        <button onclick='handleDownload("${exportType}", { ...${JSON.stringify(options)}, format: "csv" })' class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2">
+                            <i class="fas fa-file-csv"></i> CSV (Excel)
+                        </button>
+                        <button onclick='handleDownload("${exportType}", { ...${JSON.stringify(options)}, format: "pdf" })' class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            `;
+            showModal("Options d'Exportation", modalContent);
+        }
+
+        async function handleDownload(exportType, options = {}) {
+            const format = options.format || 'csv';
+            closeModal(); // Fermer la modale de sélection
+            showSpinner(true);
+            try {
+                if (format === 'csv') {
+                    const payload = { exportType, ...options };
+                    const result = await callAdminApi('adminExportData', payload);
+                    const { csvContent, fileName } = result.data;
+                    downloadCsv(csvContent, fileName);
+                } else if (format === 'pdf') {
+                    await exportToPdf(exportType, options);
+                }
+            } catch (error) {
+                showModal('Erreur de Téléchargement', `<p class="text-red-500">${error.message}</p>`);
+            } finally {
+                showSpinner(false);
+            }
+        }
+        
+        function downloadCsv(csvContent, fileName) {
+            const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM pour Excel
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", fileName);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        async function exportToPdf(exportType, options) {
+            const { htmlContent, pdfFileName } = await _internal_generateHtmlForPdf(exportType, options);
+
+            const element = document.createElement('div');
+            element.innerHTML = htmlContent;
+            const opt = {
+                margin: 0.5, filename: pdfFileName, image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true }, jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        // NOUVEAU: Helper pour générer le HTML pour le PDF
+        async function generateHtmlForPdf(exportType, options) {
+            // Cette fonction est maintenant définie plus bas, avec les autres fonctions d'aide.
+            // Le code est déplacé pour une meilleure organisation.
+            // La logique reste la même.
+            return _internal_generateHtmlForPdf(exportType, options);
+        }
+
         // NOUVEAU: Fonction d'appel API spécifique à l'admin
         async function callAdminApi(action, data = {}) {
             const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
