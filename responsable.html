@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -178,32 +179,20 @@
                 const targetContent = document.getElementById(tab.dataset.target);
                 if (targetContent) {
                     targetContent.classList.remove('hidden');
+                    // NOUVEAU: Charger les données de l'onglet cliqué seulement si nécessaire
+                    if (tab.dataset.target === 'students-content' && !targetContent.dataset.loaded) {
+                        loadClassStudents();
+                        targetContent.dataset.loaded = 'true';
+                    }
+                    if (tab.dataset.target === 'attendance-content' && !targetContent.dataset.loaded) {
+                        loadClassAttendance();
+                        targetContent.dataset.loaded = 'true';
+                    }
                 }
             });
         });
 
-        function logout() {
-            sessionStorage.removeItem(RESPONSABLE_SESSION_KEY);
-            window.location.href = 'index.html';
-        }
-
-        // --- LOGIQUE DU TABLEAU DE BORD ---
-        async function loadDashboard() {
-            showSpinner(true);
-            try {
-                const result = await callResponsableApi('responsableGetDashboardData');
-                const { className, courses } = result.data;
-                document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
-                renderPlanning(courses);
-                setupAddCourseForm();
-                loadClassStudents(); // Charger les étudiants
-                loadClassAttendance(); // Charger les présences
-            } catch (error) {
-                showModal('Erreur', `Impossible de charger le tableau de bord: ${error.message}`);
-            } finally {
-                showSpinner(false);
-            }
-        }
+        // ... (le reste du code est déplacé pour une meilleure organisation)
 
         function renderPlanning(courses) {
             const container = document.getElementById('planning-table-container');
@@ -258,7 +247,7 @@
                     const result = await callResponsableApi('responsableAddCourse', { payload });
                     showModal('Succès', result.message);
                     form.reset();
-                    loadDashboard();
+                    loadDashboard(true); // Recharger avec spinner
                 } catch (error) {
                     showModal('Erreur', error.message);
                 } finally {
@@ -274,7 +263,7 @@
             try {
                 const result = await callResponsableApi('responsableUpdateCourseStatus', { courseId, status });
                 showModal('Succès', result.message);
-                loadDashboard();
+                loadDashboard(true); // Recharger avec spinner
             } catch (error) {
                 showModal('Erreur', error.message);
             } finally {
@@ -498,6 +487,28 @@
             const result = await response.json();
             if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
             return result;
+        }
+    </script>
+    <script>
+        // --- LOGIQUE DE LA PAGE (réorganisée) ---
+        function logout() {
+            sessionStorage.removeItem(RESPONSABLE_SESSION_KEY);
+            window.location.href = 'index.html';
+        }
+
+        async function loadDashboard(showSpinnerOnLoad = true) {
+            if (showSpinnerOnLoad) showSpinner(true);
+            try {
+                const result = await callResponsableApi('responsableGetDashboardData');
+                const { className, courses } = result.data;
+                document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
+                renderPlanning(courses);
+                setupAddCourseForm();
+            } catch (error) {
+                showModal('Erreur', `Impossible de charger le tableau de bord: ${error.message}`);
+            } finally {
+                if (showSpinnerOnLoad) showSpinner(false);
+            }
         }
     </script>
 
