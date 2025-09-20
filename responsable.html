@@ -162,6 +162,7 @@
                 window.location.href = 'index.html'; 
             } else {
                 loadDashboard();
+                setupAddCourseForm(); // NOUVEAU: Initialiser le formulaire une seule fois
             }
         });
 
@@ -535,7 +536,6 @@
                 const { className, courses } = result.data;
                 document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
                 renderPlanning(courses);
-                setupAddCourseForm();
             } catch (error) {
                 showModal('Erreur', `Impossible de charger le tableau de bord: ${error.message}`);
             } finally {
