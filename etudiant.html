@@ -257,7 +257,7 @@
                 if (!element) throw new Error("L'élément de la carte est introuvable.");
 
                 // CORRECTION: Utiliser domtoimage pour générer une image PNG
-                const dataUrl = await domtoimage.toPng(element, { quality: 0.98, bgcolor: 'transparent' });
+                const dataUrl = await domtoimage.toPng(element, { quality: 0.98 });
                 const link = document.createElement('a');
                 link.download = `carte-etudiant-${studentId}.png`; // Nom du fichier
                 link.href = dataUrl;
