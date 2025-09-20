@@ -7,7 +7,8 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
     <!-- CORRECTION: Chargement de la librairie en local pour garantir la disponibilité -->
     <script src="html2canvas.min.js"></script> 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- NOUVEAU: Remplacement de html2pdf par jsPDF pour un meilleur contrôle -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -253,22 +254,26 @@
             showSpinner(true);
             try {
                 const studentId = sessionStorage.getItem(STUDENT_SESSION_KEY);
-                // On s'assure que le template de la carte est à jour avant de la "photographier"
-                await renderAndDisplayStudentCard(studentId);
-                await new Promise(resolve => setTimeout(resolve, 300)); // Petit délai pour le rendu
+                // On s'assure que le template de la carte est à jour avant de la capturer
+                await createStudentCardElement(studentId); // Remplit le template original
+                await new Promise(resolve => setTimeout(resolve, 500)); // Délai pour le rendu des images
 
                 const element = document.getElementById('student-card-generator');
                 if (!element) throw new Error("L'élément de la carte est introuvable.");
 
-                const opt = {
-                    margin:       0,
-                    filename:     `carte-etudiant-${studentId}.pdf`,
-                    image:        { type: 'jpeg', quality: 0.98 },
-                    html2canvas:  { scale: 2, useCORS: true, backgroundColor: null },
-                    jsPDF:        { unit: 'in', format: [3.6, 2.25], orientation: 'landscape' } // Format carte de crédit
-                };
-                
-                await html2pdf().set(opt).from(element).save();
+                // 1. "Photographier" la carte en une image de haute qualité
+                const canvas = await html2canvas(element, {
+                    scale: 3, // Haute résolution
+                    useCORS: true, // Pour charger les images externes (logo, QR)
+                    backgroundColor: null // Pour capturer le fond en dégradé
+                });
+                const imgData = canvas.toDataURL('image/png');
+
+                // 2. Créer un PDF et y insérer l'image
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 53.98] }); // Format carte bancaire
+                pdf.addImage(imgData, 'PNG', 0, 0, 85.6, 53.98);
+                pdf.save(`carte-etudiant-${studentId}.pdf`);
 
             } catch (error) {
                 alert(`Erreur lors de la génération de la carte : ${error.message}`);
