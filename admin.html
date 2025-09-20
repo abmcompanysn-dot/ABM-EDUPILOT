@@ -504,7 +504,7 @@
                 const payload = { name };
                 if (options.parent) {
                     const parentSelect = document.getElementById(options.parentSelectId);
-                    payload[`${options.parent}Id`] = parentSelect.value;
+                    payload[`${options.parent}Id`] = parentSelect.value; // ex: payload.filiereId = 'FIL-XXXX'
                 }
                 
                 showSpinner(true);
@@ -512,7 +512,7 @@
                     // Désactiver le bouton pour éviter les doubles clics
                     e.submitter.disabled = true;
                     const result = await callAdminApi('adminAddEntity', { entityType, payload });
-                    await loadAndRenderEntities(entityType); // Recharger la liste D'ABORD
+                    loadAndRenderEntities(entityType); // Recharger la liste D'ABORD
                     showModal('Succès', result.message); // La modale s'affiche
 
                     // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
