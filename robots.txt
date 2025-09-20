@@ -1,0 +1,13 @@
+# Indique aux robots des moteurs de recherche quelles pages ils peuvent ou ne peuvent pas explorer.
+
+User-agent: *
+Allow: /
+Allow: /fonctionnement.html
+
+Disallow: /admin.html
+Disallow: /responsable.html
+Disallow: /etudiant.html
+Disallow: /documentation_interne.html
+Disallow: /documentation_support.html
+
+Sitemap: https://abm-edupilote.netlify.app/sitemap.xml
