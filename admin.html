@@ -526,11 +526,12 @@
 
                 const filiereData = filieres.map(filiere => {
                     const classesInFiliere = classes.filter(c => c.ID_FILIERE_FK === filiere.ID_FILIERE);
-                    const studentsInFiliere = students.filter(s => s.ID_FILIERE_FK === filiere.ID_FILIERE);
+                    const classIdsInFiliere = new Set(classesInFiliere.map(c => c.ID_CLASSE));
+                    const studentsInFiliere = students.filter(s => classIdsInFiliere.has(s.ID_CLASSE_FK));
                     return {
                         ...filiere,
                         classCount: classesInFiliere.length,
-                        studentCount: studentsInFiliere.length
+                        studentCount: studentsInFiliere.length,
                     };
                 });
 
