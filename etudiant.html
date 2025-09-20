@@ -107,28 +107,28 @@
     </main>
 
     <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
-    <div id="student-card-generator" class="w-[350px] h-[220px] fixed -left-[9999px] top-0 p-5 flex flex-col justify-between rounded-xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284] text-white" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+    <div id="student-card-generator" class="w-[340px] h-[214px] fixed -left-[9999px] top-0 p-6 flex flex-col justify-between rounded-2xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284] text-white" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
         <!-- En-tête de la carte -->
-        <div class="flex justify-between items-start">
-            <div class="flex items-center gap-3">
-                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-10 h-10" alt="Logo">
-                <span class="text-xs font-bold opacity-70 tracking-wider">CARTE ÉTUDIANT</span>
-            </div>
-            <!-- "Puce" QR Code -->
-            <div class="w-14 h-14 bg-gradient-to-br from-yellow-300 to-yellow-500 p-1 rounded-md shadow-md">
-                <div id="card-qr-code" class="w-full h-full bg-white"></div>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 id="card-university-name" class="text-lg font-bold">UNIVERSITÉ</h2>
+                <p class="text-sm opacity-90">CARTE ÉTUDIANTE</p>
             </div>
         </div>
 
-        <!-- Informations principales -->
-        <div class="text-left mt-auto">
-            <p id="card-student-id" class="font-mono text-xl tracking-widest" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);"></p>
-        </div>
+        <!-- Logo à la place de la puce -->
+        <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mb-2" alt="Logo">
 
-        <!-- Pied de la carte -->
-        <div class="text-left mt-2">
+        <!-- Informations étudiant -->
+        <div class="space-y-1 mt-auto">
             <p id="card-student-name" class="font-semibold uppercase tracking-wide text-base"></p>
             <p id="card-university-filiere" class="text-xs opacity-70 mt-1"></p>
+            <p id="card-student-id" class="text-xs opacity-75"></p>
+        </div>
+
+        <!-- QR Code -->
+        <div id="card-qr-code" class="absolute bottom-4 right-4 bg-white p-1.5 rounded-md shadow-md w-14 h-14">
+            <!-- Le QR code sera injecté ici -->
         </div>
     </div>
 
@@ -209,13 +209,14 @@
                 const cardTemplate = document.getElementById('student-card-generator').cloneNode(true);
 
                 // Remplir le template de la carte
+                document.getElementById('card-university-name').textContent = student.NOM_UNIVERSITE || 'Université';
                 document.getElementById('card-student-name').textContent = student.NOM_COMPLET;
-                document.getElementById('card-student-id').textContent = student.ID_ETUDIANT;
-                document.getElementById('card-university-filiere').textContent = `${student.NOM_FILIERE} / ${student.NOM_UNIVERSITE || 'Université'}`;
+                document.getElementById('card-student-id').textContent = `N° ${student.ID_ETUDIANT}`;
+                document.getElementById('card-university-filiere').textContent = student.NOM_FILIERE || 'Filière non définie';
                 
                 // Générer le QR code pour la carte
                 const qrData = `ABM-ETU-ID:${student.ID_ETUDIANT}`;
-                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=56x56&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
                 document.getElementById('card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
 
                 // Attendre que l'image du QR code soit chargée
@@ -223,9 +224,10 @@
 
                 // Remplir le clone
                 cardTemplate.querySelector('#card-student-name').textContent = student.NOM_COMPLET;
-                cardTemplate.querySelector('#card-student-id').textContent = student.ID_ETUDIANT;
-                cardTemplate.querySelector('#card-university-filiere').textContent = `${student.NOM_FILIERE} / ${student.NOM_UNIVERSITE || 'Université'}`;
+                cardTemplate.querySelector('#card-student-id').textContent = `N° ${student.ID_ETUDIANT}`;
+                cardTemplate.querySelector('#card-university-filiere').textContent = student.NOM_FILIERE || 'Filière non définie';
                 cardTemplate.querySelector('#card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
+                cardTemplate.querySelector('#card-university-name').textContent = student.NOM_UNIVERSITE || 'Université';
                 
                 cardTemplate.removeAttribute('id'); // Enlever l'ID pour éviter les doublons
                 cardTemplate.className = "w-full h-auto shadow-2xl rounded-xl flex flex-col overflow-hidden border border-gray-200"; // Appliquer des styles visibles
