@@ -522,9 +522,30 @@
 
                 if (decodedText.startsWith("ABM-ETU-ID:")) {
                     const studentId = decodedText.split(':')[1];
-                    markStudentPresent(studentId);
+                    // AMÉLIORATION: Demander confirmation avant de pointer
+                    confirmAndMarkStudentPresent(studentId);
                 } else {
                     showModal("QR Code Invalide", "Ce QR code ne semble pas être un code d'identification d'étudiant valide pour cette application.");
+                }
+            }
+
+            async function confirmAndMarkStudentPresent(studentId) {
+                showSpinner(true);
+                try {
+                    const courseResult = await callResponsableApi('responsableGetCurrentCourse');
+                    const studentResult = await callResponsableApi('responsableGetStudentDetails', { studentId });
+                    const studentName = studentResult.data.studentName;
+                    const courseName = courseResult.data.matiere;
+
+                    const confirmationHtml = `
+                        <p class="text-center">Voulez-vous marquer <strong>${studentName}</strong> (${studentId}) comme présent(e) au cours de <strong>${courseName}</strong> ?</p>
+                        <button onclick="markStudentPresent('${studentId}'); closeModal();" class="mt-4 w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Oui, Confirmer la Présence</button>
+                    `;
+                    showModal('Confirmation de Pointage', confirmationHtml, true);
+                } catch (error) {
+                    showModal("Erreur de Confirmation", error.message);
+                } finally {
+                    showSpinner(false);
                 }
             }
 
@@ -574,9 +595,13 @@
             spinnerOverlay.classList.toggle('hidden', !show);
         }
 
-        function showModal(title, content) {
+        function showModal(title, content, rawHtml = false) {
             modalTitle.textContent = title;
-            modalContent.innerHTML = `<p>${content}</p>`;
+            if (rawHtml) {
+                modalContent.innerHTML = content;
+            } else {
+                modalContent.innerHTML = `<p>${content}</p>`;
+            }
             modal.classList.remove('hidden');
         }
 
