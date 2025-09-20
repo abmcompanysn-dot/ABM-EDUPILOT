@@ -773,8 +773,8 @@
                     // Désactiver le bouton pour éviter les doubles clics
                     e.submitter.disabled = true;
                     const result = await callAdminApi('adminAddEntity', { entityType, payload });
-                    await loadAndRenderEntities(entityType); // CORRECTION: On attend que la liste soit rechargée
-                    showModal('Succès', result.message); // La modale s'affiche
+                    await loadAndRenderEntities(entityType); // On attend que la liste soit rechargée
+                    showModal('Succès', result.message); // La modale s'affiche APRÈS le rechargement
 
                     // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
                     if (entityType === 'classe') {
