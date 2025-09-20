@@ -1161,16 +1161,16 @@
             showSpinner(true);
             try {
                 const result = await callAdminApi('adminDeleteEntity', { entityType, entityId });
-                showModal('Succès', result.message);
                 if (entityType === 'student') {
-                    loadAndRenderStudents();
+                    await loadAndRenderStudents();
                 } else if (entityType === 'responsable') {
-                    loadAndRenderResponsables();
+                    await loadAndRenderResponsables();
                 } else {
-                    loadAndRenderEntities(entityType);
+                    await loadAndRenderEntities(entityType);
                 }
-                loadInteractiveDashboard(); // NOUVEAU: Rafraîchit les statistiques du tableau de bord
-                reloadCurrentPageData(); // NOUVEAU: Rafraîchit la vue actuelle
+                await loadInteractiveDashboard(); // On attend que le tableau de bord soit rafraîchi
+                await reloadCurrentPageData(); // On attend que la vue actuelle soit rafraîchie
+                showModal('Succès', result.message); // Le message de succès s'affiche en dernier
             } catch (error) {
                 showModal('Erreur', error.message);
             } finally {
