@@ -111,35 +111,22 @@
     </main>
 
     <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
-    <div id="student-card-generator" class="w-[340px] h-[214px] fixed -left-[9999px] top-0 p-6 text-white relative overflow-hidden flex flex-col rounded-2xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284]" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
-        <!-- Motifs décoratifs en fond -->
-        <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
-        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
-
-        <!-- En-tête de la carte -->
-        <div class="flex justify-between items-start mb-4">
+    <div id="student-card-generator" class="w-[400px] fixed -left-[9999px] top-0 p-6 bg-white shadow-2xl rounded-lg flex items-center gap-6" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+        <!-- Grand QR Code -->
+        <div id="card-qr-code" class="w-36 h-36 p-1.5 bg-white border rounded-lg flex-shrink-0">
+            <!-- Le QR code sera injecté ici par le script -->
+        </div>
+        <!-- Informations -->
+        <div class="flex flex-col justify-between h-full">
             <div>
-                <h2 id="card-university-name" class="text-lg font-bold">UNIVERSITÉ</h2>
-                <p class="text-sm opacity-90">CARTE ÉTUDIANTE</p>
+                <p id="card-student-name" class="text-xl font-bold text-gray-800"></p>
+                <p id="card-university-filiere" class="text-sm text-gray-600"></p>
+                <p id="card-student-id" class="text-sm text-gray-500 font-mono mt-1"></p>
             </div>
-            <div class="text-right">
-                <p class="text-xs opacity-75">2024-2025</p>
+            <div class="mt-4 flex items-center gap-2">
+                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-8 h-8" alt="Logo">
+                <p id="card-university-name" class="text-xs font-semibold text-gray-700"></p>
             </div>
-        </div>
-
-        <!-- Logo ABM (à la place de la puce) -->
-        <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mb-2" alt="Logo">
-
-        <!-- Informations étudiant -->
-        <div class="space-y-1 mt-auto">
-            <p id="card-student-name" class="text-base font-semibold tracking-wide"></p>
-            <p id="card-university-filiere" class="text-xs opacity-90"></p>
-            <p id="card-student-id" class="text-xs opacity-75 font-mono"></p>
-        </div>
-
-        <!-- QR Code (élément manquant restauré) -->
-        <div id="card-qr-code" class="absolute bottom-4 right-4 bg-white p-1.5 rounded-md shadow-md w-14 h-14">
-            <!-- Le QR code sera injecté ici -->
         </div>
     </div>
 
@@ -230,7 +217,7 @@
                 
                 // Générer le QR code pour la carte
                 const qrData = `ABM-ETU-ID:${student.ID_ETUDIANT}`;
-                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=56x56&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=144x144&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
                 originalCard.querySelector('#card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
 
                 // Attendre que l'image du QR code soit chargée
@@ -271,7 +258,7 @@
 
                 // 2. Créer un PDF et y insérer l'image
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [85.6, 53.98] }); // Format carte bancaire
+                const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [110, 70] }); // Format personnalisé
                 pdf.addImage(imgData, 'PNG', 0, 0, 85.6, 53.98);
                 pdf.save(`carte-etudiant-${studentId}.pdf`);
 
