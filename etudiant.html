@@ -67,15 +67,12 @@
                                     <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
                                 </div>
 
-                                <div class="text-center">
-                                    <h4 class="text-sm font-medium text-gray-700 mb-2">Mon QR Code d'Identification</h4>
-                                    <div id="personal-qr-code" class="mx-auto w-40 h-40 bg-gray-50 rounded-lg flex items-center justify-center">
-                                        <p class="text-xs text-gray-500">Chargement...</p>
-                                    </div>
+                                <!-- NOUVEAU: Conteneur pour afficher la carte étudiant -->
+                                <div id="student-card-display" class="w-full max-w-[280px] mx-auto my-4">
+                                    <!-- La carte sera injectée ici par le script -->
                                 </div>
-                                <!-- NOUVEAU: Bouton de téléchargement de la carte -->
-                                <div class="mt-4">
-                                    <button onclick="downloadStudentCard()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
+                                <div>
+                                    <button type="button" onclick="downloadStudentCard()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
                                         <i class="fas fa-id-card"></i> Télécharger ma carte</button>
                                 </div>
 
@@ -169,11 +166,9 @@
             document.getElementById('student-dashboard-name').textContent = '...';
             loadStudentInfo(studentId);
             loadStudentAttendance(studentId);
-            loadStudentSchedule(studentId);
-            // Le QR code est statique, pas besoin de le recharger à chaque fois, sauf au premier chargement
-            if (isInitialLoad) {
-                loadPersonalQrCode(studentId);
-            }
+            loadStudentSchedule(studentId);            
+            // NOUVEAU: Charger et afficher la carte étudiant
+            renderAndDisplayStudentCard(studentId);
         }
 
         async function loadStudentInfo(studentId) {
@@ -211,14 +206,12 @@
             }
         }
 
-        // NOUVEAU: Génère et télécharge la carte étudiant
-        async function downloadStudentCard() {
-            showSpinner(true); // Utilisation d'un spinner global simple
+        // NOUVEAU: Remplit le template de la carte et la retourne en tant qu'élément HTML
+        async function createStudentCardElement(studentId) {
             try {
-                const studentId = sessionStorage.getItem(STUDENT_SESSION_KEY);
-                // Récupérer les infos à jour
-                const result = await callApi('getPublicStudentProfile', { studentId });
+                const result = await callApi('getPublicStudentProfile', { studentId }); // Récupérer les infos à jour
                 const student = result.data.student;
+                const cardTemplate = document.getElementById('student-card-generator').cloneNode(true);
 
                 // Remplir le template de la carte
                 document.getElementById('card-student-name').textContent = student.NOM_COMPLET;
@@ -231,6 +224,30 @@
                 document.getElementById('card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
 
                 // Attendre que l'image du QR code soit chargée
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                // Remplir le clone
+                cardTemplate.querySelector('#card-student-name').textContent = student.NOM_COMPLET;
+                cardTemplate.querySelector('#card-student-id').textContent = student.ID_ETUDIANT;
+                cardTemplate.querySelector('#card-university-filiere').textContent = `${student.NOM_FILIERE} / ${student.NOM_UNIVERSITE || 'Université'}`;
+                cardTemplate.querySelector('#card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
+                
+                cardTemplate.removeAttribute('id'); // Enlever l'ID pour éviter les doublons
+                cardTemplate.className = "w-full h-auto shadow-lg rounded-lg flex flex-col overflow-hidden border border-gray-200"; // Appliquer des styles visibles
+
+                return cardTemplate;
+            } catch (error) {
+                console.error("Erreur lors de la création de la carte:", error);
+                return null;
+            }
+        }
+
+        // NOUVEAU: Génère et télécharge la carte étudiant
+        async function downloadStudentCard() {
+            showSpinner(true);
+            try {
+                const studentId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+                await renderAndDisplayStudentCard(studentId); // S'assurer que la carte est à jour
                 await new Promise(resolve => setTimeout(resolve, 500));
 
                 // Utiliser html2pdf pour convertir le div en image
@@ -243,6 +260,21 @@
                 alert(`Erreur lors de la génération de la carte : ${error.message}`);
             } finally {
                 showSpinner(false);
+            }
+        }
+
+        // NOUVEAU: Fonction principale pour afficher la carte sur le dashboard
+        async function renderAndDisplayStudentCard(studentId) {
+            const displayContainer = document.getElementById('student-card-display');
+            displayContainer.innerHTML = '<p class="text-xs text-center text-gray-500">Génération de la carte...</p>';
+            
+            const cardElement = await createStudentCardElement(studentId);
+            
+            if (cardElement) {
+                displayContainer.innerHTML = '';
+                displayContainer.appendChild(cardElement);
+            } else {
+                displayContainer.innerHTML = '<p class="text-xs text-center text-red-500">Erreur lors de l\'affichage de la carte.</p>';
             }
         }
 
@@ -271,17 +303,6 @@
                 `).join('');
                 container.innerHTML = '';
                 container.appendChild(timeline);
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        async function loadPersonalQrCode(studentId) {
-            const container = document.getElementById('personal-qr-code');
-            try {
-                const qrData = `ABM-ETU-ID:${studentId}`;
-                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}`;
-                container.innerHTML = `<img src="${qrApiUrl}" alt="Mon QR Code d'identification" class="rounded-lg">`;
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
