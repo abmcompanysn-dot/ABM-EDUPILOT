@@ -1269,6 +1269,32 @@
             handleModalButtonClick(event);
         });
 
+        // NOUVEAU: Gère les clics sur les boutons dynamiques dans la modale
+        function handleModalButtonClick(event) {
+            const button = event.target.closest('button[data-action]');
+            if (!button) return;
+
+            const action = button.dataset.action;
+            const url = button.dataset.url;
+            const title = button.dataset.title;
+            const filename = button.dataset.filename;
+            const targetId = button.dataset.target;
+
+            switch (action) {
+                case 'download':
+                    downloadQrCode(url, filename);
+                    break;
+                case 'share':
+                    shareQrCode(url, title, filename);
+                    break;
+                case 'copy-link':
+                    copyLink(targetId);
+                    break;
+                case 'share-link':
+                    shareLink(url, title);
+                    break;
+            }
+        }
         // NOUVEAU: Fonction pour fermer la modale principale
         function closeModal() {
             modal.classList.add('hidden');
@@ -1310,7 +1336,7 @@
             try {
                 showSpinner(true);
                 const response = await fetch(qrUrl);
-                const blob = await response.blob();
+                const blob = await response.blob(); // Récupère l'image en tant que données binaires
                 const link = document.createElement('a');
                 link.href = URL.createObjectURL(blob);
                 link.download = fileName || 'qrcode.png';
@@ -1343,7 +1369,7 @@
                     return;
                 }
                 // Si rien ne fonctionne
-                alert("Le partage n'est pas supporté sur ce navigateur. Veuillez télécharger l'image et la partager manuellement.");
+                showModal("Non supporté", "Le partage n'est pas supporté sur ce navigateur. Veuillez télécharger l'image et la partager manuellement.");
             } catch (error) {
                 console.error('Erreur de partage:', error);
                 alert("Une erreur est survenue lors du partage.");
@@ -1357,11 +1383,11 @@
             const input = document.getElementById(inputId);
             if (!input) return;
             const textToCopy = input.value;
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(textToCopy).then(() => { alert('Lien copié !'); }, () => { alert('La copie a échoué.'); });
+            if (navigator.clipboard) { // L'API moderne du presse-papiers
+                navigator.clipboard.writeText(textToCopy).then(() => { showModal('Succès', 'Lien copié dans le presse-papiers !'); }, () => { showModal('Erreur', 'La copie a échoué.'); });
             } else {
                 input.select();
-                input.setSelectionRange(0, 99999);
+                input.setSelectionRange(0, 99999); // Fallback pour les anciens navigateurs
                 try { document.execCommand('copy'); alert('Lien copié !'); } catch (err) { alert('La copie a échoué.'); }
             }
         }
@@ -1371,7 +1397,7 @@
                 try {
                     await navigator.share({ title: title, text: 'Utilisez ce lien pour vous inscrire à la classe.', url: url });
                 } catch (error) { console.error('Erreur de partage:', error); }
-            } else {
+            } else { // Si le partage natif n'est pas disponible
                 alert("Le partage n'est pas supporté sur ce navigateur. Veuillez copier le lien manuellement.");
             }
         }
