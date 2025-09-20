@@ -796,7 +796,9 @@
                 // NOUVEAU: Logique pour remplir le profil étudiant
                 document.getElementById('profile-scan-name').textContent = params.get('name');
                 document.getElementById('profile-scan-email').textContent = params.get('email');
-                setupAttendanceForm(params);
+                // CORRECTION: Remplir les champs de classe et filière du profil, au lieu d'appeler setupAttendanceForm
+                document.getElementById('profile-scan-class').textContent = params.get('class');
+                document.getElementById('profile-scan-filiere').textContent = params.get('filiereName');
             }
 
             modalContainer.classList.remove('hidden');
