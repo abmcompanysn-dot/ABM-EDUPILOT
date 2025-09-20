@@ -3,49 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template de Carte Étudiant - ABM EduPilote</title>
+    <title>Carte Étudiante - Modèle Final</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f3ff; /* Un fond neutre pour faire ressortir la carte */
+            background-color: #f1f5f9; /* bg-slate-100 */
             display: flex;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             padding: 1rem;
         }
+        .card-gradient {
+            /* Le dégradé de la barre de navigation de l'application */
+            background: linear-gradient(135deg, #1C2B5A 0%, #432284 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 6px 20px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 <body>
 
     <!-- ================================================================== -->
-    <!-- TEMPLATE DE LA CARTE ÉTUDIANT -->
-    <!-- C'est cette structure HTML qui définit le design de la carte. -->
+    <!-- MODÈLE FINAL DE LA CARTE ÉTUDIANT -->
+    <!-- C'est cette structure qui sera utilisée dans l'application. -->
     <!-- ================================================================== -->
-    <div id="student-card-template" class="w-[350px] h-[220px] p-5 flex flex-col justify-between rounded-xl shadow-2xl bg-gradient-to-br from-[#1C2B5A] to-[#432284] text-white" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+    <div class="card-gradient card-shadow rounded-2xl p-6 text-white relative overflow-hidden flex flex-col" style="width: 340px; height: 214px;">
+        <!-- Motifs décoratifs en fond -->
+        <div class="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
+        <div class="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12"></div>
+        
         <!-- En-tête de la carte -->
-        <div class="flex justify-between items-start">
-            <div class="flex items-center gap-3">
-                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-10 h-10" alt="Logo">
-                <span class="text-xs font-bold opacity-70 tracking-wider">CARTE ÉTUDIANT</span>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 class="text-lg font-bold">NOM UNIVERSITÉ</h2>
+                <p class="text-sm opacity-90">CARTE ÉTUDIANTE</p>
             </div>
-            <!-- "Puce" QR Code -->
-            <div class="w-14 h-14 bg-gradient-to-br from-yellow-300 to-yellow-500 p-1 rounded-md shadow-md">
-                <div class="w-full h-full bg-white flex items-center justify-center text-black text-[8px]">QR</div>
+            <div class="text-right">
+                <p class="text-xs opacity-75">2024-2025</p>
             </div>
         </div>
 
-        <!-- Informations principales -->
-        <div class="text-left mt-auto">
-            <p id="card-student-id" class="font-mono text-xl tracking-widest" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.2);">0123 4567 8910 1112</p>
+        <!-- Logo ABM (à la place de la puce) -->
+        <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mb-2" alt="Logo ABM EduPilote">
+
+        <!-- Informations étudiant (poussées vers le bas) -->
+        <div class="space-y-1 mt-auto">
+            <p class="text-base font-semibold tracking-wide">NOM COMPLET ETUDIANT</p>
+            <p class="text-xs opacity-90">Nom de la Filière</p>
+            <p class="text-xs opacity-75 font-mono">N° ID-ETUDIANT</p>
         </div>
 
-        <!-- Pied de la carte -->
-        <div class="text-left mt-2">
-            <p id="card-student-name" class="font-semibold uppercase tracking-wide text-base">NOM COMPLET DE L'ETUDIANT</p>
-            <p id="card-university-filiere" class="text-xs opacity-70 mt-1">Nom Filière / Nom Université</p>
+        <!-- QR Code -->
+        <div class="absolute bottom-4 right-4">
+            <div class="bg-white p-1.5 rounded-md shadow-md">
+                <!-- Un QR Code d'exemple sera généré ici par l'application -->
+                <div class="w-14 h-14 flex items-center justify-center bg-gray-200">
+                    <i class="fas fa-qrcode text-3xl text-gray-400"></i>
+                </div>
+            </div>
         </div>
     </div>
 
