@@ -805,8 +805,8 @@
 
                     // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
                     if (entityType === 'classe') {
-                        refreshClassDropdowns();
-                        loadInteractiveDashboard(); // AMÉLIORATION: Rafraîchir le tableau de bord
+                        await refreshClassDropdowns();
+                        await loadInteractiveDashboard(); // AMÉLIORATION: On attend que le tableau de bord soit complètement rafraîchi
                     }
 
                     form.reset(); // Utiliser form.reset() pour vider tous les champs
@@ -1401,7 +1401,13 @@
         function startPollingForFiliere(filiereId, creationDateStr) {
             if (pollingIntervals[filiereId]) return; // Déjà en cours de surveillance
 
-            const creationTime = new Date(creationDateStr).getTime();
+            // CORRECTION: S'assurer que la date est correctement interprétée, même si le format est inattendu.
+            const creationDate = new Date(creationDateStr);
+            if (isNaN(creationDate.getTime())) {
+                console.error(`Date de création invalide pour la filière ${filiereId}:`, creationDateStr);
+                return; // On ne lance pas le timer si la date est invalide.
+            }
+            const creationTime = creationDate.getTime();
             const endTime = creationTime + 5 * 60 * 1000; // 5 minutes après la création
 
             const timerElement = document.getElementById(`timer-${filiereId}`);
@@ -1426,7 +1432,7 @@
                 // Mettre à jour l'affichage du timer
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                 const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-                timerElement.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                timerElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
                 // Vérifier si une classe a été ajoutée (on ne le fait que toutes les 20 secondes pour limiter les appels)
                 if (Math.floor(timeLeft / 1000) % 20 === 0) {
