@@ -141,7 +141,7 @@
 
     <div id="management-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Gestion des Filières & Classes</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Filières & Classes</h1>
             <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
         </header>
 
@@ -210,7 +210,7 @@
     <!-- NOUVEAU: Page de gestion du planning -->
     <div id="planning-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Gestion du Planning</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion du Planning</h1>
             <p class="text-gray-600 mt-2">Planifiez les cours et consultez l'emploi du temps.</p>
         </header>
 
@@ -259,7 +259,7 @@
     <!-- NOUVEAU: Page de gestion des responsables -->
     <div id="responsables-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Gestion des Responsables de Classe</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Responsables</h1>
             <p class="text-gray-600 mt-2">Créez des comptes pour les responsables et assignez-les à une classe.</p>
         </header>
 
@@ -301,7 +301,7 @@
     <!-- NOUVEAU: Page de gestion des étudiants -->
     <div id="students-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Gestion des Étudiants</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Étudiants</h1>
             <p class="text-gray-600 mt-2">Consultez et gérez les étudiants inscrits dans votre établissement.</p>
         </header>
         <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -315,7 +315,7 @@
     <!-- NOUVEAU: Page de consultation des présences -->
     <div id="attendance-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Feuille de Présence</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Feuille de Présence</h1>
             <p class="text-gray-600 mt-2">Consultez l'historique des pointages par QR code.</p>
         </header>
 
@@ -328,7 +328,7 @@
     <!-- NOUVEAU: Page des outils -->
     <div id="tools-page" class="page-container hidden">
         <header class="mb-10">
-            <h1 class="text-4xl font-bold text-gray-800">Outils et Générateurs</h1>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Outils et Générateurs</h1>
             <p class="text-gray-600 mt-2">Générez ici vos QR codes de présence et liens d'inscription.</p>
         </header>
         <div class="grid md:grid-cols-2 gap-8">
@@ -475,7 +475,7 @@
             if (window.getComputedStyle(menuButton).display !== 'none') { // Si on est en vue mobile
                 sidebar.classList.add('-translate-x-full');
             }
-            
+
             // Logique de chargement des pages
             if (pageId === 'management-page') {
                 setupAdminManagementPage();
@@ -497,7 +497,8 @@
             const container = document.getElementById('university-name-header');
             if (!container) return;
             try {
-                const result = await callAdminApi('getUniversityInfo');
+                // CORRECTION: L'action ne nécessite pas de données supplémentaires, l'ID est déjà dans le token de session.
+                const result = await callAdminApi('getUniversityInfo'); 
                 container.textContent = result.data.universityName;
             } catch (error) {
                 container.textContent = "Université non trouvée";
