@@ -2,1565 +2,374 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="robots" content="noindex, nofollow"> <!-- Page privée, ne pas indexer -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administration - ABM EduPilote</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Espace Étudiant - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- CORRECTION: Ajout de 'defer' pour garantir que les scripts sont chargés avant exécution -->
+    <script src="html2canvas.min.js" defer></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
-        body { 
+        :root{ --bg:#f5f3ff; --muted:#6b7280; --card-gap:1.5rem; --radius:14px; }
+        html,body{ height:100%; background:var(--bg); font-family: 'Inter', sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        main#app-container{ width:100%; max-width:1200px; margin:32px auto; padding:16px; }
+        .panel{ border-radius:12px; background:linear-gradient(180deg,#ffffff,#fbfdff); box-shadow: 0 6px 18px rgba(15,23,42,.04); }
+        /* NOUVEAU: Style pour la carte étudiant à télécharger */
+        #student-card-generator {
             font-family: 'Inter', sans-serif;
-            background-color: #f5f3ff; /* bg-violet-50 */
+            background: white;
         }
-        .action-card {
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        h1, h2, h3 {
-            font-family: 'Poppins', sans-serif;
-        }
+        input:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,.08); border-color: rgba(99,102,241,.9); }
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
-    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
-<body>
-    <div class="relative min-h-screen lg:flex">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="bg-gradient-to-b from-[#1C2B5A] to-[#2a3a75] text-white w-64 fixed inset-y-0 left-0 transform -translate-x-full lg:relative lg:translate-x-0 transition-transform duration-200 ease-in-out z-30 flex flex-col">
-            <div class="p-4 lg:p-6 flex items-center space-x-3 border-b border-white/10">
-                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white p-1 rounded-md">
-                <div>
-                    <h1 class="text-xl font-bold text-white">ABM EduPilote</h1>
-                    <p class="text-xs text-violet-300">Administration</p>
-                </div>
-            </div>
-            <nav class="mt-6 flex-1">
-                <a href="#" onclick="showPage('main-dashboard', this)" class="nav-link flex items-center py-3 px-6 text-violet-600 bg-white font-semibold">
-                    Tableau de Bord
-                </a>
-                <a href="#" onclick="showPage('management-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Filières & Classes
-                </a>
-                <a href="#" onclick="showPage('responsables-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Responsables
-                </a>
-                <a href="#" onclick="showPage('students-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Étudiants
-                </a>
-                <a href="#" onclick="showPage('planning-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Planning
-                </a>
-                <a href="#" onclick="showPage('attendance-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Présences
-                </a>
-                <a href="#" onclick="showPage('tools-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Outils (QR/Liens)
-                </a>
-            </nav>
-            <div class="p-4 border-t border-white/10">
-                <button onclick="logout()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition-all text-sm">Déconnexion</button>
-            </div>
-        </aside>
+<body class="antialiased">
 
-        <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
-            <header class="flex justify-between items-center p-4 lg:p-6 bg-white border-b shadow-sm sticky top-0 z-20">
-                <!-- Hamburger Menu for Mobile -->
-                <button id="menu-button" class="lg:hidden text-gray-500 hover:text-violet-600 focus:outline-none">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                </button>
-                <h2 id="page-title" class="text-2xl font-semibold text-gray-700">Tableau de Bord</h2>
-                <!-- NOUVEAU: Affichage du nom de l'école -->
-                <div class="hidden sm:block text-right">
-                    <p id="university-name-header" class="font-semibold text-gray-800 truncate"></p>
-                </div>
-            </header>
-
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-violet-50 p-6">
-                
-                <!-- NOUVEAU: Tableau de bord interactif -->
-                <div id="main-dashboard" class="page-container space-y-8">
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center space-x-3">
+                    <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white p-1 rounded-md">
                     <div>
-                        <h2 class="text-3xl font-bold text-gray-800">Vue d'ensemble des Filières</h2>
-                        <p class="text-gray-500 mt-1">Cliquez sur une filière pour voir les classes associées.</p>
-                    </div>
-                    <div id="filiere-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- Les cartes des filières seront injectées ici -->
-                        <p>Chargement des filières...</p>
+                        <a href="index.html" class="text-white font-semibold text-lg">ABM EduPilote</a>
+                        <p class="text-xs text-violet-300 -mt-0.5">Espace Étudiant</p>
                     </div>
                 </div>
+                <nav>
+                    <button onclick="studentLogout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
+                </nav>
+            </div>
+        </div>
+    </header>
 
-                <!-- NOUVEAU: Vue des classes d'une filière -->
-                <div id="filiere-details-page" class="page-container hidden space-y-6">
-                    <button onclick="showPage('main-dashboard')" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux filières</button>
-                    <h2 id="filiere-details-title" class="text-3xl font-bold text-gray-800">Classes de la filière...</h2>
-                    <div id="class-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- La liste des classes sera injectée ici -->
+    <!-- MAIN -->
+    <main id="app-container">
+        <!-- TABLEAU DE BORD ÉTUDIANT -->
+        <section id="page-student-dashboard">
+            <div class="panel p-6 lg:p-8">
+                <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Bonjour, <span id="student-dashboard-name">Chargement...</span></h1>
+                        <p class="text-sm text-gray-500 mt-1">Bienvenue dans votre espace personnel.</p>
                     </div>
-                </div>
+                </header>
 
-                <!-- NOUVEAU: Vue des étudiants d'une classe -->
-                <div id="class-details-page" class="page-container hidden space-y-6">
-                    <div class="flex flex-wrap gap-4 items-center justify-between">
-                        <button id="back-to-classes-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux classes</button>
-                        <h2 id="class-details-title" class="text-3xl font-bold text-gray-800">Étudiants de la classe...</h2>
-                    </div>
-                    <div id="student-list-container" class="bg-white p-6 rounded-lg shadow-sm">
-                        <!-- La liste des étudiants sera injectée ici -->
-                    </div>
-                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Colonne 1 -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mes Informations</h3>
+                            <form id="studentUpdateForm" class="space-y-4">
+                                <div>
+                                    <label for="student-info-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
+                                    <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
 
-                <!-- NOUVEAU: Vue du profil étudiant -->
-                <div id="student-profile-page" class="page-container hidden space-y-8">
-                    <button id="back-to-student-list-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour à la liste des étudiants</button>
-                    
-                    <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div id="student-profile-header">
-                            <!-- Le header du profil sera injecté ici -->
+                                <!-- NOUVEAU: Conteneur pour afficher la carte étudiant -->
+                                <div id="student-card-display" class="w-full max-w-[280px] mx-auto my-4">
+                                    <!-- La carte sera injectée ici par le script -->
+                                </div>
+                                <div class="space-y-2">
+                                    <button type="button" onclick="downloadQrCodeOnly()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
+                                        <i class="fas fa-qrcode"></i> Télécharger mon QR Code (Image)</button>
+                                </div>
+
+                                <div>
+                                    <label for="student-info-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="student-info-email" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md font-semibold flex items-center justify-center gap-3">
+                                    <span class="btnText">Mettre à jour</span>
+                                    <span class="btnSpinner hidden">Sauvegarde...</span>
+                                </button>
+                            </form>
+                            <div class="messageArea mt-3 text-center" aria-live="polite"></div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Historique des Présences</h3>
-                            <div id="student-profile-attendance" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+                    <!-- Colonne 2: Emploi du temps et Historique -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mon Emploi du Temps</h3>
+                            <div id="student-schedule-container" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'emploi du temps...</p></div>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow-sm">
-                            <h3 class="text-xl font-bold text-gray-800 mb-4">Emploi du Temps de la Classe</h3>
-                            <div id="student-profile-schedule" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Historique de mes Présences</h3>
+                            <div id="student-attendance-history" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'historique...</p></div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </section>
+    </main>
 
-    <div id="management-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Filières & Classes</h1>
-            <p class="text-gray-600 mt-2">Ajoutez et consultez les filières et classes de votre établissement.</p>
-        </header>
-
-        <!-- Tabs -->
-        <div class="mb-6 border-b border-gray-200">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-violet-500 text-violet-600" data-target="filiere-content">Filières</button>
-                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
-            </nav>
+    <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
+    <div id="student-card-generator" class="w-[320px] h-[500px] fixed -left-[9999px] top-0 bg-white shadow-2xl flex flex-col" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+        <!-- En-tête coloré -->
+        <div class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] p-5 text-white text-center">
+            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mx-auto mb-2" alt="Logo">
+            <h3 id="card-university-name" class="font-bold text-lg"></h3>
         </div>
-
-        <!-- Contenu des onglets -->
-        <div id="management-content-container">
-            <!-- Contenu Filières -->
-            <div id="filiere-content" class="management-tab-content">
-                 <div class="grid lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Filière</h3>
-                        <form id="add-filiere-form" class="mt-4 space-y-4">
-                            <div>
-                                <p class="text-sm text-gray-500">La filière sera ajoutée à votre université.</p>
-                            </div>
-                            <div>
-                                <label for="filiere-name" class="block text-sm font-medium text-gray-700">Nom de la filière</label>
-                                <input type="text" id="filiere-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                            <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter</button>
-                        </form>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-medium text-gray-900">Filières Existantes</h3>
-                        </div>
-                        <div id="filiere-list-container" class="max-h-[70vh] overflow-y-auto"><ul id="filiere-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
-                    </div>
-                </div>
+        <!-- Corps de la carte -->
+        <div class="p-6 flex flex-col items-center text-center flex-grow">
+            <!-- Placeholder pour la photo -->
+            <div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center border-4 border-violet-100 mb-4">
+                <i class="fas fa-user text-5xl text-gray-400"></i>
             </div>
-            <!-- Contenu Classes -->
-            <div id="classe-content" class="management-tab-content hidden">
-                 <div class="grid lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
-                        <form id="add-classe-form" class="mt-4 space-y-4">
-                            <div>
-                                <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
-                                <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
-                            </div>
-                            <div>
-                                <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
-                                <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                            <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter</button>
-                        </form>
-                    </div>
-                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-medium text-gray-900">Classes Existantes</h3>
-                        </div>
-                        <div id="classe-list-container" class="max-h-[70vh] overflow-y-auto"><ul id="classe-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
-                    </div>
-                </div>
-            </div>
+            <!-- Informations -->
+            <p id="card-student-name" class="text-2xl font-bold text-gray-800"></p>
+            <!-- CORRECTION: Affichage de la filière et de l'université à la place de l'ID -->
+            <p id="card-university-filiere" class="text-base text-gray-600 mt-1"></p> 
+            <!-- QR Code -->
+            <div id="card-qr-code" class="w-40 h-40 mt-auto p-1.5 bg-white border rounded-lg"></div>
         </div>
-    </div>
-
-    <!-- NOUVEAU: Page de gestion du planning -->
-    <div id="planning-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion du Planning</h1>
-            <p class="text-gray-600 mt-2">Planifiez les cours et consultez l'emploi du temps.</p>
-        </header>
-
-        <div class="grid lg:grid-cols-3 gap-8 items-start">
-            <!-- Formulaire d'ajout de cours -->
-            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Cours</h3>
-                <form id="add-course-form" class="space-y-4">
-                    <div>
-                        <label for="course-classe-select" class="block text-sm font-medium text-gray-700">Classe</label>
-                        <select id="course-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
-                    </div>
-                    <div>
-                        <label for="course-matiere" class="block text-sm font-medium text-gray-700">Matière</label>
-                        <input type="text" id="course-matiere" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label>
-                        <input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="course-date" class="block text-sm font-medium text-gray-700">Date du cours</label>
-                        <input type="date" id="course-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div>
-                            <label for="course-start-time" class="block text-sm font-medium text-gray-700">Heure Début</label>
-                            <input type="time" id="course-start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="course-end-time" class="block text-sm font-medium text-gray-700">Heure Fin</label>
-                            <input type="time" id="course-end-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Planifier le cours</button>
-                </form>
-            </div>
-            <!-- Affichage du planning -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Planning des Cours</h3>
-                <div id="planning-table-container" class="max-h-[60vh] overflow-x-auto"><p>Chargement du planning...</p></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page de gestion des responsables -->
-    <div id="responsables-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Responsables</h1>
-            <p class="text-gray-600 mt-2">Créez des comptes pour les responsables et assignez-les à une classe.</p>
-        </header>
-
-        <div class="grid lg:grid-cols-3 gap-8 items-start">
-            <!-- Formulaire d'ajout de responsable -->
-            <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Responsable</h3>
-                <form id="add-responsable-form" class="space-y-4">
-                    <div>
-                        <label for="responsable-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
-                        <input type="text" id="responsable-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="responsable-email" class="block text-sm font-medium text-gray-700">Email de connexion</label>
-                        <input type="email" id="responsable-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                    </div>
-                    <div>
-                        <label for="responsable-password" class="block text-sm font-medium text-gray-700">Mot de passe</label>
-                        <div class="relative">
-                            <input type="password" id="responsable-password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm pr-10">
-                            <button type="button" onclick="togglePasswordVisibility('responsable-password', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-violet-600"><i class="fas fa-eye"></i></button>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="responsable-classe-select" class="block text-sm font-medium text-gray-700">Assigner à la classe</label>
-                        <select id="responsable-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
-                    </div>
-                    <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Créer et Assigner</button>
-                </form>
-            </div>
-            <!-- Affichage des responsables -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Responsables Actuels</h3>
-                <div id="responsables-table-container" class="max-h-[60vh] overflow-x-auto"><p>Chargement des responsables...</p></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page de gestion des étudiants -->
-    <div id="students-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Étudiants</h1>
-            <p class="text-gray-600 mt-2">Consultez et gérez les étudiants inscrits dans votre établissement.</p>
-        </header>
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Liste des Étudiants</h3>
-            <div id="students-table-container" class="max-h-[70vh] overflow-x-auto">
-                <p>Chargement des étudiants...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page de consultation des présences -->
-    <div id="attendance-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Feuille de Présence</h1>
-            <p class="text-gray-600 mt-2">Consultez l'historique des pointages par QR code.</p>
-        </header>
-
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Historique des Pointages</h3>
-            <div id="attendance-table-container" class="max-h-[70vh] overflow-x-auto"><p>Chargement des données de présence...</p></div>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Page des outils -->
-    <div id="tools-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Outils et Générateurs</h1>
-            <p class="text-gray-600 mt-2">Générez ici vos QR codes de présence et liens d'inscription.</p>
-        </header>
-        <div class="grid md:grid-cols-2 gap-8">
-            <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
-                <div class="flex-grow">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les QR Codes de Présence</h3>
-                </div>
-                <button class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700" onclick="callAdminAction('adminGetQrCodes')">Lancer la génération</button>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
-                <div class="flex-grow">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les Liens d'Inscription</h3>
-                </div>
-                <button class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700" onclick="callAdminAction('adminGetRegLinks')">Lancer la génération</button>
-            </div>
-        </div>
-    </div>
-
-            </main>
-        </div>
-    </div>
-
-    <!-- NOUVEAU: Bouton flottant pour le scanner -->
-    <button id="scan-qr-btn-admin" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code Étudiant">
-        <i class="fas fa-qrcode text-2xl"></i>
-    </button>
-
-    <!-- NOUVEAU: Conteneur pour le scanner QR Code -->
-    <div id="qr-scanner-container-admin" class="fixed inset-0 bg-black/80 flex-col items-center justify-center p-4 hidden z-50">
-        <p class="text-white text-lg mb-4 font-medium">Scanner le QR Code de l'étudiant</p>
-        <div id="qr-reader-admin" class="w-full max-w-sm bg-gray-800 rounded-lg overflow-hidden border-4 border-violet-500 shadow-lg"></div>
-        <button id="close-scanner-btn-admin" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
-    </div>
-
-    <!-- Modal -->
-    <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
-        <div class="relative bg-white rounded-xl shadow-lg w-full max-w-4xl flex flex-col" style="max-height: 90vh;">
-            <!-- En-tête de la modale -->
-            <div class="flex-shrink-0 px-6 py-4 border-b border-gray-200">
-                <h3 id="modal-title" class="text-lg leading-6 font-medium text-gray-900">Résultat</h3>
-            </div>
-            <!-- Contenu défilant -->
-            <div id="modal-content" class="flex-grow overflow-y-auto p-6"></div>
-            <!-- Pied de la modale -->
-            <div class="flex-shrink-0 px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                <button id="close-modal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Fermer</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Spinner Overlay -->
-    <div id="spinner-overlay" class="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center hidden z-50">
-        <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-violet-500"></div>
     </div>
 
     <script>
-        
-
-        const modal = document.getElementById('modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalContent = document.getElementById('modal-content');
-        const closeModalBtn = document.getElementById('close-modal');
-        const spinnerOverlay = document.getElementById('spinner-overlay');
-
-        // NOUVEAU: Gérer l'authentification au chargement de la page
+        // --- CONFIGURATION ---
+        // --- AUTHENTIFICATION ---
         document.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const tokenFromUrl = urlParams.get('token');
-
-            if (tokenFromUrl) {
-                // Si un token est dans l'URL, on le sauvegarde et on nettoie l'URL
-                sessionStorage.setItem(ADMIN_SESSION_KEY, tokenFromUrl);
-                // Redirige vers la même page sans les paramètres pour une URL propre
-                window.history.replaceState({}, document.title, window.location.pathname);
-            }
-
-            // Vérifier si on a une session valide
-            const sessionToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!sessionToken) {
-                // Si pas de token, on redirige vers la page de connexion
+            const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+            if (studentSessionId) {
+                loadStudentDashboard(studentSessionId);
+                // NOUVEAU: Réactivation du rafraîchissement automatique en arrière-plan
+                setInterval(() => {
+                    console.log('Refreshing student data in background...');
+                    // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
+                    loadStudentDashboard(studentSessionId, false); 
+                }, 90000); // Rafraîchit toutes les 90 secondes
+            } else {
                 window.location.href = 'index.html'; 
             }
-
-            // NOUVEAU: Logique pour le menu mobile
-            const menuButton = document.getElementById('menu-button');
-            const sidebar = document.getElementById('sidebar');
-            menuButton.addEventListener('click', () => {
-                sidebar.classList.toggle('-translate-x-full');
-            });
-
-            // NOUVEAU: Initialisation propre de la page
-            // On clique sur le premier lien de navigation pour afficher le tableau de bord par défaut.
-            document.querySelector('.nav-link').click();
-            // On pré-charge les données des filières en arrière-plan pour que le formulaire d'ajout de classe soit prêt.
-            // Cela rend la navigation vers l'onglet "Classes" plus rapide.
-            loadAndRenderEntities('filiere');
-
-            // NOUVEAU: Charger les données pour le nouveau tableau de bord interactif
-            loadInteractiveDashboard();
-
-            // NOUVEAU: Initialiser le scanner pour l'admin
-            setupAdminScanner();
-
-            // NOUVEAU: Charger le nom de l'université
-            loadUniversityName();
-
         });
 
-        function logout() {
-            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        // --- Fonctions pour l'Espace Étudiant ---
+        function studentLogout() 
+        {
+            sessionStorage.removeItem(STUDENT_SESSION_KEY);
             window.location.href = 'index.html';
         }
 
-        function showPage(pageId, linkElement) {
-            document.querySelectorAll('.page-container').forEach(p => p.classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
-            
-            // Mettre à jour le titre de la page
-            const pageTitles = {
-                'main-dashboard': 'Tableau de Bord',
-                'management-page': 'Filières & Classes',
-                'responsables-page': 'Responsables',
-                'planning-page': 'Planning',
-                'attendance-page': 'Présences',
-                'tools-page': 'Outils',
-                'students-page': 'Étudiants',
-                'student-profile-page': 'Profil Étudiant' // NOUVEAU
+        function loadStudentDashboard(studentId, isInitialLoad = true) {
+            document.getElementById('student-dashboard-name').textContent = '...';
+            loadStudentInfo(studentId);
+            loadStudentAttendance(studentId);
+            loadStudentSchedule(studentId);            
+            // NOUVEAU: Charger et afficher la carte étudiant
+            renderAndDisplayStudentCard(studentId);
+        }
+
+        async function loadStudentInfo(studentId) {
+            const form = document.getElementById('studentUpdateForm');
+            try {
+                const result = await callApi('getStudentData', { studentId });
+                const student = result.data;
+                document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
+                document.getElementById('student-info-name').value = student.name || '';
+                document.getElementById('student-info-email').value = student.email || '';
+                form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+            } catch (error) {
+                displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
+            }
+        }
+
+        async function handleUpdateStudentInfo(e, studentId) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: studentId,
+                name: form.querySelector('#student-info-name').value,
+                email: form.querySelector('#student-info-email').value
             };
-            document.getElementById('page-title').textContent = pageTitles[pageId] || 'Administration';
-
-            // Mettre à jour le style du lien actif dans la sidebar
-            document.querySelectorAll('.nav-link').forEach(link => {
-                link.classList.remove('bg-white', 'text-violet-600', 'font-semibold', 'hover:bg-white/10', 'hover:text-white');
-                link.classList.add('text-gray-300', 'hover:bg-white/10', 'hover:text-white');
-            });
-            if (linkElement) {
-                linkElement.classList.remove('text-gray-300');
-                linkElement.classList.add('bg-white', 'text-violet-600', 'font-semibold');
-            }
-
-            // NOUVEAU: Fermer le menu mobile après un clic
-            const sidebar = document.getElementById('sidebar');
-            const menuButton = document.getElementById('menu-button');
-            if (window.getComputedStyle(menuButton).display !== 'none') { // Si on est en vue mobile
-                sidebar.classList.add('-translate-x-full');
-            }
-
-            // Logique de chargement des pages
-            if (pageId === 'management-page') {
-                setupAdminManagementPage();
-            } else if (pageId === 'planning-page') {
-                setupPlanningPage();
-            } else if (pageId === 'attendance-page') {
-                setupAttendancePage();
-            } else if (pageId === 'responsables-page') {
-                setupResponsablesPage();
-            } else if (pageId === 'students-page') {
-                setupStudentsPage();
-            } else if (pageId === 'main-dashboard') {
-                loadInteractiveDashboard(); // NOUVEAU
-            }
-        }
-
-        // NOUVEAU: Charge et affiche le nom de l'université dans l'en-tête
-        async function loadUniversityName() {
-            const container = document.getElementById('university-name-header');
-            if (!container) return;
+            setLoading(true, form);
             try {
-                // CORRECTION: L'action ne nécessite pas de données supplémentaires, l'ID est déjà dans le token de session.
-                const result = await callAdminApi('getUniversityInfo'); 
-                container.textContent = result.data.universityName;
+                const result = await callApi('updateStudentInfo', data);
+                displayMessageInForm(form, result.message, 'success');
+                // Recharger les informations pour s'assurer que tout est à jour
+                loadStudentInfo(studentId);
             } catch (error) {
-                container.textContent = "Université non trouvée";
-                console.error("Erreur de chargement du nom de l'université:", error);
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
             }
         }
-        // ANCIENNE FONCTION DE DASHBOARD (pour les stats)
-        async function loadAdminDashboard() {}
-        // NOUVEAU: Initialise la page de gestion
-        function setupAdminManagementPage() {
-            document.querySelector('.management-tab').click(); // Active le premier onglet
-            const tabs = document.querySelectorAll('.management-tab');
-            const tabContents = document.querySelectorAll('.management-tab-content');
 
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    tabs.forEach(t => {
-                        t.classList.remove('border-violet-500', 'text-violet-600');
-                        t.classList.add('border-transparent', 'text-gray-500');
-                    });
-                    tab.classList.add('border-violet-500', 'text-violet-600');
-                    tab.classList.remove('border-transparent', 'text-gray-500');
-                    
-                    tabContents.forEach(c => c.classList.add('hidden'));
-                    const targetContent = document.getElementById(tab.dataset.target);
-                    if (targetContent) targetContent.classList.remove('hidden');
-                    
-                    // OPTIMISATION: Ne recharger que si la liste n'a pas déjà été chargée
-                    const entityType = tab.dataset.target.split('-')[0];
-                    const listElement = document.getElementById(`${entityType}-list`);
-                    if (listElement && listElement.dataset.loaded !== 'true') {
-                        loadAndRenderEntities(entityType);
-                    }
-                });
-            });
+        // NOUVEAU: Remplit le template de la carte et la retourne en tant qu'élément HTML
+        async function createStudentCardElement(studentId) {
+            try {
+                const result = await callApi('getPublicStudentProfile', { studentId });
+                const student = result.data.student;
+                
+                // Références aux éléments du template original (pour le téléchargement)
+                const originalCard = document.getElementById('student-card-generator');
+                if (!originalCard) throw new Error("Le template de carte #student-card-generator est introuvable.");
 
-            setupEntityForm('filiere', {});
-            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
+                // Remplir le template original
+                originalCard.querySelector('#card-university-name').textContent = student.NOM_UNIVERSITE || 'Université';
+                originalCard.querySelector('#card-student-name').textContent = student.NOM_COMPLET;
+                originalCard.querySelector('#card-university-filiere').textContent = student.NOM_FILIERE || 'Filière non définie';
+                
+                // Générer le QR code pour la carte
+                const qrData = `ABM-ETU-ID:${student.ID_ETUDIANT}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
+                originalCard.querySelector('#card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
+
+                // Attendre que l'image du QR code soit chargée
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                // Cloner le template maintenant qu'il est rempli, pour l'affichage
+                const cardTemplate = originalCard.cloneNode(true);
+                
+                cardTemplate.removeAttribute('id');
+                cardTemplate.className = "w-full h-auto shadow-lg rounded-lg flex flex-col overflow-hidden border border-gray-200";
+
+                return cardTemplate;
+            } catch (error) {
+                console.error("Erreur lors de la création de la carte:", error);
+                return null;
+            }
         }
 
-        // NOUVEAU: Charge les données pour le tableau de bord interactif
-        async function loadInteractiveDashboard() {
-            const container = document.getElementById('filiere-cards-container');
-            container.innerHTML = '<p>Chargement des filières...</p>';
+        // NOUVEAU: Télécharge uniquement le QR code au format PNG
+        async function downloadQrCodeOnly() {
             try {
-                const [filieresResult, classesResult, studentsResult] = await Promise.all([
-                    callAdminApi('adminGetEntities', { entityType: 'filiere' }),
-                    callAdminApi('adminGetEntities', { entityType: 'classe' }),
-                    callAdminApi('adminGetStudents')
-                ]);
-
-                const filieres = filieresResult.data;
-                const classes = classesResult.data;
-                const students = studentsResult.data;
-
-                if (filieres.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucune filière n\'a été créée. Allez dans l\'onglet "Filières & Classes" pour commencer.</p>';
-                    return;
+                const qrCodeContainer = document.getElementById('card-qr-code');
+                const qrImg = qrCodeContainer ? qrCodeContainer.querySelector('img') : null;
+                if (!qrImg || !qrImg.src) {
+                    throw new Error("Le QR Code n'est pas encore affiché. Veuillez patienter.");
                 }
-
-                const filiereData = filieres.map(filiere => {
-                    const classesInFiliere = classes.filter(c => c.ID_FILIERE_FK === filiere.ID_FILIERE);
-                    const classIdsInFiliere = new Set(classesInFiliere.map(c => c.ID_CLASSE));
-                    const studentsInFiliere = students.filter(s => classIdsInFiliere.has(s.ID_CLASSE_FK));
-                    return {
-                        ...filiere,
-                        classCount: classesInFiliere.length,
-                        studentCount: studentsInFiliere.length,
-                    };
-                });
-
-                container.innerHTML = filiereData.map(f => `
-                    <div onclick="showFiliereDetails('${f.ID_FILIERE}', '${f.NOM_FILIERE}')" class="action-card bg-white p-6 rounded-lg shadow-sm cursor-pointer">
-                        <h3 class="text-xl font-bold text-violet-700 truncate">${f.NOM_FILIERE}</h3>
-                        ${f.classCount > 0 ? `
-                            <div class="mt-4 flex justify-between text-gray-600">
-                                <div class="text-center">
-                                    <p class="text-2xl font-bold">${f.classCount}</p>
-                                    <p class="text-xs">Classes</p>
-                                </div>
-                                <div class="text-center">
-                                    <p class="text-2xl font-bold">${f.studentCount}</p>
-                                    <p class="text-xs">Étudiants</p>
-                                </div>
-                            </div>` : `
-                            <div class="mt-4 text-center text-gray-500 text-sm p-3 bg-gray-50 rounded-md">
-                                <p>Aucune classe trouvée.</p>
-                            </div>
-                        `}
-                    </div>
-                `).join('');
-
+                const link = document.createElement('a');
+                link.href = qrImg.src;
+                link.download = `mon-qrcode-abm.png`;
+                link.click();
             } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur de chargement: ${error.message}</p>`;
+                alert(`Erreur lors du téléchargement du QR Code : ${error.message}`);
             }
         }
 
-        // NOUVEAU: Affiche la vue détaillée d'une filière
-        async function showFiliereDetails(filiereId, filiereName) {
-            showPage('filiere-details-page');
-            document.getElementById('filiere-details-title').textContent = `Classes de la filière : ${filiereName}`;
-            const container = document.getElementById('class-list-container');
-            container.innerHTML = '<p>Chargement des classes...</p>';
-
-            try {
-                const [classesResult, studentsResult] = await Promise.all([
-                    callAdminApi('adminGetEntities', { entityType: 'classe' }),
-                    callAdminApi('adminGetStudents')
-                ]);
-                const classes = classesResult.data.filter(c => c.ID_FILIERE_FK === filiereId);
-                const students = studentsResult.data;
-
-                if (classes.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucune classe dans cette filière.</p>';
-                    return;
-                }
-
-                container.innerHTML = classes.map(c => {
-                    const studentCount = students.filter(s => s.ID_CLASSE_FK === c.ID_CLASSE).length;
-                    return `
-                        <div onclick="showClassDetails('${c.ID_CLASSE}', '${c.NOM_CLASSE}', '${filiereId}', '${filiereName}')" class="action-card bg-white p-5 rounded-lg shadow-sm cursor-pointer">
-                            <h4 class="text-lg font-semibold text-gray-800">${c.NOM_CLASSE}</h4>
-                            <p class="text-gray-500 mt-2">${studentCount} étudiant(s)</p>
-                        </div>
-                    `;
-                }).join('');
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+        // NOUVEAU: Fonction principale pour afficher la carte sur le dashboard
+        async function renderAndDisplayStudentCard(studentId) {
+            const displayContainer = document.getElementById('student-card-display');
+            displayContainer.innerHTML = '<p class="text-xs text-center text-gray-500">Génération de la carte...</p>';
+            
+            const cardElement = await createStudentCardElement(studentId);
+            
+            if (cardElement) {
+                displayContainer.innerHTML = '';
+                displayContainer.appendChild(cardElement);
+            } else {
+                displayContainer.innerHTML = '<p class="text-xs text-center text-red-500">Erreur lors de l\'affichage de la carte.</p>';
             }
         }
 
-        // NOUVEAU: Affiche la vue détaillée d'une classe
-        async function showClassDetails(classId, className, filiereId, filiereName) {
-            showPage('class-details-page');
-            document.getElementById('class-details-title').textContent = `Étudiants de : ${className}`;
-            document.getElementById('back-to-classes-btn').onclick = () => showFiliereDetails(filiereId, filiereName);
-            const container = document.getElementById('student-list-container');
-            container.innerHTML = '<p>Chargement des étudiants...</p>';
-
-            try {
-                const studentsResult = await callAdminApi('adminGetStudents');
-                const students = studentsResult.data.filter(s => s.ID_CLASSE_FK === classId);
-
-                if (students.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun étudiant inscrit dans cette classe.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                            <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${students.map(s => `
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${s.NOM_COMPLET}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${s.EMAIL}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onclick="showStudentAttendance('${s.ID_ETUDIANT}', '${s.NOM_COMPLET}')" class="text-violet-600 hover:text-violet-900">Voir Présences</button>
-                                    <button onclick="showStudentProfile('${s.ID_ETUDIANT}', '${classId}', '${className}', '${filiereId}', '${filiereName}')" class="ml-4 text-blue-600 hover:text-blue-900">Voir Profil Complet</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Affiche l'historique de présence d'un étudiant dans une modale
-        async function showStudentAttendance(studentId, studentName) {
-            showSpinner(true);
+        async function loadStudentAttendance(studentId) {
+            const container = document.getElementById('student-attendance-history');
+            container.innerHTML = '<p>Chargement de l\'historique...</p>';
             try {
                 const result = await callApi('getStudentAttendanceHistory', { studentId });
                 const history = result.data;
-                let contentHtml;
-
-                if (history.length === 0) {
-                    contentHtml = '<p class="text-center text-gray-500">Aucun pointage enregistré pour cet étudiant.</p>';
-                } else {
-                    contentHtml = '<ul class="space-y-3">';
-                    history.forEach(item => {
-                        contentHtml += `
-                            <li class="p-3 bg-gray-50 rounded-md border">
-                                <p class="font-semibold">${item.MATIERE}</p>
-                                <p class="text-sm text-gray-600">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'full', timeStyle: 'short' })}</p>
-                            </li>
-                        `;
-                    });
-                    contentHtml += '</ul>';
+                if (!history || history.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                    return;
                 }
-                showModal(`Historique de présence de ${studentName}`, contentHtml);
+                const timeline = document.createElement('div');
+                timeline.className = 'space-y-4';
+                timeline.innerHTML = history.map(item => `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                        </div>
+                    </div>
+                `).join('');
+                container.innerHTML = '';
+                container.appendChild(timeline);
             } catch (error) {
-                showModal('Erreur', `<p class="text-red-500">${error.message}</p>`);
-            } finally {
-                showSpinner(false);
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
         }
 
-        // NOUVEAU: Affiche la page de profil complète d'un étudiant
-        async function showStudentProfile(studentId, classId, className, filiereId, filiereName) {
-            showPage('student-profile-page');
-            // Configurer le bouton de retour
-            document.getElementById('back-to-student-list-btn').onclick = () => showClassDetails(classId, className, filiereId, filiereName);
-
-            const headerContainer = document.getElementById('student-profile-header');
-            const attendanceContainer = document.getElementById('student-profile-attendance');
-            const scheduleContainer = document.getElementById('student-profile-schedule');
-            headerContainer.innerHTML = '<p>Chargement du profil...</p>';
-            attendanceContainer.innerHTML = '';
-            scheduleContainer.innerHTML = '';
-
+        // NOUVEAU: Charge et affiche l'emploi du temps de l'étudiant
+        async function loadStudentSchedule(studentId) {
+            const container = document.getElementById('student-schedule-container');
+            container.innerHTML = '<p class="text-gray-500">Chargement de l\'emploi du temps...</p>';
             try {
-                // AMÉLIORATION: On fait 3 appels séparés et fiables au lieu d'un seul qui échoue.
-                const [profileResult, attendanceResult, scheduleResult] = await Promise.all([
-                    callAdminApi('adminGetStudentProfile', { studentId }), // Récupère les infos de base
-                    callApi('getStudentAttendanceHistory', { studentId }), // Récupère les présences (fonction fiable)
-                    callApi('getStudentSchedule', { studentId }) // Récupère l'emploi du temps (fonction fiable)
-                ]);
+                const result = await callApi('getStudentSchedule', { studentId });
+                const courses = result.data;
 
-                if (!profileResult.success || !profileResult.data || !profileResult.data.student) {
-                    throw new Error(profileResult.error || "Impossible de charger les informations de base de l'étudiant.");
+                if (!courses || courses.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour votre classe.</p>';
+                    return;
                 }
 
-                const student = profileResult.data.student;
-                const attendanceHistory = attendanceResult.success ? attendanceResult.data : [];
-                const schedule = scheduleResult.success ? scheduleResult.data : [];
-
-                // Afficher l'en-tête
-                headerContainer.innerHTML = /*html*/`
-                    <h2 class="text-3xl font-bold text-gray-800">${student.NOM_COMPLET}</h2>
-                    <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
-                        <span><strong>ID:</strong> <span class="font-mono">${student.ID_ETUDIANT}</span></span>
-                        <span><strong>Email:</strong> ${student.EMAIL}</span>
-                        <span><strong>Classe:</strong> ${student.NOM_CLASSE}</span>
-                        <span><strong>Filière:</strong> ${student.NOM_FILIERE}</span>
-                    </div>
-                `;
-
-                // Afficher l'historique des présences
-                if (attendanceHistory.length === 0) {
-                    attendanceContainer.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
-                } else {
-                    attendanceContainer.innerHTML = /*html*/`
-                        <div class="space-y-4">
-                        ${attendanceHistory.map(item => `
-                            <div class="flex items-center space-x-4">
-                                <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600"><i class="fas fa-check"></i></div>
+                const scheduleHtml = courses.map(course => {
+                    const statusColor = course.STATUT === 'Confirmé' ? 'bg-green-100 text-green-800' : (course.STATUT === 'Annulé' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+                    const statusIcon = course.STATUT === 'Confirmé' ? '✅' : (course.STATUT === 'Annulé' ? '❌' : '⏳');
+                    return `
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                            <div class="flex justify-between items-start">
                                 <div>
-                                    <p class="font-medium text-gray-800">${item.MATIERE}</p>
-                                    <p class="text-xs text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                                    <p class="font-semibold text-gray-800">${course.MATIERE}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                                 </div>
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${statusIcon} ${course.STATUT}</span>
                             </div>
-                        `).join('')}
                         </div>
                     `;
-                }
+                }).join('');
 
-                // Afficher l'emploi du temps
-                if (schedule.length === 0) {
-                    scheduleContainer.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour cette classe.</p>';
-                } else {
-                    scheduleContainer.innerHTML = /*html*/`
-                        <div class="space-y-3">
-                        ${schedule.map(course => `
-                            <div class="p-3 bg-gray-50 rounded-md border">
-                                <p class="font-semibold text-sm">${course.MATIERE}</p>
-                                <p class="text-xs text-gray-600">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
-                                <p class="text-xs text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
-                            </div>
-                        `).join('')}
-                        </div>
-                    `;
-                }
-
-            } catch (error) {
-                headerContainer.innerHTML = `<p class="text-red-500">Erreur lors du chargement du profil: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Gère la soumission des formulaires d'ajout
-        function setupEntityForm(entityType, options) {
-            const form = document.getElementById(`add-${entityType}-form`);
-            if (!form) return;
-            
-            // Remplacer addEventListener par onsubmit pour éviter les listeners multiples
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const nameInput = document.getElementById(`${entityType}-name`);
-                const name = nameInput.value.trim();
-                if (!name) return;
-                
-                const payload = { name };
-                if (options.parent) {
-                    const parentSelect = document.getElementById(options.parentSelectId);
-                    payload[`${options.parent}Id`] = parentSelect.value; // ex: payload.filiereId = 'FIL-XXXX'
-                }
-                
-                showSpinner(true);
-                try {
-                    // Désactiver le bouton pour éviter les doubles clics
-                    e.submitter.disabled = true;
-                    const result = await callAdminApi('adminAddEntity', { entityType, payload });
-                    await loadAndRenderEntities(entityType); // On attend que la liste soit rechargée
-                    showModal('Succès', result.message); // La modale s'affiche APRÈS le rechargement
-
-                    // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
-                    if (entityType === 'classe') {
-                        await refreshClassDropdowns();
-                        await loadInteractiveDashboard(); // AMÉLIORATION: On attend que le tableau de bord soit complètement rafraîchi
-                    }
-
-                    form.reset(); // Utiliser form.reset() pour vider tous les champs
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    showSpinner(false);
-                    if (e.submitter) e.submitter.disabled = false;
-                }
-            };
-        }
-
-        /**
-         * NOUVEAU: Rafraîchit les listes déroulantes de classes sur les pages Planning et Responsables.
-         * Cette fonction est appelée après l'ajout d'une nouvelle classe.
-         */
-        async function refreshClassDropdowns() {
-            try { // On ne met pas de spinner ici car c'est une action de fond
-                const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-                const classes = classesResult.data;
-                const optionsHtml = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-                const optionsHtmlByName = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.NOM_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-
-                document.getElementById('responsable-classe-select').innerHTML = optionsHtml;
-                document.getElementById('course-classe-select').innerHTML = optionsHtmlByName;
-                console.log('Listes déroulantes des classes mises à jour.');
-            } catch (error) { console.error("Erreur lors du rafraîchissement des listes de classes:", error); }
-        }
-
-        // NOUVEAU: Charge et affiche les listes de filières/classes
-        async function loadAndRenderEntities(entityType) {
-            const listElement = document.getElementById(`${entityType}-list`);
-            const listContainer = document.getElementById(`${entityType}-list-container`);
-            if (!listElement) return;
-            listElement.dataset.loaded = 'false'; // Marquer comme non chargé pour forcer le rechargement si nécessaire
-            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
-
-            try {
-                const result = await callAdminApi('adminGetEntities', { entityType });
-                const entities = result.data;
-                
-                if (entityType === 'filiere') {
-                    const parentSelect = document.getElementById('classe-filiere-select');
-                    if (parentSelect) { // On met à jour la liste déroulante des filières dans l'onglet "Classes"
-                        parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
-                            + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
-                    }
-                }
-                
-                // Vider la liste actuelle pour la reconstruire
-                listElement.innerHTML = '';
-                
-                if (entities.length === 0) {
-                    itemsHtml = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
-                } else {
-                    itemsHtml = entities.map(entity => {
-                        const idKey = `ID_${entityType.toUpperCase()}`;
-                        const nameKey = `NOM_${entityType.toUpperCase()}`;
-                        return `<li class="p-3 bg-white border rounded-md flex justify-between items-center">
-                                    <div>
-                                        <span class="font-medium">${entity[nameKey]}</span>
-                                        <span class="block text-xs text-gray-400 font-mono">${entity[idKey]}</span>
-                                    </div>
-                                    <button onclick="handleDeleteEntity('${entityType}', '${entity[idKey]}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
-                                </li>`;
-                    }).join('');
-                }
-                
-                // Insérer le nouveau contenu
-                // Utiliser innerHTML une seule fois est plus performant
-                listElement.innerHTML = itemsHtml;
-                
-                listElement.dataset.loaded = 'true'; // Marquer comme chargé
-            } catch (error) {
-                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
-            }
-        }
-
-        // NOUVEAU: Initialise la page de planning
-        function setupPlanningPage() {
-            loadAndRenderPlanning();
-            setupPlanningForm();
-        }
-
-        // NOUVEAU: Charge et affiche le planning
-        async function loadAndRenderPlanning() {
-            const container = document.getElementById('planning-table-container');
-            const classSelect = document.getElementById('course-classe-select');
-            container.innerHTML = '<p>Chargement du planning...</p>';
-
-            try {
-                // Charger les classes pour le formulaire
-                const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-                classSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
-                    + classesResult.data.map(c => `<option value="${c.NOM_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-
-                // Charger le planning
-                const planningResult = await callAdminApi('adminGetPlanning');
-                const courses = planningResult.data;
-
-                if (courses.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun cours planifié.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Heures</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
-                            <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${courses.map(course => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(course.DATE_COURS).toLocaleDateString()}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${course.CLASSE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${course.MATIERE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap"><span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">${course.STATUT}</span></td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onclick="handleDeleteCourseClick('${course.ID_COURS}')" class="text-red-600 hover:text-red-900">Supprimer</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
+                container.innerHTML = `<div class="space-y-4">${scheduleHtml}</div>`;
 
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
         }
 
-        // NOUVEAU: Gère la soumission du formulaire de planning
-        function setupPlanningForm() {
-            const form = document.getElementById('add-course-form');
-            // Remplacer addEventListener par onsubmit
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const payload = {
-                    classe: document.getElementById('course-classe-select').value,
-                    matiere: document.getElementById('course-matiere').value,
-                    enseignant: document.getElementById('course-enseignant').value,
-                    date: document.getElementById('course-date').value,
-                    startTime: document.getElementById('course-start-time').value,
-                    endTime: document.getElementById('course-end-time').value,
-                };
-                try {
-                    e.submitter.disabled = true;
-                    const result = await callAdminApi('adminAddCourse', { payload });
-                    showModal('Succès', result.message);
-                    form.reset();
-                    loadAdminDashboard(); // NOUVEAU: Rafraîchir les statistiques
-                    loadAndRenderPlanning(); // Recharger la liste
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    if (e.submitter) e.submitter.disabled = false;
-                }
-            };
-        }
-
-        // NOUVEAU: Initialise la page de présence
-        function setupAttendancePage() {
-            loadAndRenderAttendance();
-        }
-
-        // NOUVEAU: Charge et affiche les données de présence
-        async function loadAndRenderAttendance() {
-            const container = document.getElementById('attendance-table-container');
-            container.innerHTML = '<p>Chargement des données de présence...</p>';
-
-            try {
-                const result = await callAdminApi('adminGetAttendance');
-                const scans = result.data;
-
-                if (scans.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré pour le moment.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Heure</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Matière</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${scans.map(scan => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${new Date(scan.TIMESTAMP).toLocaleString('fr-FR')}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${scan.NOM_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${scan.ID_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.CLASSE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${scan.MATIERE}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Initialise la page des responsables
-        function setupResponsablesPage() {
-            loadAndRenderResponsables();
-            setupResponsableForm();
-        }
-
-        // NOUVEAU: Charge et affiche les responsables
-        async function loadAndRenderResponsables() {
-            const container = document.getElementById('responsables-table-container');
-            container.innerHTML = '<p>Chargement des responsables...</p>';
-            try {
-                const result = await callAdminApi('adminGetResponsables');
-                const responsables = result.data;
-
-                if (responsables.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun responsable assigné.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe Assignée</th>
-                    <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${responsables.map(resp => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${resp.NOM_RESPONSABLE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${resp.EMAIL_RESPONSABLE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${resp.ID_CLASSE_FK}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onclick="handleDeleteEntity('responsable', '${resp.ID_RESPONSABLE}')" class="text-red-600 hover:text-red-900">Supprimer</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Gère la soumission du formulaire d'ajout de responsable
-        async function setupResponsableForm() {
-            const form = document.getElementById('add-responsable-form');
-            const classSelect = document.getElementById('responsable-classe-select');
-            
-            // Charger les classes dans le dropdown
-            const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-            classSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
-                + classesResult.data.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-            
-            // Remplacer addEventListener par onsubmit
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const payload = {
-                    name: document.getElementById('responsable-name').value,
-                    email: document.getElementById('responsable-email').value,
-                    password: document.getElementById('responsable-password').value,
-                    classId: classSelect.value,
-                };
-                try {
-                    e.submitter.disabled = true;
-                    const result = await callAdminApi('adminAddResponsable', { payload });
-                    form.reset();
-                    await loadAndRenderResponsables(); // Recharger la liste et attendre que ce soit fait
-                    loadInteractiveDashboard(); // Rafraîchir les statistiques du tableau de bord
-                    showModal('Succès', result.message); // Afficher le message de succès APRÈS le rechargement
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    if (e.submitter) e.submitter.disabled = false;
-                }
-            };
-        }
-
-        // NOUVEAU: Initialise la page des étudiants
-        function setupStudentsPage() {
-            loadAndRenderStudents();
-        }
-
-        // NOUVEAU: Charge et affiche les étudiants
-        async function loadAndRenderStudents() {
-            const container = document.getElementById('students-table-container');
-            container.innerHTML = '<p>Chargement des étudiants...</p>';
-            try {
-                const result = await callAdminApi('adminGetStudents');
-                const students = result.data;
-
-                if (students.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun étudiant inscrit pour le moment.</p>';
-                    return;
-                }
-
-                const table = document.createElement('table');
-                table.className = 'min-w-full divide-y divide-gray-200';
-                table.innerHTML = `
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Étudiant</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
-                            <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        ${students.map(student => `
-                            <tr>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.NOM_COMPLET}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${student.ID_ETUDIANT}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.EMAIL}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.NOM_CLASSE}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button onclick="handleDeleteEntity('student', '${student.ID_ETUDIANT}')" class="text-red-600 hover:text-red-900">Supprimer</button>
-                                </td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-                container.innerHTML = '';
-                container.appendChild(table);
-            } catch (error) {
-                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
-            }
-        }
-
-        // NOUVEAU: Gère le clic sur le bouton de suppression de cours
-        async function handleDeleteCourseClick(courseId) {
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer ce cours (${courseId}) ? Cette action est irréversible.`)) {
-                return;
-            }
-            showSpinner(true);
-            try {
-                const result = await callAdminApi('adminDeleteCourse', { courseId });
-                showModal('Succès', result.message);
-                loadAndRenderPlanning(); // Recharger la liste
-            } catch (error) {
-                showModal('Erreur', error.message);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Gère la suppression de toutes les entités
-        async function handleDeleteEntity(entityType, entityId) {
-            const typeName = { filiere: 'cette filière', classe: 'cette classe', responsable: 'ce responsable', student: 'cet étudiant'}[entityType];
-            if (!confirm(`Êtes-vous sûr de vouloir supprimer ${typeName} (${entityId}) ? Cette action est irréversible.`)) {
-                return;
-            }
-            
-            showSpinner(true);
-            try {
-                const result = await callAdminApi('adminDeleteEntity', { entityType, entityId });
-                // Si la suppression réussit, on met à jour l'interface
-                if (entityType === 'student') {
-                    await loadAndRenderStudents();
-                } else if (entityType === 'responsable') {
-                    await loadAndRenderResponsables();
-                } else {
-                    await loadAndRenderEntities(entityType);
-                    if (entityType === 'classe') await refreshClassDropdowns(); // Mettre à jour les listes déroulantes
-                }
-                await loadInteractiveDashboard(); // On attend que le tableau de bord soit rafraîchi
-                showModal('Succès', result.message); // Le message de succès s'affiche en dernier
-            } catch (error) {
-                // AMÉLIORATION: Gérer la suppression en cascade pour les filières
-                if (entityType === 'filiere' && error.message.includes("classe(s) sont rattachées")) {
-                    if (confirm(error.message)) { // Affiche l'erreur et demande confirmation
-                        // L'utilisateur a confirmé, on relance la suppression avec l'option cascade
-                        const cascadeResult = await callAdminApi('adminDeleteEntity', { entityType, entityId, cascade: true });
-                        await loadAndRenderEntities('filiere'); // Recharger la liste des filières
-                        await loadAndRenderEntities('classe');  // Recharger aussi la liste des classes
-                        await loadInteractiveDashboard(); // Mettre à jour le tableau de bord
-                        showModal('Succès', cascadeResult.message);
-                    }
-                } else {
-                    // Afficher les autres erreurs normalement
-                    showModal('Erreur', error.message);
-                }
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        /**
-         * NOUVEAU: Rafraîchit les données de la page actuellement visible.
-         * Utile après une suppression pour mettre à jour la liste.
-         */
-        function reloadCurrentPageData() {
-            const currentPage = document.querySelector('.page-container:not(.hidden)');
-            if (!currentPage) return;
-            const currentPageId = currentPage.id;
-
-            console.log(`Background refresh for: ${currentPageId}`); // Pour le débogage
-
-            if (currentPageId === 'main-dashboard') {
-                loadInteractiveDashboard();
-            } else if (currentPageId === 'students-page') {
-                loadAndRenderStudents();
-            } else if (currentPageId === 'responsables-page') {
-                loadAndRenderResponsables();
-            } else if (currentPageId === 'management-page') {
-                const currentTab = document.querySelector('.management-tab.border-violet-500');
-                if (currentTab) {
-                    const entityType = currentTab.dataset.target.split('-')[0];
-                    loadAndRenderEntities(entityType);
-                }
-            } else if (currentPageId === 'planning-page') {
-                loadAndRenderPlanning();
-            } else if (currentPageId === 'attendance-page') {
-                loadAndRenderAttendance();
-            }
-        }
-
-        // NOUVEAU: Fonction pour afficher/masquer le mot de passe (déplacée ici pour être globale)
-        function togglePasswordVisibility(inputId, button) {
-            const input = document.getElementById(inputId);
-            const icon = button.querySelector('i');
-            if (!input || !icon) return;
-
-            if (input.type === "password") {
-                input.type = "text";
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                input.type = "password";
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
-
-        closeModalBtn.onclick = () => modal.classList.add('hidden');
-        window.onclick = (event) => {
-            if (event.target == modal) {
-                modal.classList.add('hidden');
-            }
-        }
-
-        function showSpinner(show) {
-            spinnerOverlay.classList.toggle('hidden', !show);
-        }
-
-        function showModal(title, content) {
-            modalTitle.textContent = title;
-            modalContent.innerHTML = content;
-            modal.classList.remove('hidden');
-        }
-
-        // NOUVEAU: Attacher les gestionnaires d'événements pour les boutons dans la modale
-        modalContent.addEventListener('click', function(event) {
-            handleModalButtonClick(event);
-        });
-
-        // NOUVEAU: Gère les clics sur les boutons dynamiques dans la modale
-        function handleModalButtonClick(event) {
-            const button = event.target.closest('button[data-action]');
-            if (!button) return;
-
-            const action = button.dataset.action;
-            const url = button.dataset.url;
-            const title = button.dataset.title;
-            const filename = button.dataset.filename;
-            const targetId = button.dataset.target;
-
-            switch (action) {
-                case 'download':
-                    downloadQrCode(url, filename);
-                    break;
-                case 'share':
-                    shareQrCode(url, title, filename);
-                    break;
-                case 'copy-link':
-                    copyLink(targetId);
-                    break;
-                case 'share-link':
-                    shareLink(url, title);
-                    break;
-            }
-        }
-        // NOUVEAU: Fonction pour fermer la modale principale
-        function closeModal() {
-            modal.classList.add('hidden');
-        }
-
-        // NOUVEAU: Fonctions pour l'exportation de données (CSV/PDF)
-        function showExportOptions(exportType, options = {}) {
-            const modalContent = `
-                <div class="text-center">
-                    <h3 class="text-lg font-medium text-gray-900 mb-6">Choisir le format d'exportation</h3>
-                    <div class="flex justify-center gap-4">
-                        <button onclick='handleDownload("${exportType}", { ...${JSON.stringify(options)}, format: "csv" })' class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2">
-                            <i class="fas fa-file-csv"></i> CSV (Excel)
-                        </button>
-                        <button onclick='handleDownload("${exportType}", { ...${JSON.stringify(options)}, format: "pdf" })' class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-lg flex items-center gap-2">
-                            <i class="fas fa-file-pdf"></i> PDF
-                        </button>
-                    </div>
-                </div>
-            `;
-            showModal("Options d'Exportation", modalContent);
-        }
-
-        async function handleDownload(exportType, options = {}) {
-            const format = options.format || 'csv';
-            showSpinner(true);
-            try {
-                // La logique d'export CSV/PDF a été retirée, on ne garde que la logique de la modale
-            } catch (error) {
-                showModal('Erreur de Téléchargement', `<p class="text-red-500">${error.message}</p>`);
-            } finally {
-                closeModal(); // Fermer la modale de sélection après l'action
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Fonctions de téléchargement et de partage déplacées ici
-        async function downloadQrCode(qrUrl, fileName) {
-            try {
-                showSpinner(true);
-                const response = await fetch(qrUrl);
-                const blob = await response.blob(); // Récupère l'image en tant que données binaires
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = fileName || 'qrcode.png';
-                link.click();
-                URL.revokeObjectURL(link.href);
-            } catch (error) {
-                console.error('Erreur de téléchargement du QR Code:', error);
-                alert("Le téléchargement a échoué. Veuillez essayer de maintenir le doigt sur l'image pour la sauvegarder.");
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        async function shareQrCode(qrUrl, title, fileName) {
-            try {
-                showSpinner(true);
-                // Tenter de partager en tant que fichier d'abord (meilleure expérience)
-                if (navigator.share && navigator.canShare) {
-                    const response = await fetch(qrUrl);
-                    const blob = await response.blob();
-                    const file = new File([blob], fileName, { type: 'image/png' });
-                    if (navigator.canShare({ files: [file] })) {
-                        await navigator.share({ title: title, text: 'Voici le QR code.', files: [file] });
-                        return; // Succès
-                    }
-                }
-                // Fallback: partager l'URL de l'image si le partage de fichier n'est pas possible
-                if (navigator.share) {
-                    await navigator.share({ title: title, text: 'Voici le QR code (ouvrez le lien pour voir l\'image).', url: qrUrl });
-                    return;
-                }
-                // Si rien ne fonctionne
-                showModal("Non supporté", "Le partage n'est pas supporté sur ce navigateur. Veuillez télécharger l'image et la partager manuellement.");
-            } catch (error) {
-                console.error('Erreur de partage:', error);
-                alert("Une erreur est survenue lors du partage.");
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Fonctions pour copier et partager les liens d'inscription
-        function copyLink(inputId) {
-            const input = document.getElementById(inputId);
-            if (!input) return;
-            const textToCopy = input.value;
-            if (navigator.clipboard) { // L'API moderne du presse-papiers
-                navigator.clipboard.writeText(textToCopy).then(() => { showModal('Succès', 'Lien copié dans le presse-papiers !'); }, () => { showModal('Erreur', 'La copie a échoué.'); });
-            } else {
-                input.select();
-                input.setSelectionRange(0, 99999); // Fallback pour les anciens navigateurs
-                try { document.execCommand('copy'); alert('Lien copié !'); } catch (err) { alert('La copie a échoué.'); }
-            }
-        }
-
-        async function shareLink(url, title) {
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: title, text: 'Utilisez ce lien pour vous inscrire à la classe.', url: url });
-                } catch (error) { console.error('Erreur de partage:', error); }
-            } else { // Si le partage natif n'est pas disponible
-                alert("Le partage n'est pas supporté sur ce navigateur. Veuillez copier le lien manuellement.");
-            }
-        }
-
-        // NOUVEAU: Logique du Scanner QR Code pour l'administrateur
-        function setupAdminScanner() {
-            const scanQrBtn = document.getElementById('scan-qr-btn-admin');
-            const scannerContainer = document.getElementById('qr-scanner-container-admin');
-            const closeScannerBtn = document.getElementById('close-scanner-btn-admin');
-            let html5QrCode = null;
-
-            function onScanSuccess(decodedText, decodedResult) {
-                console.log(`Code scanné = ${decodedText}`);
-                if (html5QrCode && html5QrCode.isScanning) {
-                    html5QrCode.stop().catch(err => console.error("Erreur à l'arrêt du scanner.", err));
-                }
-                scannerContainer.classList.add('hidden');
-
-                if (decodedText.startsWith("ABM-ETU-ID:")) {
-                    const studentId = decodedText.split(':')[1];
-                    // CORRECTION: Au lieu de marquer présent, on affiche le profil complet.
-                    callAdminApi('adminGetStudentProfile', { studentId })
-                        .then(result => {
-                            const student = result.data.student;
-                            showStudentProfile(student.ID_ETUDIANT, student.ID_CLASSE_FK, student.NOM_CLASSE, student.ID_FILIERE_FK, student.NOM_FILIERE);
-                        })
-                        .catch(err => showModal('Erreur', `Impossible de trouver le profil de l'étudiant. ${err.message}`));
-                } else {
-                    // Si ce n'est pas un QR code étudiant, on ne fait rien dans l'interface admin.
-                    // On pourrait éventuellement gérer les QR codes de présence ou d'inscription ici aussi.
-                    showModal("QR Code Invalide", "Ce QR code ne semble pas être un code d'identification d'étudiant valide pour cette application.");
-                }
-            }
-
-            scanQrBtn.addEventListener('click', () => {
-                scannerContainer.classList.remove('hidden');
-                scannerContainer.classList.add('flex');
-                if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader-admin");
-                html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, () => {})
-                .catch(err => {
-                    showModal("Erreur Caméra", "Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
-                    scannerContainer.classList.add('hidden');
-                });
-            });
-
-            closeScannerBtn.addEventListener('click', () => {
-                if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop();
-                scannerContainer.classList.add('hidden');
-            });
-        }
-
-        // NOUVEAU: Fonction pour marquer un étudiant présent par l'admin
-        async function markStudentPresentByAdmin(studentId) {
-            showSpinner(true);
-            try {
-                const result = await callAdminApi('scanStudentForAttendance', { studentId });
-                showModal('Présence Confirmée', result.message);
-            } catch (error) {
-                showModal('Erreur de Pointage', error.message);
-            } finally {
-                showSpinner(false);
-            }
-        }
-
-        // NOUVEAU: Fonction d'appel API spécifique à l'admin
-        async function callAdminApi(action, data = {}) {
-            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!universityId) {
-                throw new Error('Session administrateur invalide. Veuillez vous reconnecter.');
-            }
-            
-            const response = await fetch(WEB_APP_URL, {
-                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data: { ...data, universityId } })
-            });
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
-            return result;
-        }
-
-        // NOUVEAU: Fonction d'appel API générique (sans token admin)
+        // --- FONCTIONS UTILITAIRES ---
         async function callApi(action, data = {}) {
             if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
             const response = await fetch(WEB_APP_URL, {
-                method: 'POST',
-                mode: 'cors',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({ action, data })
             });
-
             const result = await response.json();
             if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
             return result;
         }
 
-        async function callAdminAction(actionName) {
-            showSpinner(true);
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement ? formElement.querySelector('.submitBtn') : null;
+            const btnText = formElement ? formElement.querySelector('.btnText') : null;
+            const btnSpinner = formElement ? formElement.querySelector('.btnSpinner') : null;
+            if (!submitBtn) return;
+            submitBtn.disabled = isLoading;
+            if (btnText) btnText.classList.toggle('hidden', isLoading);
+            if (btnSpinner) btnSpinner.classList.toggle('hidden', !isLoading);
+        }
 
-            const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
-            if (!universityId) {
-                showModal('Erreur d\'authentification', '<p class="text-red-600 font-semibold">Votre session a expiré. Veuillez vous reconnecter.</p>');
-                showSpinner(false);
-                // Optionnel: rediriger vers la page de login après un délai
-                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
-                return;
-            }
+        function displayMessageInForm(formElement, message, type) {
+            let messageArea = formElement.parentElement.querySelector('.messageArea') || formElement.nextElementSibling;
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
+        }
 
-            try {
-                const result = await callAdminApi(actionName);
-
-                if (result.success) {
-                    if (result.html) {
-                        showModal('Résultat de l\'opération', result.html);
-                    } else if (result.message) {
-                        showModal('Opération terminée', `<p class="text-green-600 font-semibold">${result.message}</p>`);
-                    }
-                } else {
-                    showModal('Erreur', `<p class="text-red-600 font-semibold">${result.error || 'Une erreur inconnue est survenue.'}</p>`);
-                }
-
-            } catch (error) {
-                console.error('Erreur de communication:', error);
-                showModal('Erreur de communication', `<p class="text-red-600 font-semibold">${error.message}</p>`);
-            } finally {
-                showSpinner(false);
-            }
+        // Spinner global simple
+        function showSpinner(show) {
+            // Pour l'instant, on peut utiliser un simple log ou une future implémentation de spinner
+            console.log(`Spinner: ${show}`);
         }
     </script>
 
-
+</body>
 </html>
