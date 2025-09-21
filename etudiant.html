@@ -73,9 +73,7 @@
                                     <!-- La carte sera injectée ici par le script -->
                                 </div>
                                 <div class="space-y-2">
-                                    <button type="button" onclick="downloadStudentCardAsPdf()" class="w-full bg-red-700 hover:bg-red-800 text-white py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
-                                        <i class="fas fa-file-pdf"></i> Télécharger ma carte (PDF)</button>
-                                    <button type="button" onclick="downloadQrCodeOnly()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
+                                    <button type="button" onclick="downloadQrCodeOnly()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
                                         <i class="fas fa-qrcode"></i> Télécharger mon QR Code (Image)</button>
                                 </div>
 
@@ -233,45 +231,6 @@
             } catch (error) {
                 console.error("Erreur lors de la création de la carte:", error);
                 return null;
-            }
-        }
-
-        // NOUVEAU: Télécharge la carte étudiant au format PDF
-        async function downloadStudentCardAsPdf() {
-            showSpinner(true);
-            try {
-                const studentId = sessionStorage.getItem(STUDENT_SESSION_KEY);
-                // On s'assure que le template de la carte est à jour avant de la capturer
-                await createStudentCardElement(studentId); // Remplit le template original
-                await new Promise(resolve => setTimeout(resolve, 500)); // Délai pour le rendu des images
-
-                const element = document.getElementById('student-card-generator');
-                if (!element) throw new Error("L'élément de la carte est introuvable.");
-
-                // 1. "Photographier" la carte en une image de haute qualité
-                const canvas = await html2canvas(element, {
-                    scale: 3, // Haute résolution
-                    useCORS: true, // Pour charger les images externes (logo, QR)
-                    backgroundColor: null // Pour capturer le fond en dégradé
-                });
-                const imgData = canvas.toDataURL('image/png');
-
-                // 2. Créer un PDF et y insérer l'image
-                const { jsPDF } = window.jspdf;
-                // Dimensions de la carte d'identité standard (CR80)
-                const cardWidth = 53.98;
-                const cardHeight = 85.6;
-                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: [cardWidth, cardHeight] });
-                
-                // Ajouter l'image en pleine page
-                pdf.addImage(imgData, 'PNG', 0, 0, cardWidth, cardHeight);
-
-                pdf.save(`carte-etudiant-${studentId}.pdf`);
-
-            } catch (error) {
-                alert(`Erreur lors de la génération de la carte : ${error.message}`);
-            } finally {
-                showSpinner(false);
             }
         }
 
