@@ -268,9 +268,8 @@
                             <span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span>
                             <div class="flex-grow border-t border-gray-300"></div>
                         </div>
-                        <div id="google-signin-button-login" class="flex justify-center">
+                        <div id="google-signin-button-login" class="flex justify-center" style="min-height: 40px;">
                             <!-- Le bouton Google sera rendu ici -->
-                            <p class="text-xs text-gray-400">Chargement de la connexion Google...</p>
                         </div>
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
@@ -319,9 +318,8 @@
                             <span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span>
                             <div class="flex-grow border-t border-gray-300"></div>
                         </div>
-                        <div id="google-signin-button-register" class="flex justify-center">
+                        <div id="google-signin-button-register" class="flex justify-center" style="min-height: 40px;">
                             <!-- Le bouton Google sera rendu ici -->
-                             <p class="text-xs text-gray-400">Chargement de la connexion Google...</p>
                         </div>
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
@@ -768,13 +766,14 @@
             if (safe$('studentLoginForm')) safe$('studentLoginForm').onsubmit = handleStudentLogin;
             if (safe$('responsableLoginForm')) safe$('responsableLoginForm').onsubmit = handleResponsableLogin;
         });
-
+        
         // NOUVEAU: Initialisation de Google Sign-In
         window.onload = function () {
           if (typeof google !== 'undefined') {
             google.accounts.id.initialize({
               client_id: GOOGLE_CLIENT_ID,
-              callback: handleGoogleCredentialResponse
+              callback: handleGoogleCredentialResponse,
+              ux_mode: 'popup' // Utiliser le mode popup pour une meilleure expérience
             });
             // Rendre le bouton pour la page de connexion
             google.accounts.id.renderButton(
@@ -991,24 +990,37 @@
             const currentPage = document.querySelector('.page:not(.hidden)');
             const form = currentPage.querySelector('form');
             
-            setLoading(true, form);
-            displayMessageInForm(form, 'Vérification du compte Google...', 'info');
+            setLoading(true, form || document.body); // Utilise le formulaire ou le body comme fallback
+            displayMessageInForm(form || document.body, 'Vérification du compte Google...', 'info');
 
             try {
-                const result = await callApi('authWithGoogle', { credential });
-                // Connexion réussie, redirection vers le tableau de bord admin
-                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
+                // Si l'utilisateur est sur la page d'inscription, on envoie aussi le nom de l'école
+                const payload = { credential };
+                if (currentPage.id === 'page-register') {
+                    const universityName = document.getElementById('universityName').value;
+                    if (universityName) {
+                        payload.universityName = universityName;
+                    }
+                }
+
+                const result = await callApi('authWithGoogle', payload);
+                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`; // Redirection
             } catch (error) {
-                // Si l'erreur indique qu'il faut s'inscrire, on guide l'utilisateur
-                if (error.message.includes('needsRegistration')) {
+                // Si le backend nous dit que l'utilisateur doit finaliser son inscription
+                if (error.needsRegistration) {
                     showPage('page-register');
-                    displayMessageInForm(safe$('registerForm'), 'Votre compte Google est valide. Veuillez maintenant nommer votre école pour finaliser l\'inscription.', 'info');
+                    const registerForm = safe$('registerForm');
+                    displayMessageInForm(registerForm, 'Votre compte Google est valide. Veuillez nommer votre école pour finaliser l\'inscription.', 'info');
+                    // Pré-remplir les champs
+                    safe$('adminEmail').value = error.email || '';
+                    safe$('adminEmail').readOnly = true; // Verrouiller le champ email
+                    safe$('adminPassword').closest('div').style.display = 'none'; // Cacher le champ mot de passe
                 } else {
                     // Afficher les autres erreurs
                     displayMessageInForm(form, error.message, 'error');
                 }
             } finally {
-                setLoading(false, form);
+                setLoading(false, form || document.body);
             }
         }
 
@@ -1064,7 +1076,11 @@
             });
 
             const result = await response.json();
-            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
+            // CORRECTION: Transmettre l'objet d'erreur complet pour une meilleure gestion
+            if (!result.success) {
+                const err = new Error(result.error || 'Erreur inconnue de l\'API.');
+                throw Object.assign(err, result); // Ajoute les autres propriétés de la réponse (ex: needsRegistration)
+            }
             return result;
         }
 
