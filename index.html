@@ -461,6 +461,19 @@
                         <span class="btnSpinner hidden">Vérification...</span>
                     </button>
                 </div>
+                <!-- NOUVEAU: Inscription Étudiant avec Google -->
+                <div class="relative flex py-3 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-xs">OU</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+                <div>
+                    <button type="button" onclick="handleStudentGoogleAuth()" class="w-full bg-white hover:bg-gray-100 text-gray-700 font-semibold py-3 rounded-md flex items-center justify-center gap-3 border border-gray-300">
+                        <img src="https://www.google.com/favicon.ico" alt="Google" class="w-5 h-5">
+                        <span>S'inscrire avec Google</span>
+                    </button>
+                    <p class="text-xs text-gray-500 text-center mt-2">Utilisez votre compte Google pour un accès rapide et sécurisé.</p>
+                </div>
             </form>
             <div class="messageArea mt-4 text-center" aria-live="polite"></div>
             <div class="mt-4 text-center text-sm">
@@ -758,6 +771,20 @@
                 } else if (page === 'attendance') {
                     openModalWithTemplate('attendance-template', params);
                 } 
+
+                // NOUVEAU: Gérer le retour de l'authentification Google pour l'étudiant
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const state = hashParams.get('state');
+                if (accessToken && state) {
+                    try {
+                        const stateData = JSON.parse(decodeURIComponent(state));
+                        if (stateData.type === 'studentAuth') {
+                            handleStudentGoogleCallback(accessToken, stateData.classId);
+                            window.location.hash = ''; // Nettoyer l'URL
+                        }
+                    } catch (e) { console.error("Erreur lors du traitement du retour Google:", e); }
+                }
             }
 
             // Attacher les gestionnaires pour les pages de base (préservés)
@@ -933,13 +960,10 @@
             setLoading(true, form);
             try {
                 const result = await callApi('registerSchool', data);
-                // NOUVEAU: Vérifier si un token est retourné pour une connexion directe
-                if (result.token) {
-                    displayMessageInForm(form, result.message, 'success');
-                    setTimeout(() => { window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`; }, 1500);
-                } else {
-                    renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
-                }
+                // AMÉLIORATION : On redirige systématiquement après une inscription réussie.
+                // Le backend renvoie toujours un token.
+                displayMessageInForm(form, result.message, 'success');
+                setTimeout(() => { window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`; }, 1500);
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -1031,11 +1055,56 @@
                     safe$('adminEmail').readOnly = true; // Verrouiller le champ email
                     safe$('adminPassword').closest('div').style.display = 'none'; // Cacher le champ mot de passe
                 } else {
-                    // Afficher les autres erreurs
-                    displayMessageInForm(form, error.message, 'error');
+                    // AMÉLIORATION: Afficher un message générique pour les autres erreurs Google.
+                    // L'erreur technique est enregistrée dans le backend (Google Sheet).
+                    displayMessageInForm(form, "Une erreur est survenue lors de l'authentification Google. Veuillez réessayer ou utiliser l'inscription manuelle. L'incident a été enregistré.", 'error');
                 }
             } finally {
                 setLoading(false, form || document.body);
+            }
+        }
+
+        // NOUVEAU: Gère l'authentification Google pour les étudiants
+        async function handleStudentGoogleAuth() {
+            const form = document.getElementById('classRegisterForm');
+            const classId = form.querySelector('#classId').value;
+            if (!classId) {
+                displayMessageInForm(form, "ID de classe manquant. Impossible de continuer.", 'error');
+                return;
+            }
+
+            // Rediriger vers la page de consentement Google
+            // Le redirect_uri doit pointer vers une page capable de gérer la réponse
+            const redirectUri = `${window.location.origin}${window.location.pathname}`;
+            const state = JSON.stringify({ type: 'studentAuth', classId: classId });
+
+            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+                `client_id=${GOOGLE_CLIENT_ID}` +
+                `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+                `&response_type=token` + // On demande un token directement
+                `&scope=email%20profile` +
+                `&state=${encodeURIComponent(state)}`;
+
+            window.location.href = authUrl;
+        }
+
+        // NOUVEAU: Gère la réponse après l'authentification Google de l'étudiant
+        async function handleStudentGoogleCallback(token, classId) {
+            openModalWithTemplate('class-register-template', new URLSearchParams({classId}));
+            const form = document.getElementById('classRegisterForm');
+            setLoading(true, form);
+            displayMessageInForm(form, "Finalisation de l'inscription avec Google...", 'info');
+
+            try {
+                const result = await callApi('registerStudentWithGoogle', { googleToken: token, classId: classId });
+                const successMessage = `${result.message} Votre nouvel ID Étudiant est : <strong class="font-mono text-lg">${result.studentId}</strong>. Conservez-le précieusement pour vous connecter.`;
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"><span class="text-4xl text-green-600"><i class="fas fa-check"></i></span></div><h1 class="text-xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-3">${successMessage}</p><button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                // Le setLoading est géré par le remplacement du contenu de la modale
+                // setLoading(false, form); 
             }
         }
 
