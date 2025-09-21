@@ -773,7 +773,7 @@
             google.accounts.id.initialize({
               client_id: GOOGLE_CLIENT_ID,
               callback: handleGoogleCredentialResponse,
-              ux_mode: 'popup' // Utiliser le mode popup pour une meilleure expérience
+              ux_mode: 'redirect' // CORRECTION: 'redirect' est plus fiable que 'popup' avec certains hébergeurs (Netlify, Vercel)
             });
             // Rendre le bouton pour la page de connexion
             google.accounts.id.renderButton(
