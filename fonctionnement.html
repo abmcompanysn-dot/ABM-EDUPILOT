@@ -2,8 +2,14 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <!-- SEO Meta Tags -->
+    <title>Comment fonctionne ABM EduPilote ? Guide d'utilisation</title>
+    <meta name="description" content="Découvrez le fonctionnement d'ABM EduPilote. Un guide complet pour les administrateurs, les responsables de classe et les étudiants.">
+    <meta name="keywords" content="guide ABM EduPilote, tutoriel, fonctionnement, espace admin, espace responsable, espace étudiant">
+    <meta name="author" content="ABM Company Tech">
+    <link rel="canonical" href="https://abm-edupilote.netlify.app/fonctionnement.html">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fonctionnement - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Librairie pour la génération de PDF -->
@@ -140,6 +146,28 @@
                 </div>
             </section>
 
+            <!-- NOUVEAU: Section sur le Scanner Intégré -->
+            <section class="mb-12 sm:mb-20">
+                <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Une Fonctionnalité Révolutionnaire : Le Scanner Intégré</h2>
+                <div class="grid lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h4 class="text-xl font-bold text-slate-800 mb-4">Plus besoin d'application externe !</h4>
+                        <p class="text-slate-600 mb-4">ABM EduPilote intègre un scanner de QR code directement dans l'application, accessible depuis la page d'accueil et les espaces dédiés.</p>
+                        <ul class="space-y-3 text-slate-600">
+                            <li class="flex items-start"><span class="text-yellow-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Accès Rapide</span><span>: Un simple clic sur l'icône de caméra et le scanner est prêt.</span></li>
+                            <li class="flex items-start"><span class="text-yellow-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Interaction Intelligente</span><span>: Le scanner reconnaît le type de QR code et agit en conséquence :
+                                <ul class="list-['-_'] list-inside ml-6 mt-2 space-y-1 text-sm">
+                                    <li><strong>Code de Présence :</strong> Ouvre le formulaire de pointage.</li>
+                                    <li><strong>Code d'Inscription :</strong> Ouvre le formulaire d'inscription à la classe.</li>
+                                    <li><strong>Code Étudiant :</strong> Affiche le profil public de l'étudiant ou permet au responsable/admin de gérer la présence.</li>
+                                </ul>
+                            </span></li>
+                        </ul>
+                    </div>
+                    <div class="feature-card overflow-hidden rounded-lg"><img src="https://i.postimg.cc/8PcRjQZy/une-image-Simplifiez-la-gestion-Une-image-montrant-la-technologie-ou-la-gestion-dans-un-contexte.jpg" alt="Scanner de QR Code intégré" class="w-full h-auto object-cover shadow-md border"></div>
+                </div>
+            </section>
+
             <!-- Guide par Rôle -->
             <section>
                 <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Comment utiliser ABM EduPilote ?</h2>
@@ -167,6 +195,7 @@
                                 <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Planification</span><span>: Supervisez l'emploi du temps de tout l'établissement.</span></li>
                                 <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Délégation</span><span>: Créez des comptes pour les responsables de classe.</span></li>
                                 <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Suivi Global</span><span>: Consultez l'historique complet des présences de toute l'université.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Scan de Profil</span><span>: Scannez le QR code d'un étudiant pour accéder instantanément à son profil complet.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -193,6 +222,7 @@
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Gestion du Planning</span><span>: Proposez, confirmez ou annulez les cours de votre classe.</span></li>
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Suivi de Classe</span><span>: Accédez à la liste de vos étudiants et à leur historique de présence.</span></li>
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Outils Dédiés</span><span>: Générez et partagez le lien d'inscription et le QR code de présence en un clic.</span></li>
+                                <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Pointage Manuel</span><span>: Scannez le QR code d'un étudiant pour valider sa présence s'il n'a pas son téléphone.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -234,6 +264,16 @@
                 </p>
             </section>
         </div>
+
+        <!-- NOUVEAU: Avertissement Légal -->
+        <section class="mt-12 sm:mt-20 max-w-3xl mx-auto">
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded-r-lg">
+                <h4 class="font-bold text-lg">Avertissement sur la Propriété Intellectuelle</h4>
+                <p class="mt-2 text-sm">
+                    Le logiciel ABM EduPilote, son code source, son design et tous ses composants sont une création originale et la propriété exclusive de <strong>ABM Company Tech</strong>. Toute copie, reproduction ou distribution non autorisée, même partielle, est strictement interdite et fera l'objet de <strong>poursuites judiciaires systématiques</strong>.
+                </p>
+            </div>
+        </section>
 
         <!-- Footer (identique à la page d'accueil) -->
         <footer id="contact" class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] text-white py-12 w-full mt-16">
