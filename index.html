@@ -781,7 +781,7 @@
                         const stateData = JSON.parse(decodeURIComponent(state));
                         if (stateData.type === 'studentAuth') {
                             handleStudentGoogleCallback(accessToken, stateData.classId);
-                            window.location.hash = ''; // Nettoyer l'URL
+                            window.location.hash = ''; // Nettoyer l'URL pour éviter les re-déclenchements
                         }
                     } catch (e) { console.error("Erreur lors du traitement du retour Google:", e); }
                 }
@@ -1090,21 +1090,22 @@
 
         // NOUVEAU: Gère la réponse après l'authentification Google de l'étudiant
         async function handleStudentGoogleCallback(token, classId) {
+            // 1. Ouvrir la modale d'inscription pour montrer à l'utilisateur que quelque chose se passe
             openModalWithTemplate('class-register-template', new URLSearchParams({classId}));
             const form = document.getElementById('classRegisterForm');
             setLoading(true, form);
             displayMessageInForm(form, "Finalisation de l'inscription avec Google...", 'info');
 
             try {
+                // 2. Appeler le backend pour créer l'étudiant
                 const result = await callApi('registerStudentWithGoogle', { googleToken: token, classId: classId });
+                // 3. Afficher le message de succès directement dans la modale
                 const successMessage = `${result.message} Votre nouvel ID Étudiant est : <strong class="font-mono text-lg">${result.studentId}</strong>. Conservez-le précieusement pour vous connecter.`;
                 const modalContent = document.getElementById('modal-content');
                 modalContent.innerHTML = `<div class="p-6 text-center"><div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"><span class="text-4xl text-green-600"><i class="fas fa-check"></i></span></div><h1 class="text-xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-3">${successMessage}</p><button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button></div>`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
-            } finally {
-                // Le setLoading est géré par le remplacement du contenu de la modale
-                // setLoading(false, form); 
+                setLoading(false, form); // Remettre le bouton si erreur
             }
         }
 
