@@ -1075,7 +1075,8 @@
 
             // Rediriger vers la page de consentement Google
             // Le redirect_uri doit pointer vers une page capable de gérer la réponse
-            const redirectUri = `${window.location.origin}${window.location.pathname}`;
+            // AMÉLIORATION: Utiliser l'origine pour une URL de redirection cohérente et éviter les erreurs.
+            const redirectUri = `${window.location.origin}/`;
             const state = JSON.stringify({ type: 'studentAuth', classId: classId });
 
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
