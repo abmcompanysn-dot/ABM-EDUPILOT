@@ -411,8 +411,8 @@
             // Vérifier si on a une session valide
             const sessionToken = sessionStorage.getItem(ADMIN_SESSION_KEY);
             if (!sessionToken) {
-                // Si pas de token, on redirige vers la page de connexion
-                window.location.href = 'index.html'; 
+                // Si pas de token, on redirige vers la page d'accueil
+                window.location.href = PAGE_URLS.HOME; 
             }
 
             // NOUVEAU: Logique pour le menu mobile
@@ -442,7 +442,7 @@
 
         function logout() {
             sessionStorage.removeItem(ADMIN_SESSION_KEY);
-            window.location.href = 'index.html';
+            window.location.href = PAGE_URLS.HOME;
         }
 
         function showPage(pageId, linkElement) {
@@ -1539,7 +1539,7 @@
                 showModal('Erreur d\'authentification', '<p class="text-red-600 font-semibold">Votre session a expiré. Veuillez vous reconnecter.</p>');
                 showSpinner(false);
                 // Optionnel: rediriger vers la page de login après un délai
-                setTimeout(() => { window.location.href = 'index.html'; }, 3000);
+                setTimeout(() => { window.location.href = PAGE_URLS.HOME; }, 3000);
                 return;
             }
 
