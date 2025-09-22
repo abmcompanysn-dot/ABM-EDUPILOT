@@ -658,6 +658,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nom</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Étudiant</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Téléphone</th>
                             <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
                         </tr>
                     </thead>
@@ -667,6 +668,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${s.NOM_COMPLET}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_ETUDIANT}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${s.EMAIL}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${s.NUMERO_TELEPHONE || 'N/A'}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button onclick="showStudentAttendance('${s.ID_ETUDIANT}', '${s.NOM_COMPLET}')" class="text-violet-600 hover:text-violet-900">Voir Présences</button>
                                     <button onclick="showStudentProfile('${s.ID_ETUDIANT}', '${classId}', '${className}', '${filiereId}', '${filiereName}')" class="ml-4 text-blue-600 hover:text-blue-900">Voir Profil Complet</button>
@@ -748,6 +750,7 @@
                     <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
                         <span><strong>ID:</strong> <span class="font-mono">${student.ID_ETUDIANT}</span></span>
                         <span><strong>Email:</strong> ${student.EMAIL}</span>
+                        <span><strong>Téléphone:</strong> ${student.NUMERO_TELEPHONE || 'N/A'}</span>
                         <span><strong>Classe:</strong> ${student.NOM_CLASSE}</span>
                         <span><strong>Filière:</strong> ${student.NOM_FILIERE}</span>
                     </div>
@@ -1155,6 +1158,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nom</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Étudiant</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classe</th>
                             <th class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
                         </tr>
@@ -1165,6 +1169,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.NOM_COMPLET}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">${student.ID_ETUDIANT}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.EMAIL}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.NUMERO_TELEPHONE || 'N/A'}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.NOM_CLASSE}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                     <button onclick="handleDeleteEntity('student', '${student.ID_ETUDIANT}')" class="text-red-600 hover:text-red-900">Supprimer</button>
