@@ -450,18 +450,6 @@
                         <span class="btnSpinner hidden">Vérification...</span>
                     </button>
                 </div>
-                <!-- NOUVEAU: Inscription Étudiant avec Google -->
-                <div class="relative flex py-3 items-center">
-                    <div class="flex-grow border-t border-gray-200"></div>
-                    <span class="flex-shrink mx-4 text-gray-400 text-xs">OU</span>
-                    <div class="flex-grow border-t border-gray-200"></div>
-                </div>
-                <!-- CORRECTION: Conteneur pour le bouton Google Sign-In -->
-                <div id="student-google-signin-button" class="flex justify-center">
-                    <!-- Le bouton Google sera rendu ici par le script -->
-                </div>
-                    <p class="text-xs text-gray-500 text-center mt-2">Utilisez votre compte Google pour un accès rapide et sécurisé.</p>
-                </div>
             </form>
             <div class="messageArea mt-4 text-center" aria-live="polite"></div>
             <div class="mt-4 text-center text-sm">
@@ -883,19 +871,6 @@
                  const contextEl = document.getElementById('class-context-display');
  
                  if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
- 
-                 // Initialiser le bouton Google pour l'inscription étudiant ici,
-                 // car le formulaire est maintenant dans une modale.
-                 if (typeof google !== 'undefined') {
-                     google.accounts.id.initialize({
-                         client_id: GOOGLE_CLIENT_ID,
-                         callback: handleStudentGoogleCredentialResponse
-                     });
-                     google.accounts.id.renderButton(
-                         form.querySelector('#student-google-signin-button'),
-                         { theme: "outline", size: "large", type: "standard", text: "signup_with" }
-                     );
-                 }
              } catch (error) {
                  document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
                  displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
@@ -1095,67 +1070,6 @@
             const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
             const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
             messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
-        }
-
-        function renderConfirmationPage(title, message, type = 'success') {
-            showAuthPage('page-confirmation');
-            const iconContainer = document.getElementById('confirmation-icon');
-            const titleEl = document.getElementById('confirmation-title');
-            const messageEl = document.getElementById('confirmation-message');
-
-            if (type === 'success') {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>`;
-            } else {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-red-600"><i class="fas fa-times"></i></span>`;
-            }
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-        }
-
-        // --- NOUVELLE LOGIQUE D'INITIALISATION GOOGLE ---
-        window.onload = function () {
-          if (typeof google !== 'undefined') {
-            // Initialisation pour les admins
-            google.accounts.id.initialize({
-              client_id: GOOGLE_CLIENT_ID,
-              callback: handleGoogleCredentialResponse,
-            });
-
-            // NOUVEAU: Au lieu de rendre les boutons directement, on attache un événement
-            // qui ouvrira la modale pour demander le nom de l'école.
-            document.getElementById("google-signin-button-login").addEventListener('click', () => openModalWithTemplate('google-school-name-template'));
-            document.getElementById("google-signin-button-register").addEventListener('click', () => openModalWithTemplate('google-school-name-template'));
-
-            // On ajoute un placeholder visuel pour les boutons
-            document.getElementById("google-signin-button-login").innerHTML = `<div class="gsi-material-button"><div class="gsi-material-button-state"></div><div class="gsi-material-button-content-wrapper"><div class="gsi-material-button-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg></div><span class="gsi-material-button-contents">Continuer avec Google</span></div></div>`;
-            document.getElementById("google-signin-button-register").innerHTML = `<div class="gsi-material-button"><div class="gsi-material-button-state"></div><div class="gsi-material-button-content-wrapper"><div class="gsi-material-button-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg></div><span class="gsi-material-button-contents">S'inscrire avec Google</span></div></div>`;
-          }
-        }
-
-        // CORRECTION: Nouvelle fonction pour gérer la réponse Google pour l'inscription étudiante
-        async function handleStudentGoogleCredentialResponse(response) {
-            const credential = response.credential;
-            const form = document.getElementById('classRegisterForm');
-            if (!form) return;
-
-            const classId = form.querySelector('#classId').value;
-            setLoading(true, form);
-            displayMessageInForm(form, "Finalisation de l'inscription avec Google...", 'info');
-
-            try {
-                // Appeler le backend avec le credential (ID Token)
-                const result = await callApi('registerStudentWithGoogle', { googleToken: credential, classId: classId });
-                
-                // Afficher le message de succès
-                const successMessage = `${result.message} Votre nouvel ID Étudiant est : <strong class="font-mono text-lg">${result.studentId}</strong>. Conservez-le précieusement pour vous connecter.`;
-                const modalContent = document.getElementById('modal-content');
-                modalContent.innerHTML = `<div class="p-6 text-center"><div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"><span class="text-4xl text-green-600"><i class="fas fa-check"></i></span></div><h1 class="text-xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-3">${successMessage}</p><button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button></div>`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-                setLoading(false, form);
-            }
         }
 
 
