@@ -11,7 +11,7 @@
 // 3. Assurez-vous que votre déploiement est de type "Application Web".
 // 4. Copiez l'URL de l'application Web et collez-la ici.
 const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxh9jtKuNTuQC-coE74nn5vKUDlAV8J9n_R7K6LwKlNHXe14acqIwUedBwxCeiq1ZZQkw/exec';
-
+// CORRECTION: Utilisation des noms de clés de session cohérents avec les autres fichiers.
 // --- Clés de session et autres constantes ---
 const ADMIN_SESSION_KEY = 'abm_admin_token';
 const STUDENT_SESSION_KEY = 'abm_student_token';
