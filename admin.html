@@ -797,6 +797,74 @@
             }
         }
 
+        // CORRECTION: Réintroduction de la fonction showStudentProfile qui avait été supprimée.
+        // Affiche la page de profil complète d'un étudiant
+        async function showStudentProfile(studentId, classId, className, filiereId, filiereName) {
+            showPage('student-profile-page');
+            // Configurer le bouton de retour
+            document.getElementById('back-to-student-list-btn').onclick = () => showClassDetails(classId, className, filiereId, filiereName);
+
+            const headerContainer = document.getElementById('student-profile-header');
+            const attendanceContainer = document.getElementById('student-profile-attendance');
+            const scheduleContainer = document.getElementById('student-profile-schedule');
+            headerContainer.innerHTML = '<p>Chargement du profil...</p>';
+            attendanceContainer.innerHTML = '';
+            scheduleContainer.innerHTML = '';
+
+            try {
+                // On fait 3 appels séparés et fiables
+                const [profileResult, attendanceResult, scheduleResult] = await Promise.all([
+                    callAdminApi('adminGetStudentProfile', { studentId }),
+                    callApi('getStudentAttendanceHistory', { studentId }),
+                    callApi('getStudentSchedule', { studentId })
+                ]);
+
+                if (!profileResult.success || !profileResult.data || !profileResult.data.student) {
+                    throw new Error(profileResult.error || "Impossible de charger les informations de base de l'étudiant.");
+                }
+
+                const student = profileResult.data.student;
+                const attendanceHistory = attendanceResult.success ? attendanceResult.data : [];
+                const schedule = scheduleResult.success ? scheduleResult.data : [];
+
+                // Afficher l'en-tête
+                headerContainer.innerHTML = /*html*/`
+                    <h2 class="text-3xl font-bold text-gray-800">${student.NOM_COMPLET}</h2>
+                    <div class="mt-2 flex flex-wrap gap-x-6 gap-y-2 text-sm text-gray-500">
+                        <span><strong>ID:</strong> <span class="font-mono">${student.ID_ETUDIANT}</span></span>
+                        <span><strong>Email:</strong> ${student.EMAIL}</span>
+                        <span><strong>Téléphone:</strong> ${student.NUMERO_TELEPHONE || 'N/A'}</span>
+                        <span><strong>Classe:</strong> ${student.NOM_CLASSE}</span>
+                        <span><strong>Filière:</strong> ${student.NOM_FILIERE}</span>
+                    </div>
+                `;
+
+                // Afficher l'historique des présences
+                if (attendanceHistory.length === 0) {
+                    attendanceContainer.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                } else {
+                    attendanceContainer.innerHTML = /*html*/`
+                        <div class="space-y-4">
+                        ${attendanceHistory.map(item => `
+                            <div class="flex items-center space-x-4"><div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600"><i class="fas fa-check"></i></div><div><p class="font-medium text-gray-800">${item.MATIERE}</p><p class="text-xs text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p></div></div>
+                        `).join('')}
+                        </div>`;
+                }
+
+                // Afficher l'emploi du temps
+                if (schedule.length === 0) {
+                    scheduleContainer.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour cette classe.</p>';
+                } else {
+                    scheduleContainer.innerHTML = /*html*/`
+                        <div class="space-y-3">
+                        ${schedule.map(course => `<div class="p-3 bg-gray-50 rounded-md border"><p class="font-semibold text-sm">${course.MATIERE}</p><p class="text-xs text-gray-600">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p><p class="text-xs text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p></div>`).join('')}
+                        </div>`;
+                }
+            } catch (error) {
+                headerContainer.innerHTML = `<p class="text-red-500">Erreur lors du chargement du profil: ${error.message}</p>`;
+            }
+        }
+
         // NOUVEAU: Gère la soumission des formulaires d'ajout
         function setupEntityForm(entityType, options) {
             const form = document.getElementById(`add-${entityType}-form`);
