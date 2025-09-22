@@ -868,35 +868,32 @@
             if(!form) return;
             form.querySelector('#classId').value = classId;
             form.addEventListener('submit', handleClassRegisterSubmit);
-
-            try {
-                const result = await callApi('getClassDetails', { classId });
-                const details = result.data;
-                document.getElementById('class-name-display').textContent = details.className || '(Nom indisponible)';
-                const contextEl = document.getElementById('class-context-display');
-                // NOUVEAU: Remplir le profil étudiant scanné
-                document.getElementById('profile-scan-class').textContent = details.className || 'N/A';
-                document.getElementById('profile-scan-filiere').textContent = details.filiereName || 'N/A';
-
-                if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
-
-                // CORRECTION: Initialiser le bouton Google pour l'inscription étudiant ici,
-                // car le formulaire est maintenant dans une modale.
-                if (typeof google !== 'undefined') {
-                    google.accounts.id.initialize({
-                        client_id: GOOGLE_CLIENT_ID,
-                        callback: handleStudentGoogleCredentialResponse
-                    });
-                    google.accounts.id.renderButton(
-                        form.querySelector('#student-google-signin-button'),
-                        { theme: "outline", size: "large", type: "standard", text: "signup_with" }
-                    );
-                }
-
-            } catch (error) {
-                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
-                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
-            }
+            
+            // CORRECTION: Réintroduire l'appel API pour obtenir les détails de la classe
+             try {
+                 const result = await callApi('getClassDetails', { classId });
+                 const details = result.data;
+                 document.getElementById('class-name-display').textContent = details.className || '(Nom indisponible)';
+                 const contextEl = document.getElementById('class-context-display');
+ 
+                 if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
+ 
+                 // Initialiser le bouton Google pour l'inscription étudiant ici,
+                 // car le formulaire est maintenant dans une modale.
+                 if (typeof google !== 'undefined') {
+                     google.accounts.id.initialize({
+                         client_id: GOOGLE_CLIENT_ID,
+                         callback: handleStudentGoogleCredentialResponse
+                     });
+                     google.accounts.id.renderButton(
+                         form.querySelector('#student-google-signin-button'),
+                         { theme: "outline", size: "large", type: "standard", text: "signup_with" }
+                     );
+                 }
+             } catch (error) {
+                 document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
+                 displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
+             }
         }
 
         async function setupAttendanceForm(params) {
@@ -1230,35 +1227,32 @@
                 });
             }
 
-            try {
-                // Analyser l'URL scannée
-                const url = new URL(decodedText);
-                const params = url.searchParams;
-                const page = params.get('page');
-
-                if (decodedText.startsWith("ABM-ETU-ID:")) {
-                    const studentId = decodedText.split(':')[1];
-                    // NOUVEAU: Appeler la fonction publique dédiée
-                    callApi('getPublicStudentProfile', { studentId })
-                        .then(result => {
-                            const student = result.data.student;
-                            const params = new URLSearchParams();
-                            params.set('name', student.NOM_COMPLET);
-                            params.set('email', student.EMAIL);
-                            params.set('class', student.NOM_CLASSE);
-                            params.set('filiereName', student.NOM_FILIERE);
-                            openModalWithTemplate('student-profile-template', params);
-                        })
-                        .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
-                } else if (page === 'class-register' || page === 'attendance') {
+            // CORRECTION: Vérifier d'abord si c'est un ID étudiant avant de tenter de parser une URL.
+            if (decodedText.startsWith("ABM-ETU-ID:")) {
+                const studentId = decodedText.split(':')[1];
+                callApi('getPublicStudentProfile', { studentId })
+                    .then(result => {
+                        const student = result.data.student;
+                        const params = new URLSearchParams();
+                        params.set('name', student.NOM_COMPLET);
+                        params.set('email', student.EMAIL);
+                        params.set('class', student.NOM_CLASSE);
+                        params.set('filiereName', student.NOM_FILIERE);
+                        openModalWithTemplate('student-profile-template', params);
+                    })
+                    .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
+            } else {
+                try {
+                    // Si ce n'est pas un ID étudiant, on essaie de le traiter comme une URL.
+                    const url = new URL(decodedText);
+                    const params = url.searchParams;
+                    const page = params.get('page');
                     // Ouvrir la modale directement au lieu de suivre le lien
                     openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
-                } else {
-                    alert("QR Code non reconnu par l'application : " + decodedText);
+                } catch (e) {
+                    console.error("URL invalide ou erreur de traitement:", e);
+                    alert("QR Code invalide ou non reconnu : " + decodedText);
                 }
-            } catch (e) {
-                console.error("URL invalide ou erreur de traitement:", e);
-                alert("QR Code invalide : " + decodedText);
             }
         }
 
