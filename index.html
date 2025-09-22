@@ -1125,74 +1125,76 @@
         });
 
         // --- NOUVEAU: Logique du Scanner QR Code Intégré ---
-        const scanQrBtn = document.getElementById('scan-qr-btn');
-        const scannerContainer = document.getElementById('qr-scanner-container');
-        const closeScannerBtn = document.getElementById('close-scanner-btn');
+        function setupMainScanner() {
+            const scanQrBtn = document.getElementById('scan-qr-btn');
+            const scannerContainer = document.getElementById('qr-scanner-container');
+            const closeScannerBtn = document.getElementById('close-scanner-btn');
 
-        let html5QrCode_main = null;
+            let html5QrCode_main = null;
 
-        function onScanSuccess(decodedText, decodedResult) {
-            console.log(`Code scanné = ${decodedText}`);
+            function onScanSuccess(decodedText, decodedResult) {
+                console.log(`Code scanné = ${decodedText}`);
 
-            // Arrêter le scanner
-            if (html5QrCode_main && html5QrCode_main.isScanning) {
-                html5QrCode_main.stop().then(() => { // CORRECTION: Utilisation de la variable correcte
-                    scannerContainer.classList.add('hidden');
-                }).catch(err => { // CORRECTION: Utilisation de la variable correcte
-                    console.error("Impossible d'arrêter le scanner.", err);
-                    scannerContainer.classList.add('hidden');
-                });
-            }
+                // Arrêter le scanner
+                if (html5QrCode_main && html5QrCode_main.isScanning) {
+                    html5QrCode_main.stop().then(() => {
+                        scannerContainer.classList.add('hidden');
+                    }).catch(err => {
+                        console.error("Impossible d'arrêter le scanner.", err);
+                        scannerContainer.classList.add('hidden');
+                    });
+                }
 
-            // CORRECTION: Vérifier d'abord si c'est un ID étudiant avant de tenter de parser une URL.
-            if (decodedText.startsWith("ABM-ETU-ID:")) {
-                const studentId = decodedText.split(':')[1];
-                callApi('getPublicStudentProfile', { studentId })
-                    .then(result => {
-                        const student = result.data.student;
-                        const params = new URLSearchParams();
-                        params.set('name', student.NOM_COMPLET);
-                        params.set('email', student.EMAIL);
-                        params.set('class', student.NOM_CLASSE);
-                        params.set('filiereName', student.NOM_FILIERE);
-                        params.set('universityName', student.NOM_UNIVERSITE); // NOUVEAU
-                        openModalWithTemplate('student-profile-template', params);
-                    })
-                    .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
-            } else {
-                try {
-                    // Si ce n'est pas un ID étudiant, on essaie de le traiter comme une URL.
-                    const url = new URL(decodedText);
-                    const params = url.searchParams;
-                    const page = params.get('page');
-                    // Ouvrir la modale directement au lieu de suivre le lien
-                    openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
-                } catch (e) {
-                    console.error("URL invalide ou erreur de traitement:", e);
-                    alert("QR Code invalide ou non reconnu : " + decodedText);
+                // CORRECTION: Vérifier d'abord si c'est un ID étudiant avant de tenter de parser une URL.
+                if (decodedText.startsWith("ABM-ETU-ID:")) {
+                    const studentId = decodedText.split(':')[1];
+                    callApi('getPublicStudentProfile', { studentId })
+                        .then(result => {
+                            const student = result.data.student;
+                            const params = new URLSearchParams();
+                            params.set('name', student.NOM_COMPLET);
+                            params.set('email', student.EMAIL);
+                            params.set('class', student.NOM_CLASSE);
+                            params.set('filiereName', student.NOM_FILIERE);
+                            params.set('universityName', student.NOM_UNIVERSITE); // NOUVEAU
+                            openModalWithTemplate('student-profile-template', params);
+                        })
+                        .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
+                } else {
+                    try {
+                        // Si ce n'est pas un ID étudiant, on essaie de le traiter comme une URL.
+                        const url = new URL(decodedText);
+                        const params = url.searchParams;
+                        const page = params.get('page');
+                        // Ouvrir la modale directement au lieu de suivre le lien
+                        openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
+                    } catch (e) {
+                        console.error("URL invalide ou erreur de traitement:", e);
+                        alert("QR Code invalide ou non reconnu : " + decodedText);
+                    }
                 }
             }
-        }
 
-        function onScanFailure(error) { /* Ignorer les échecs pour continuer à scanner */ }
+            function onScanFailure(error) { /* Ignorer les échecs pour continuer à scanner */ }
 
-        scanQrBtn.addEventListener('click', () => {
-            scannerContainer.classList.remove('hidden');
-            scannerContainer.classList.add('flex'); // pour le centrage
+            scanQrBtn.addEventListener('click', () => {
+                scannerContainer.classList.remove('hidden');
+                scannerContainer.classList.add('flex'); // pour le centrage
 
-            if (!html5QrCode_main) html5QrCode_main = new Html5Qrcode("qr-reader");
-            
-            html5QrCode_main.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
-            .catch(err => {
-                alert("Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
-                scannerContainer.classList.add('hidden'); // CORRECTION: Utilisation de la variable correcte
+                if (!html5QrCode_main) html5QrCode_main = new Html5Qrcode("qr-reader");
+                
+                html5QrCode_main.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
+                .catch(err => {
+                    alert("Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+                    scannerContainer.classList.add('hidden');
+                });
             });
-        });
 
-        closeScannerBtn.addEventListener('click', () => {
-            if (html5QrCode_main && html5QrCode_main.isScanning) html5QrCode_main.stop();
-            scannerContainer.classList.add('hidden');
-        });
+            closeScannerBtn.addEventListener('click', () => {
+                if (html5QrCode_main && html5QrCode_main.isScanning) html5QrCode_main.stop();
+                scannerContainer.classList.add('hidden');
+            });
+        }
         // fin du script
     </script>
 
