@@ -82,6 +82,11 @@
                                     <input type="email" id="student-info-email" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
                                 </div>
 
+                                <div>
+                                    <label for="student-info-telephone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+                                    <input type="tel" id="student-info-telephone" class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
                                 <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md font-semibold flex items-center justify-center gap-3">
                                     <span class="btnText">Mettre à jour</span>
                                     <span class="btnSpinner hidden">Sauvegarde...</span>
@@ -171,6 +176,7 @@
                 document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
                 document.getElementById('student-info-name').value = student.name || '';
                 document.getElementById('student-info-email').value = student.email || '';
+                document.getElementById('student-info-telephone').value = student.telephone || ''; // NOUVEAU
                 form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
             } catch (error) {
                 displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
@@ -183,7 +189,8 @@
             const data = {
                 studentId: studentId,
                 name: form.querySelector('#student-info-name').value,
-                email: form.querySelector('#student-info-email').value
+                email: form.querySelector('#student-info-email').value,
+                telephone: form.querySelector('#student-info-telephone').value // NOUVEAU
             };
             setLoading(true, form);
             try {
