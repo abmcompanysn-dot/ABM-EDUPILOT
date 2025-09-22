@@ -367,8 +367,14 @@
             if (!messageArea) return;
             const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
             const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
-            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            messageArea.innerHTML = `
+                <div class="flex items-start p-4 rounded-lg ${bgColorClass} ${colorClass}">
+                    <i class="fas ${icon} mr-3 mt-1"></i>
+                    <div><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'}:</strong> ${message}</div>
+                </div>
+            `;
         }
 
         // Spinner global simple
