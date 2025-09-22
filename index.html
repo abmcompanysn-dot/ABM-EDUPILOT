@@ -232,8 +232,7 @@
 
     </main>
 
-    <!-- NOUVEAU: Overlay pour les formulaires de connexion/inscription -->
-    <div id="auth-overlay" class="fixed inset-0 bg-cover bg-center bg-gray-700 z-50 hidden items-center justify-center p-4" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');">
+    <!-- NOUVEAU: Overlay pour les formulaires de connexion/inscription -->    <div id="auth-overlay" class="fixed inset-0 bg-cover bg-center bg-gray-700 z-50 hidden items-center justify-center p-4" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
         <div class="relative w-full h-full overflow-y-auto flex items-center justify-center">
             <!-- Les formulaires sont maintenant ici -->
@@ -1062,8 +1061,14 @@
             if (!messageArea) return;
             const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
             const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
-            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            messageArea.innerHTML = `
+                <div class="flex items-start p-4 rounded-lg ${bgColorClass} ${colorClass}">
+                    <i class="fas ${icon} mr-3 mt-1"></i>
+                    <div><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'}:</strong> ${message}</div>
+                </div>
+            `;
         }
 
 
