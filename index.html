@@ -851,6 +851,8 @@
                 setupAttendanceForm(params);
             } else if (templateId === 'google-finalize-register-template') {
                 setupGoogleFinalizeForm(params);
+            } else if (templateId === 'google-school-name-template') {
+                setupGoogleSchoolNameForm();
             } else if (templateId === 'student-profile-template') {
                 // NOUVEAU: Logique pour remplir le profil étudiant
                 document.getElementById('profile-scan-name').textContent = params.get('name');
@@ -930,6 +932,24 @@
             form.addEventListener('submit', handleGoogleFinalizeSubmit);
 
             displayMessageInForm(form, `Bienvenue ${params.get('name')} !`, 'success');
+        }
+
+        // NOUVEAU: Prépare la modale pour demander le nom de l'école
+        function setupGoogleSchoolNameForm() {
+            const schoolNameInput = document.getElementById('googleSchoolNameInput');
+            const googleBtnContainer = document.getElementById('google-signin-container-in-modal');
+
+            schoolNameInput.addEventListener('input', () => {
+                if (schoolNameInput.value.trim().length > 2) {
+                    googleBtnContainer.classList.remove('hidden');
+                    // Initialiser et rendre le bouton Google une seule fois
+                    if (!googleBtnContainer.hasChildNodes()) {
+                        google.accounts.id.renderButton(googleBtnContainer, { theme: "outline", size: "large", text: "continue_with", width: "300" });
+                    }
+                } else {
+                    googleBtnContainer.classList.add('hidden');
+                }
+            });
         }
 
 
@@ -1041,33 +1061,22 @@
             const form = currentPage.querySelector('form');
             
             setLoading(true, form || document.body); // Utilise le formulaire ou le body comme fallback
-            displayMessageInForm(form || document.body, 'Vérification du compte Google...', 'info');
+            displayMessageInForm(form || document.body, 'Vérification du compte Google en cours...', 'info');
 
             try {
-                // Si l'utilisateur est sur la page d'inscription, on envoie aussi le nom de l'école
+                // NOUVEAU: On récupère le nom de l'école depuis la modale
+                const schoolNameInput = document.getElementById('googleSchoolNameInput');
+                const universityName = schoolNameInput ? schoolNameInput.value.trim() : null;
+
                 const payload = { credential };
-                if (currentPage.id === 'page-register') {
-                    const universityName = document.getElementById('universityName').value;
-                    if (universityName) {
-                        payload.universityName = universityName;
-                    }
+                if (universityName) {
+                    payload.universityName = universityName;
                 }
 
                 const result = await callApi('authWithGoogle', payload);
                 window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; // Redirection
             } catch (error) {
-                // Si le backend nous dit que l'utilisateur doit finaliser son inscription
-                if (error.needsRegistration) {
-                    // NOUVEAU: Ouvrir la modale pour demander le nom de l'école
-                    const params = new URLSearchParams();
-                    params.set('credential', credential);
-                    params.set('name', error.name);
-                    openModalWithTemplate('google-finalize-register-template', params);
-                } else {
-                    // AMÉLIORATION: Afficher un message générique pour les autres erreurs Google.
-                    // L'erreur technique est enregistrée dans le backend (Google Sheet).
-                    displayMessageInForm(form, "Une erreur est survenue lors de l'authentification Google. Veuillez réessayer ou utiliser l'inscription manuelle. L'incident a été enregistré.", 'error');
-                }
+                displayMessageInForm(form, error.message, 'error');
             } finally {
                 setLoading(false, form || document.body);
             }
@@ -1230,17 +1239,17 @@
             // Initialisation pour les admins
             google.accounts.id.initialize({
               client_id: GOOGLE_CLIENT_ID,
-              callback: handleGoogleCredentialResponse
-              // On retire ux_mode: 'redirect' pour utiliser le mode 'popup' par défaut, qui est compatible avec Netlify.
+              callback: handleGoogleCredentialResponse,
             });
-            google.accounts.id.renderButton(
-              document.getElementById("google-signin-button-login"),
-              { theme: "outline", size: "large", text: "signin_with", width: "300" } 
-            );
-            google.accounts.id.renderButton(
-              document.getElementById("google-signin-button-register"),
-              { theme: "outline", size: "large", text: "signup_with", width: "300" } 
-            );
+
+            // NOUVEAU: Au lieu de rendre les boutons directement, on attache un événement
+            // qui ouvrira la modale pour demander le nom de l'école.
+            document.getElementById("google-signin-button-login").addEventListener('click', () => openModalWithTemplate('google-school-name-template'));
+            document.getElementById("google-signin-button-register").addEventListener('click', () => openModalWithTemplate('google-school-name-template'));
+
+            // On ajoute un placeholder visuel pour les boutons
+            document.getElementById("google-signin-button-login").innerHTML = `<div class="gsi-material-button"><div class="gsi-material-button-state"></div><div class="gsi-material-button-content-wrapper"><div class="gsi-material-button-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg></div><span class="gsi-material-button-contents">Continuer avec Google</span></div></div>`;
+            document.getElementById("google-signin-button-register").innerHTML = `<div class="gsi-material-button"><div class="gsi-material-button-state"></div><div class="gsi-material-button-content-wrapper"><div class="gsi-material-button-icon"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" xmlns:xlink="http://www.w3.org/1999/xlink" style="display: block;"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24s.92 7.54 2.56 10.78l7.97-6.19z"></path><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path><path fill="none" d="M0 0h48v48H0z"></path></svg></div><span class="gsi-material-button-contents">S'inscrire avec Google</span></div></div>`;
           }
         }
 
