@@ -30,7 +30,6 @@
     <link rel="apple-touch-icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
 
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
@@ -272,15 +271,6 @@
                                 <span class="btnSpinner hidden">Vérification...</span>
                             </button>
                         </div>
-                        <!-- Séparateur et connexion Google -->
-                        <div class="relative flex py-5 items-center">
-                            <div class="flex-grow border-t border-gray-300"></div>
-                            <span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span>
-                            <div class="flex-grow border-t border-gray-300"></div>
-                        </div>
-                        <div id="google-signin-button-login" class="flex justify-center" style="min-height: 40px;">
-                            <!-- Le bouton Google sera rendu ici -->
-                        </div>
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
                     <div class="mt-4 text-center text-sm">
@@ -320,15 +310,6 @@
                                 <span class="btnText">Créer le compte</span>
                                 <span class="btnSpinner hidden">Création...</span>
                             </button>
-                        </div>
-                        <!-- Séparateur et connexion Google -->
-                        <div class="relative flex py-5 items-center">
-                            <div class="flex-grow border-t border-gray-300"></div>
-                            <span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span>
-                            <div class="flex-grow border-t border-gray-300"></div>
-                        </div>
-                        <div id="google-signin-button-register" class="flex justify-center" style="min-height: 40px;">
-                            <!-- Le bouton Google sera rendu ici -->
                         </div>
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
@@ -849,10 +830,6 @@
                 setupClassRegisterForm(params);
             } else if (templateId === 'attendance-template') {
                 setupAttendanceForm(params);
-            } else if (templateId === 'google-finalize-register-template') {
-                setupGoogleFinalizeForm(params);
-            } else if (templateId === 'google-school-name-template') {
-                setupGoogleSchoolNameForm();
             } else if (templateId === 'student-profile-template') {
                 // NOUVEAU: Logique pour remplir le profil étudiant
                 document.getElementById('profile-scan-name').textContent = params.get('name');
@@ -921,38 +898,6 @@
                 displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
             }
         }
-
-        // NOUVEAU: Prépare la modale pour finaliser l'inscription Google
-        function setupGoogleFinalizeForm(params) {
-            const credential = params.get('credential');
-            const form = document.getElementById('googleFinalizeForm');
-            if (!form || !credential) return;
-
-            form.querySelector('#googleCredential').value = credential;
-            form.addEventListener('submit', handleGoogleFinalizeSubmit);
-
-            displayMessageInForm(form, `Bienvenue ${params.get('name')} !`, 'success');
-        }
-
-        // NOUVEAU: Prépare la modale pour demander le nom de l'école
-        function setupGoogleSchoolNameForm() {
-            const schoolNameInput = document.getElementById('googleSchoolNameInput');
-            const googleBtnContainer = document.getElementById('google-signin-container-in-modal');
-
-            schoolNameInput.addEventListener('input', () => {
-                if (schoolNameInput.value.trim().length > 2) {
-                    googleBtnContainer.classList.remove('hidden');
-                    // Initialiser et rendre le bouton Google une seule fois
-                    if (!googleBtnContainer.hasChildNodes()) {
-                        google.accounts.id.renderButton(googleBtnContainer, { theme: "outline", size: "large", text: "continue_with" });
-                    }
-                } else {
-                    googleBtnContainer.classList.add('hidden');
-                }
-            });
-        }
-
-
 
         async function setupAttendanceForm(params) {
             const classe = params.get('classe');
@@ -1025,7 +970,7 @@
             const form = e.target;
             const studentId = form.querySelector('#loginStudentId').value;
             setLoading(true, form);
-            try {
+           try {
                 const result = await callApi('studentLogin', { studentId });
                 sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
                 window.location.href = PAGE_URLS.STUDENT;
@@ -1047,76 +992,6 @@
             try {
                 const result = await callApi('responsableLogin', data);
                 window.location.href = `${PAGE_URLS.RESPONSABLE}?token=${encodeURIComponent(result.token)}`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
-        }
-
-        // NOUVEAU: Gère la réponse de Google Sign-In
-        async function handleGoogleCredentialResponse(response) {
-            const credential = response.credential;
-            const currentPage = document.querySelector('.page:not(.hidden)');
-            const form = currentPage.querySelector('form');
-            
-            setLoading(true, form || document.body); // Utilise le formulaire ou le body comme fallback
-            displayMessageInForm(form || document.body, 'Vérification du compte Google en cours...', 'info');
-
-            try {
-                // NOUVEAU: On récupère le nom de l'école depuis la modale
-                const schoolNameInput = document.getElementById('googleSchoolNameInput');
-                const universityName = schoolNameInput ? schoolNameInput.value.trim() : null;
-
-                const payload = { credential };
-                if (universityName) {
-                    payload.universityName = universityName;
-                }
-
-                const result = await callApi('authWithGoogle', payload);
-                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; // Redirection
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form || document.body);
-            }
-        }
-
-        // NOUVEAU: Gère la soumission du formulaire de finalisation Google
-        async function handleGoogleFinalizeSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const payload = {
-                credential: form.querySelector('#googleCredential').value,
-                universityName: form.querySelector('#googleUniversityName').value
-            };
-
-            setLoading(true, form);
-            try {
-                // On rappelle la même action, mais cette fois avec le nom de l'école
-                const result = await callApi('authWithGoogle', payload);
-                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`;
-            } catch (error) {
-                displayMessageInForm(form, error.message, 'error');
-            } finally {
-                setLoading(false, form);
-            }
-        }
-
-        // NOUVEAU: Gère la soumission du formulaire de finalisation Google
-        async function handleGoogleFinalizeSubmit(e) {
-            e.preventDefault();
-            const form = e.target;
-            const payload = {
-                credential: form.querySelector('#googleCredential').value,
-                universityName: form.querySelector('#googleUniversityName').value
-            };
-
-            setLoading(true, form);
-            try {
-                // On rappelle la même action, mais cette fois avec le nom de l'école
-                const result = await callApi('authWithGoogle', payload);
-                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -1336,9 +1211,9 @@
         });
 
         // --- NOUVEAU: Logique du Scanner QR Code Intégré ---
-        const scanQrBtn_main = document.getElementById('scan-qr-btn');
-        const scannerContainer_main = document.getElementById('qr-scanner-container');
-        const closeScannerBtn_main = document.getElementById('close-scanner-btn');
+        const scanQrBtn = document.getElementById('scan-qr-btn');
+        const scannerContainer = document.getElementById('qr-scanner-container');
+        const closeScannerBtn = document.getElementById('close-scanner-btn');
 
         let html5QrCode_main = null;
 
@@ -1347,11 +1222,11 @@
 
             // Arrêter le scanner
             if (html5QrCode_main && html5QrCode_main.isScanning) {
-                html5QrCode_main.stop().then(() => {
-                    scannerContainer_main.classList.add('hidden');
-                }).catch(err => {
+                html5QrCode_main.stop().then(() => { // CORRECTION: Utilisation de la variable correcte
+                    scannerContainer.classList.add('hidden');
+                }).catch(err => { // CORRECTION: Utilisation de la variable correcte
                     console.error("Impossible d'arrêter le scanner.", err);
-                    scannerContainer_main.classList.add('hidden');
+                    scannerContainer.classList.add('hidden');
                 });
             }
 
@@ -1389,22 +1264,22 @@
 
         function onScanFailure(error) { /* Ignorer les échecs pour continuer à scanner */ }
 
-        scanQrBtn_main.addEventListener('click', () => {
-            scannerContainer_main.classList.remove('hidden');
-            scannerContainer_main.classList.add('flex'); // pour le centrage
+        scanQrBtn.addEventListener('click', () => {
+            scannerContainer.classList.remove('hidden');
+            scannerContainer.classList.add('flex'); // pour le centrage
 
             if (!html5QrCode_main) html5QrCode_main = new Html5Qrcode("qr-reader");
             
             html5QrCode_main.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
             .catch(err => {
                 alert("Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
-                scannerContainer_main.classList.add('hidden');
+                scannerContainer.classList.add('hidden'); // CORRECTION: Utilisation de la variable correcte
             });
         });
 
-        closeScannerBtn_main.addEventListener('click', () => {
+        closeScannerBtn.addEventListener('click', () => {
             if (html5QrCode_main && html5QrCode_main.isScanning) html5QrCode_main.stop();
-            scannerContainer_main.classList.add('hidden');
+            scannerContainer.classList.add('hidden');
         });
         // fin du script
     </script>
