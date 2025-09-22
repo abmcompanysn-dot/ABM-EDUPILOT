@@ -1,5 +1,1401 @@
 <!DOCTYPE html>
+<html lang="fr"><!DOCTYPE html>
 <html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <!-- SEO Meta Tags -->
+    <title>ABM EduPilote - Gestion Universitaire Simplifiée pour l'Afrique</title>
+    <meta name="description" content="Découvrez ABM EduPilote, la plateforme de gestion universitaire tout-en-un. Simplifiez l'administration, le suivi des présences par QR code, et la communication.">
+    <meta name="keywords" content="gestion universitaire, ERP éducation, suivi présence, QR code, Sénégal, Afrique, logiciel école, plateforme éducative, ABM Company">
+    <meta name="author" content="ABM Company Tech">
+    <link rel="canonical" href="https://abm-edupilote.netlify.app/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://abm-edupilote.netlify.app/">
+    <meta property="og:title" content="ABM EduPilote - Gestion Universitaire Simplifiée pour l'Afrique">
+    <meta property="og:description" content="La solution moderne pour la gestion des étudiants, des plannings et des présences. Conçue pour les défis du système éducatif africain.">
+    <meta property="og:image" content="https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://abm-edupilote.netlify.app/">
+    <meta property="twitter:title" content="ABM EduPilote - Gestion Universitaire Simplifiée pour l'Afrique">
+    <meta property="twitter:description" content="La solution moderne pour la gestion des étudiants, des plannings et des présences.">
+    <meta property="twitter:image" content="https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CORRECTION: Utilisation d'un lien d'icône moderne et ajout d'un favicon.ico de secours -->
+    <link rel="icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
+    <link rel="shortcut icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
+
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
+        body { 
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f3ff; /* bg-violet-50 */
+            /* Le display flex est retiré pour permettre au carrousel de prendre toute la largeur */
+            /* min-height sera géré par le contenu */
+            display: block;
+            
+        }
+
+        .action-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .page {
+            width: 100%;
+            max-width: 42rem; /* 672px */
+            margin: auto;
+        }
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+        }
+        /* NOUVEAU: Style pour les panneaux modaux */
+        .panel {
+            border-radius: 1rem; /* 16px */ background: linear-gradient(180deg, #ffffff, #fbfdff); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        /* Styles pour le menu hamburger */
+        .hamburger-button { display: flex; flex-direction: column; justify-content: space-around; width: 24px; height: 24px; background: transparent; border: none; cursor: pointer; padding: 0; z-index: 50; }
+        .hamburger-line { width: 24px; height: 2px; background-color: white; border-radius: 10px; transition: all 0.3s linear; position: relative; transform-origin: 1px; }
+        .hamburger-button.open .hamburger-line:nth-child(1) { transform: rotate(45deg); }
+        .hamburger-button.open .hamburger-line:nth-child(2) { opacity: 0; transform: translateX(20px); }
+        .hamburger-button.open .hamburger-line:nth-child(3) { transform: rotate(-45deg); }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
+</head>
+<body class="bg-violet-50">
+
+    <!-- NOUVELLE BARRE DE NAVIGATION -->
+    <header id="main-header" class="sticky top-0 w-full z-40 bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg transition-all duration-300">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="px-4 sm:px-6 lg:px-8 w-full">
+                <div class="flex items-center justify-between h-16 md:h-20">
+                    <!-- Logo -->
+                    <div class="flex-shrink-0">
+                        <a href="index.html" class="flex items-center space-x-3">
+                            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white rounded-md">
+                            <div>
+                                <span class="text-white font-bold text-xl">ABM EduPilote</span>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Navigation Desktop -->
+                    <nav class="hidden md:flex md:grow">
+                        <ul class="flex grow justify-end flex-wrap items-center">
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="index.html">Accueil</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="fonctionnement.html">Comment ça marche ?</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="mentions-legales.html">Mentions Légales</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="#contact">Contact</a></li>
+                            <li>
+                                <a href="#app-container" onclick="document.getElementById('app-container').scrollIntoView({ behavior: 'smooth' });" class="ml-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-5 py-2.5 text-center">
+                                    <span>Se Connecter</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Menu Mobile -->
+                    <div class="md:hidden">
+                        <button id="hamburger-button" class="hamburger-button">
+                            <span class="hamburger-line"></span><span class="hamburger-line"></span><span class="hamburger-line"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- NOUVEAU: Menu mobile -->
+    <div id="mobile-menu" class="md:hidden fixed inset-0 bg-gray-800 bg-opacity-95 z-50 hidden flex-col items-center justify-center">
+        <div class="flex flex-col items-center">
+            <!-- Logo dans le menu mobile -->
+            <a href="index.html" class="flex items-center space-x-3 mb-12">
+                <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-12 h-12 bg-white rounded-md">
+                <div>
+                    <span class="text-white font-bold text-2xl">ABM EduPilote</span>
+                </div>
+            </a>
+            <ul class="flex flex-col items-center text-white space-y-8">
+                <li><a href="index.html" class="text-2xl font-medium hover:text-violet-300">Accueil</a></li>
+                <li><a href="fonctionnement.html" class="text-2xl font-medium hover:text-violet-300">Comment ça marche ?</a></li>
+                <li><a href="mentions-legales.html" class="text-2xl font-medium hover:text-violet-300">Mentions Légales</a></li>
+                <li><a href="#contact" class="text-2xl font-medium hover:text-violet-300">Contact</a></li>
+                <li>
+                    <a href="#app-container" class="mt-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-6 py-3 text-center">
+                        <span>Se Connecter</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Grand Carrousel d'Ouverture -->
+    <section id="hero-carousel" class="relative w-full h-[calc(100vh-80px)] overflow-hidden shadow-lg bg-gray-800">
+        <!-- Slides container -->
+        <div id="carousel-slides" class="flex transition-transform duration-700 ease-in-out h-full">
+            <!-- Slide 1 -->
+            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');" role="group" aria-label="Slide 1 sur 3">
+                <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div class="text-center text-white p-8 max-w-3xl">
+                        <h2 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">L'éducation, l'arme la plus puissante.</h2>
+                        <p class="text-xl md:text-2xl italic opacity-90">"L'éducation est l'arme la plus puissante que vous puissiez utiliser pour changer le monde."</p>
+                        <cite class="block mt-4 text-lg not-italic">- Nelson Mandela</cite>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 2 -->
+            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg');" role="group" aria-label="Slide 2 sur 3">
+                 <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div class="text-center text-white p-8 max-w-3xl">
+                        <h2 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Simplifiez la gestion, maximisez l'apprentissage.</h2>
+                        <p class="text-xl md:text-2xl italic opacity-90">"Avec ABM EduPilote, la technologie est au service de l'éducation pour un avenir plus brillant."</p>
+                        <cite class="block mt-4 text-lg not-italic">- ABM EduPilote</cite>
+                    </div>
+                </div>
+            </div>
+            <!-- Slide 3 -->
+            <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/8PcRjQZy/une-image-Simplifiez-la-gestion-Une-image-montrant-la-technologie-ou-la-gestion-dans-un-contexte.jpg');">
+                 <div class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <div class="text-center text-white p-8 max-w-3xl">
+                        <h2 class="text-4xl md:text-6xl font-bold mb-4 leading-tight">Investir dans la connaissance.</h2>
+                        <p class="text-xl md:text-2xl italic opacity-90">"Investir dans la connaissance rapporte toujours les meilleurs intérêts."</p>
+                        <cite class="block mt-4 text-lg not-italic">- Benjamin Franklin</cite>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Navigation -->
+        <button id="prev-slide" class="absolute top-1/2 left-4 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full transition"><i class="fas fa-chevron-left"></i></button>
+        <button id="next-slide" class="absolute top-1/2 right-4 -translate-y-1/2 bg-white/30 hover:bg-white/50 text-white p-3 rounded-full transition"><i class="fas fa-chevron-right"></i></button>
+    </section>
+
+    <!-- Conteneur principal qui pousse le footer vers le bas -->
+    <main id="app-container" class="w-full py-16 px-4 sm:px-6 lg:px-8">
+
+        <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
+        <section id="page-portal" class="page">
+            <div class="max-w-7xl mx-auto text-center">
+                <div class="mb-12">
+                    <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#1C2B5A] to-[#7C3AED] text-transparent bg-clip-text">Choisissez votre portail d'accès</h1>
+                    <p class="text-gray-600 mt-4 text-lg md:text-xl">Connectez-vous à l'espace qui vous est dédié.</p>
+                </div>
+    
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    <!-- Carte pour les administrateurs existants -->
+                    <div onclick="showAuthPage('page-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace administrateur">
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/Jz4bHyRC/Acc-s-Admin-Une-image-repr-sentant-la-gestion-l-administration-ou-la-technologie-dans-le-contx.jpg');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                            <i class="fas fa-key text-3xl mb-2"></i>
+                            <h2 class="text-2xl font-bold">Accès Admin</h2>
+                            <p class="text-sm opacity-80 mt-1">Gérer l'ensemble de votre établissement.</p>
+                        </div>
+                    </div>
+    
+                    <!-- Carte pour les nouvelles écoles -->
+                    <div onclick="showAuthPage('page-register')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Inscrire une nouvelle école">
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/fLBsLgCN/Carte-Inscrire-une-cole-Une-image-d-une-fa-ade-d-universit-ou-d-un-campus.jpg');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                            <i class="fas fa-school text-3xl mb-2"></i>
+                            <h2 class="text-2xl font-bold">Inscrire une École</h2>
+                            <p class="text-sm opacity-80 mt-1">Créez un nouveau compte pour votre université.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- NOUVEAU: Carte pour les responsables -->
+                    <div onclick="showAuthPage('page-responsable-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace responsable">
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/PJHQJ26d/espace-reesponsabledes-etudiants-de-classe.jpg');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                            <i class="fas fa-chalkboard-teacher text-3xl mb-2"></i>
+                            <h2 class="text-2xl font-bold">Espace Responsable</h2>
+                            <p class="text-sm opacity-80 mt-1">Gérez le planning et les inscriptions de votre classe.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- NOUVEAU: Carte pour l'espace étudiant -->
+                    <div onclick="showAuthPage('page-student-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace étudiant">
+                        <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/Cx0pYgC2/photo-de-espcae-tudiant-africain.jpg');"></div>
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                        <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
+                            <i class="fas fa-user-graduate text-3xl mb-2"></i>
+                            <h2 class="text-2xl font-bold">Espace Étudiant</h2>
+                            <p class="text-sm opacity-80 mt-1">Consultez vos présences et pointez.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- NOUVEAU: Overlay pour les formulaires de connexion/inscription -->
+    <div id="auth-overlay" class="fixed inset-0 bg-cover bg-center bg-gray-700 z-50 hidden items-center justify-center p-4" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        <div class="relative w-full h-full overflow-y-auto flex items-center justify-center">
+            <!-- Les formulaires sont maintenant ici -->
+            <section id="page-login" class="page hidden">
+                <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800"> Accès Administration</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace.</p>
+                    </div>
+                    <form id="loginForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="loginEmail" class="block text-sm font-medium text-gray-700 mb-1">Email Administrateur</label>
+                                <input type="email" id="loginEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500" placeholder="admin@ecole.com">
+                            </div>
+                            <div>
+                                <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Mot de passe</label>
+                                <div class="relative">
+                                    <input type="password" id="loginPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 pr-10" placeholder="••••••••">
+                                    <button type="button" onclick="togglePasswordVisibility('loginPassword', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-violet-600"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Se Connecter</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                        <!-- Séparateur et connexion Google -->
+                        <div class="relative flex py-5 items-center">
+                            <div class="flex-grow border-t border-gray-300"></div>
+                            <span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span>
+                            <div class="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        <div id="google-signin-button-login" class="flex justify-center" style="min-height: 40px;">
+                            <!-- Le bouton Google sera rendu ici -->
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <section id="page-register" class="page hidden">
+                <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-6">
+                        <h1 class="text-3xl font-bold text-gray-800"> Enregistrer votre École</h1>
+                        <p class="text-gray-500 mt-2">Créez un compte pour votre établissement.</p>
+                    </div>
+                    <form id="registerForm">
+                        <div class="space-y-5">
+                            <div>
+                                <label for="universityName" class="block text-sm font-medium text-gray-700 mb-1">Nom de votre Université/École</label>
+                                <input type="text" id="universityName" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500">
+                            </div>
+                            <div>
+                                <label for="adminEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email (Administrateur)</label>
+                                <input type="email" id="adminEmail" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500">
+                            </div>
+                            <div>
+                                <label for="adminPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de Passe</label>
+                                <div class="relative">
+                                    <input type="password" id="adminPassword" required class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 pr-10">
+                                    <button type="button" onclick="togglePasswordVisibility('adminPassword', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-violet-600"><i class="fas fa-eye"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-8">
+                            <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-4 rounded-lg">
+                                <span class="btnText">Créer le compte</span>
+                                <span class="btnSpinner hidden">Création...</span>
+                            </button>
+                        </div>
+                        <!-- Séparateur et connexion Google -->
+                        <div class="relative flex py-5 items-center">
+                            <div class="flex-grow border-t border-gray-300"></div>
+                            <span class="flex-shrink mx-4 text-gray-400 text-sm">OU</span>
+                            <div class="flex-grow border-t border-gray-300"></div>
+                        </div>
+                        <div id="google-signin-button-register" class="flex justify-center" style="min-height: 40px;">
+                            <!-- Le bouton Google sera rendu ici -->
+                        </div>
+                    </form>
+                    <div class="messageArea mt-6 text-center"></div>
+                     <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <section id="page-responsable-login" class="page hidden">
+                <div class="w-full max-w-md mx-auto panel overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-4">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Espace Responsable</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous à votre espace de gestion.</p>
+                    </div>
+
+                    <form id="responsableLoginForm" class="space-y-5">
+                        <div>
+                            <label for="responsableLoginEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email</label>
+                            <input aria-label="Email responsable" type="email" id="responsableLoginEmail" name="responsableLoginEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="responsable@ecole.com">
+                        </div>
+                        <div>
+                            <label for="responsableLoginPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de passe</label>
+                            <div class="relative">
+                                <input aria-label="Mot de passe responsable" type="password" id="responsableLoginPassword" name="responsableLoginPassword" required class="w-full px-4 py-3 border border-gray-200 rounded-md pr-10" placeholder="••••••••">
+                                <button type="button" onclick="togglePasswordVisibility('responsableLoginPassword', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-violet-600"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
+                                <span class="btnText">Se Connecter</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="messageArea mt-4 text-center" aria-live="polite"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour</a>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <section id="page-student-login" class="page hidden">
+                <div class="w-full max-w-md mx-auto panel overflow-hidden">
+                <div class="p-8">
+                    <div class="text-center mb-4">
+                        <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Espace Étudiant</h1>
+                        <p class="text-gray-500 mt-2">Connectez-vous avec votre ID Étudiant.</p>
+                    </div>
+
+                    <form id="studentLoginForm" class="space-y-5">
+                        <div>
+                            <label for="loginStudentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                            <input aria-label="ID étudiant" type="text" id="loginStudentId" name="loginStudentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
+                        </div>
+
+                        <div>
+                            <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
+                                <span class="btnText">Entrer</span>
+                                <span class="btnSpinner hidden">Vérification...</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="messageArea mt-4 text-center" aria-live="polite"></div>
+                    <div class="mt-4 text-center text-sm">
+                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour</a>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <section id="page-confirmation" class="page hidden">
+                <div class="w-full max-w-md mx-auto panel p-8 text-center">
+                <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
+                    <span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>
+                </div>
+                <h1 id="confirmation-title" class="text-2xl font-bold text-gray-800">Opération Réussie</h1>
+                <p id="confirmation-message" class="text-gray-600 mt-3 text-lg">Votre action a été complétée.</p>
+                <button onclick="hideAuthOverlay()" class="mt-6 inline-block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg transition">Retour à l'accueil</button>
+            </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- NOUVEAU: Bouton flottant pour le scanner -->
+    <button id="scan-qr-btn" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code">
+        <i class="fas fa-qrcode text-2xl"></i>
+    </button>
+
+    <!-- NOUVEAU: Conteneur pour le scanner QR Code -->
+    <div id="qr-scanner-container" class="fixed inset-0 bg-black/80 flex-col items-center justify-center p-4 hidden z-50">
+        <p class="text-white text-lg mb-4 font-medium">Veuillez centrer le QR Code dans le cadre</p>
+        <div id="qr-reader" class="w-full max-w-sm bg-gray-800 rounded-lg overflow-hidden border-4 border-violet-500 shadow-lg"></div>
+        <button id="close-scanner-btn" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
+    </div>
+
+
+    <!-- MODAL GENERIQUE -->
+    <div id="modal-container" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50" aria-hidden="true">
+        <div id="modal-content" class="panel w-full max-w-lg overflow-hidden"></div>
+    </div>
+
+    <!-- TEMPLATES (la logique doit rester intacte, on garde les mêmes IDs/structures) -->
+    <template id="class-register-template">
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <h1 class="text-2xl font-bold text-gray-900">Rejoindre la Classe</h1>
+                <p class="text-sm text-gray-600 mt-2">Vous êtes sur le point de rejoindre la classe <strong id="class-name-display" class="text-violet-600"></strong>.</p>
+                <p id="class-context-display" class="text-xs text-gray-500 mt-1"></p>
+            </div>
+            <form id="classRegisterForm" class="space-y-4">
+                <input type="hidden" id="classId" name="classId" value="">
+                <div>
+                    <label for="studentName" class="block text-sm font-medium text-gray-700">Votre Nom Complet</label>
+                    <input type="text" id="studentName" name="studentName" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: Moussa Diop">
+                </div>
+                <div>
+                    <label for="studentId" class="block text-sm font-medium text-gray-700">Votre ID Étudiant</label>
+                    <input type="text" id="studentId" name="studentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
+                </div>
+                <div>
+                    <label for="studentEmail" class="block text-sm font-medium text-gray-700">Votre Email d'inscription</label>
+                    <input type="email" id="studentEmail" name="studentEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: m.diop@email.com">
+                </div>
+                <div>
+                    <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
+                        <span class="btnText">M'inscrire à la classe</span>
+                        <span class="btnSpinner hidden">Vérification...</span>
+                    </button>
+                </div>
+                <!-- NOUVEAU: Inscription Étudiant avec Google -->
+                <div class="relative flex py-3 items-center">
+                    <div class="flex-grow border-t border-gray-200"></div>
+                    <span class="flex-shrink mx-4 text-gray-400 text-xs">OU</span>
+                    <div class="flex-grow border-t border-gray-200"></div>
+                </div>
+                <!-- CORRECTION: Conteneur pour le bouton Google Sign-In -->
+                <div id="student-google-signin-button" class="flex justify-center">
+                    <!-- Le bouton Google sera rendu ici par le script -->
+                </div>
+                    <p class="text-xs text-gray-500 text-center mt-2">Utilisez votre compte Google pour un accès rapide et sécurisé.</p>
+                </div>
+            </form>
+            <div class="messageArea mt-4 text-center" aria-live="polite"></div>
+            <div class="mt-4 text-center text-sm">
+                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
+            </div>
+        </div>
+    </template>
+
+    <template id="attendance-template">
+        <div class="p-6">
+            <div class="text-center mb-4">
+                <h1 class="text-2xl font-bold text-gray-900">Feuille de Présence</h1>
+                <p class="text-sm text-gray-500 mt-2">Cours de <strong class="text-gray-700" id="matiere-display">Chargement...</strong> pour la classe <strong class="text-gray-700" id="classe-display">...</strong></p>
+            </div>
+            <form id="attendanceForm" class="space-y-4">
+                <input type="hidden" id="classe" name="classe" value="">
+                <input type="hidden" id="matiere" name="matiere" value="">
+                <div>
+                    <label for="studentId" class="block text-sm font-medium text-gray-700">Votre ID Étudiant</label>
+                    <input type="text" id="studentId" name="studentId" required class="w-full text-center text-lg font-bold px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
+                </div>
+                <div>
+                    <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
+                        <span class="btnText">Confirmer ma présence</span>
+                        <span class="btnSpinner hidden">Enregistrement...</span>
+                    </button>
+                </div>
+            </form>
+            <div class="messageArea mt-4 text-center" aria-live="polite"></div>
+            <div class="mt-4 text-center text-sm">
+                <a href="#" onclick="closeModal()" class="font-medium text-gray-500 hover:text-gray-700">Fermer</a>
+            </div>
+        </div>
+    </template>
+
+    <!-- NOUVEAU: Template pour afficher le profil étudiant après scan -->
+    <template id="student-profile-template">
+        <div class="p-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Profil Étudiant</h1>
+            <div class="mt-6 text-left space-y-3 bg-gray-50 p-4 rounded-lg border">
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Nom:</strong> <span id="profile-scan-name" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Email:</strong> <span id="profile-scan-email" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Classe:</strong> <span id="profile-scan-class" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Filière:</strong> <span id="profile-scan-filiere" class="text-gray-800"></span></p>
+            </div>
+            <button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button>
+        </div>
+    </template>
+
+
+    <!-- MODAL ABM COMPANY -->
+    <div id="abm-company-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 hidden z-50" onclick="closeAbmModal()">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
+            <div class="p-8 text-center">
+                <img src="https://i.postimg.cc/XXvkWXJW/logo-abm-company.png" alt="Logo ABM Company" class="w-20 h-20 mx-auto mb-4">
+                <h3 class="text-2xl font-bold text-gray-800">Africa Business Manager</h3>
+                <p class="text-violet-600 text-sm font-medium mb-4">COMPANY</p>
+                <p class="text-gray-600 text-base leading-relaxed">
+                    Solutions technologiques innovantes pour l'Afrique moderne.
+                    Développement d'applications mobiles et systèmes de gestion intelligents.
+                </p>
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <p class="text-sm text-gray-500">Développé par <strong class="text-gray-700">Brunel Atkossi</strong></p>
+                </div>
+                <button onclick="closeAbmModal()" class="mt-6 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <template id="student-profile-template">
+        <div class="p-6 text-center">
+            <h1 class="text-2xl font-bold text-gray-900">Profil Étudiant</h1>
+            <div class="mt-6 text-left space-y-3 bg-gray-50 p-4 rounded-lg border">
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Nom:</strong> <span id="profile-scan-name" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Email:</strong> <span id="profile-scan-email" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Classe:</strong> <span id="profile-scan-class" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">Filière:</strong> <span id="profile-scan-filiere" class="text-gray-800"></span></p>
+            </div>
+            <button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button>
+        </div>
+    </template>
+
+   <!-- Footer Professionnel -->
+    <footer id="contact" class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] text-white py-8 w-full mt-auto">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Informations Entreprise -->
+                <div class="text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start mb-4">
+                        <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-12 h-12 mr-3">
+                        <div>
+                            <h3 class="text-xl font-bold text-white">ABM EduPilote</h3>
+                            <p class="text-violet-300 text-sm font-medium">Votre Partenaire Éducatif</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">Une plateforme de gestion universitaire conçue pour simplifier l'administration, optimiser la communication et améliorer l'expérience d'apprentissage.</p>
+                </div>
+                
+                <!-- Services -->
+                <div class="text-center md:text-left">
+                    <h4 class="text-lg font-semibold text-white mb-4 flex items-center justify-center md:justify-start">
+                        
+                        Nos Services
+                    </h4>
+                    <ul class="space-y-2 text-gray-300 text-sm">
+                        <li class="flex items-center justify-center md:justify-start">
+                            
+                            Applications Mobiles
+                        </li>
+                        <li class="flex items-center justify-center md:justify-start">
+                            
+                            Gestion d'Entreprise
+                        </li>
+                        <li class="flex items-center justify-center md:justify-start">
+                            
+                            Intelligence Artificielle
+                        </li>
+                        <li class="flex items-center justify-center md:justify-start">
+                            
+                            Solutions Cloud
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Contact -->
+                <div class="text-center md:text-left">
+                    <h4 class="text-lg font-semibold text-white mb-4 flex items-center justify-center md:justify-start">
+                        
+                        Contact & Réseaux
+                    </h4>
+                    <div class="space-y-3 text-gray-300 text-sm">
+                        <div class="flex items-center justify-center md:justify-start">
+                            
+                            <span>Sénégal - Solutions Globales</span>
+                        </div>
+                        <div class="flex items-center justify-center md:justify-start">
+                            
+                            <span>abmcompanysn@gmail.com</span>
+                        </div>
+                        <div class="flex items-center justify-center md:justify-start">
+                            
+                            <span>+221 76 904 79 99</span>
+                        </div>
+                        
+                        
+                        
+                        
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Séparateur -->
+            <div class="border-t border-white/10 mt-8 pt-6">
+                <div class="flex flex-col md:flex-row justify-end items-center">
+                    <!-- Réseaux Sociaux -->
+                    <div class="flex flex-wrap gap-3 justify-center md:justify-end">
+                        <a href="https://www.facebook.com/share/p/175J3K475H/" target="_blank" class="w-12 h-12 bg-blue-600 hover:bg-blue-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.tiktok.com/@tech_sn_abmcompany" target="_blank" class="w-12 h-12 bg-black hover:bg-gray-800 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                                <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                            </svg>
+                        </a>
+                        <a href="https://www.youtube.com/@CompanyABM" target="_blank" class="w-12 h-12 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                        </a>
+                        <a href="https://wa.me/221769047999" target="_blank" class="w-12 h-12 bg-green-600 hover:bg-green-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.516"/>
+                            </svg>
+                        </a>
+                        <a href="mailto:abmcompanysn@gmail.com" class="w-12 h-12 bg-purple-600 hover:bg-purple-700 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                                <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-.904.732-1.636 1.636-1.636h.91L12 10.09l9.455-6.269h.909c.904 0 1.636.732 1.636 1.636z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section Réseaux Sociaux Spéciale -->
+            <div class="text-center mt-8 mb-6">
+                <h3 class="text-xl font-bold text-white mb-4">Rejoignez Notre Communauté</h3>
+                <div class="bg-white/10 backdrop-blur-sm rounded-2xl p-6 max-w-4xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- WhatsApp Business -->
+                        <div class="bg-green-500/20 rounded-xl p-4 border border-green-400/30">
+                            <div class="text-4xl mb-3">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" class="text-green-400">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.465 3.516"/>
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-white mb-2">WhatsApp Business</h4>
+                            <p class="text-green-200 text-sm mb-3">Rejoignez notre chaîne officielle</p>
+                            <a href="https://whatsapp.com/channel/0029VbAwuPc5kg6yWk69Ij0v" target="_blank" 
+                               class="inline-block bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105">
+                                 Notre Chaîne WhatsApp
+                            </a>
+                        </div>
+                        
+                        <!-- YouTube -->
+                        <div class="bg-red-500/20 rounded-xl p-4 border border-red-400/30">
+                            <div class="text-4xl mb-3">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" class="text-red-400">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-white mb-2">YouTube</h4>
+                            <p class="text-red-200 text-sm mb-3">Tutoriels et démonstrations</p>
+                            <a href="https://www.youtube.com/@CompanyABM" target="_blank" 
+                               class="inline-block bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105">
+                                 Notre Chaîne
+                            </a>
+                        </div>
+                        
+                        <!-- TikTok -->
+                        <div class="bg-gray-800/40 rounded-xl p-4 border border-gray-600/30">
+                            <div class="text-4xl mb-3">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/>
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-white mb-2">TikTok</h4>
+                            <p class="text-gray-200 text-sm mb-3">Contenus tech et innovations</p>
+                            <a href="https://www.tiktok.com/@tech_sn_abmcompany" target="_blank" 
+                               class="inline-block bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105">
+                                 @tech_sn_abmcompany
+                            </a>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+            
+            <!-- Copyright -->
+            <div class="text-center mt-8 pt-6 border-t border-white/10">
+                <p class="text-gray-400 text-sm">
+                    © 2025 
+                    <strong onclick="openAbmModal()" class="text-white cursor-pointer hover:underline">Africa Business Manager COMPANY</strong>.
+                    Tous droits réservés.
+                </p>
+                <p class="text-gray-500 text-xs mt-1">
+                    ABM EduPilote - Système de Rappels International v2.0
+                </p>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- ================================================================== -->
+    <!-- SCRIPT PRINCIPAL (la logique d'origine est préservée; j'ai ajouté quelques helpers UI) -->
+    <!-- ================================================================== -->
+    <script>
+        // --- MODAL ABM COMPANY ---
+        function openAbmModal() {
+            const modal = document.getElementById('abm-company-modal');
+            if (modal) modal.classList.remove('hidden');
+        }
+        function closeAbmModal() {
+            const modal = document.getElementById('abm-company-modal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        // Afficher l'année
+        // document.getElementById('year').textContent = new Date().getFullYear(); // ID 'year' n'existe plus dans le nouveau footer
+
+        // --- Helpers UI (non invasifs) ---
+        function togglePasswordVisibility(inputId, button) {
+            const input = document.getElementById(inputId);
+            const icon = button.querySelector('i');
+            if (!input || !icon) return;
+
+            if (input.type === "password") {
+                input.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+        function safe$(id){ return document.getElementById(id); }
+
+        // --- ROUTEUR SIMPLE (préservé, légèrement encapsulé) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+            if (studentSessionId) {
+                window.location.href = PAGE_URLS.STUDENT;
+                return;
+            } else {
+                const params = new URLSearchParams(window.location.search);
+                const page = params.get('page');
+
+                if (page === 'class-register' || page === 'register') {
+                    if (!params.has('classId') && params.has('classe')) {
+                        params.set('classId', params.get('classe'));
+                    }
+                    openModalWithTemplate('class-register-template', params);
+                } else if (page === 'attendance') {
+                    openModalWithTemplate('attendance-template', params);
+                } 
+
+                // NOUVEAU: Gérer le retour de l'authentification Google pour l'étudiant
+                const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                const accessToken = hashParams.get('access_token');
+                const state = hashParams.get('state');
+                if (accessToken && state) {
+                    try {
+                        const stateData = JSON.parse(decodeURIComponent(state));
+                        if (stateData.type === 'studentAuth') {
+                            handleStudentGoogleCallback(accessToken, stateData.classId);
+                            window.location.hash = ''; // Nettoyer l'URL pour éviter les re-déclenchements
+                        }
+                    } catch (e) { console.error("Erreur lors du traitement du retour Google:", e); }
+                }
+            }
+
+            // Attacher les gestionnaires pour les pages de base (préservés)
+            if (safe$('loginForm')) safe$('loginForm').onsubmit = handleLogin;
+            if (safe$('registerForm')) safe$('registerForm').onsubmit = handleRegister;
+            if (safe$('studentLoginForm')) safe$('studentLoginForm').onsubmit = handleStudentLogin;
+            if (safe$('responsableLoginForm')) safe$('responsableLoginForm').onsubmit = handleResponsableLogin;
+        });
+
+        // NOUVEAU: Fonctions pour gérer l'overlay des formulaires
+        function showAuthPage(pageId) {
+            const authOverlay = document.getElementById('auth-overlay');
+            
+            // Cacher toutes les pages dans l'overlay
+            authOverlay.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
+            
+            // Afficher la page cible
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.remove('hidden');
+            }
+
+            // Afficher l'overlay
+            authOverlay.classList.remove('hidden');
+            authOverlay.classList.add('flex');
+
+            // Fermer le menu mobile s'il est ouvert
+            const mobileMenu = document.getElementById('mobile-menu');
+            const hamburgerBtn = document.getElementById('hamburger-button');
+            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('flex');
+                hamburgerBtn.classList.remove('open');
+            }
+        }
+
+        function hideAuthOverlay() {
+            const authOverlay = document.getElementById('auth-overlay');
+            authOverlay.classList.add('hidden');
+            authOverlay.classList.remove('flex');
+            window.history.replaceState({}, document.title, window.location.pathname); // Nettoyer l'URL
+        }
+
+        // NOUVEAU: Fonctions modal (préservées)
+        function openModalWithTemplate(templateId, params) {
+            const template = document.getElementById(templateId);
+            const modalContent = document.getElementById('modal-content');
+            const modalContainer = document.getElementById('modal-container');
+
+            if (!template || !modalContent || !modalContainer) return;
+
+            const clone = template.content.cloneNode(true);
+            modalContent.innerHTML = '';
+            modalContent.appendChild(clone);
+
+            // Cacher le carrousel principal quand un modal est ouvert
+            document.getElementById('hero-carousel').style.display = 'none';
+
+            if (templateId === 'class-register-template') {
+                setupClassRegisterForm(params);
+            } else if (templateId === 'attendance-template') {
+                setupAttendanceForm(params);
+            } else if (templateId === 'google-finalize-register-template') {
+                setupGoogleFinalizeForm(params);
+            } else if (templateId === 'student-profile-template') {
+                // NOUVEAU: Logique pour remplir le profil étudiant
+                document.getElementById('profile-scan-name').textContent = params.get('name');
+                document.getElementById('profile-scan-email').textContent = params.get('email');
+                // CORRECTION: Remplir les champs de classe et filière du profil, au lieu d'appeler setupAttendanceForm
+                document.getElementById('profile-scan-class').textContent = params.get('class');
+                document.getElementById('profile-scan-filiere').textContent = params.get('filiereName');
+            }
+
+            modalContainer.classList.remove('hidden');
+            modalContainer.setAttribute('aria-hidden','false');
+        }
+
+        function closeModal() {
+            const modalContainer = document.getElementById('modal-container');
+            modalContainer.classList.add('hidden');
+            document.getElementById('hero-carousel').style.display = 'block'; // Réafficher le carrousel
+            // NOUVEAU: Vider le contenu de la modale pour éviter les conflits
+            const modalContent = document.getElementById('modal-content');
+            if (modalContent) modalContent.innerHTML = '';
+
+            modalContainer.setAttribute('aria-hidden','true');
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // --- Setup modals (préservés) ---
+        async function setupClassRegisterForm(params) {
+            const classId = params.get('classId');
+            if (!classId) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Lien d'inscription invalide. ID de classe manquant.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+                return;
+            }
+
+            const form = document.getElementById('classRegisterForm');
+            if(!form) return;
+            form.querySelector('#classId').value = classId;
+            form.addEventListener('submit', handleClassRegisterSubmit);
+
+            try {
+                const result = await callApi('getClassDetails', { classId });
+                const details = result.data;
+                document.getElementById('class-name-display').textContent = details.className || '(Nom indisponible)';
+                const contextEl = document.getElementById('class-context-display');
+                // NOUVEAU: Remplir le profil étudiant scanné
+                document.getElementById('profile-scan-class').textContent = details.className || 'N/A';
+                document.getElementById('profile-scan-filiere').textContent = details.filiereName || 'N/A';
+
+                if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
+
+                // CORRECTION: Initialiser le bouton Google pour l'inscription étudiant ici,
+                // car le formulaire est maintenant dans une modale.
+                if (typeof google !== 'undefined') {
+                    google.accounts.id.initialize({
+                        client_id: GOOGLE_CLIENT_ID,
+                        callback: handleStudentGoogleCredentialResponse
+                    });
+                    google.accounts.id.renderButton(
+                        form.querySelector('#student-google-signin-button'),
+                        { theme: "outline", size: "large", type: "standard", text: "signup_with" }
+                    );
+                }
+
+            } catch (error) {
+                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
+                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
+            }
+        }
+
+        // NOUVEAU: Prépare la modale pour finaliser l'inscription Google
+        function setupGoogleFinalizeForm(params) {
+            const credential = params.get('credential');
+            const form = document.getElementById('googleFinalizeForm');
+            if (!form || !credential) return;
+
+            form.querySelector('#googleCredential').value = credential;
+            form.addEventListener('submit', handleGoogleFinalizeSubmit);
+
+            displayMessageInForm(form, `Bienvenue ${params.get('name')} !`, 'success');
+        }
+
+
+
+        async function setupAttendanceForm(params) {
+            const classe = params.get('classe');
+            if (!classe) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+                return;
+            }
+
+            const form = document.getElementById('attendanceForm');
+            try {
+                const result = await callApi('getCurrentCourse', { classe: classe });
+                const course = result.data;
+
+                form.querySelector('#classe').value = course.classe;
+                document.getElementById('classe-display').textContent = course.classe;
+                form.querySelector('#matiere').value = course.matiere;
+                document.getElementById('matiere-display').textContent = course.matiere;
+
+                form.addEventListener('submit', handleAttendanceSubmit);
+            } catch (error) {
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><h2 class="text-xl font-bold text-red-600">Formulaire non disponible</h2><p class="text-gray-600 mt-2">${error.message}</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
+            }
+        }
+
+        // --- Handlers (préservés) ---
+        async function handleRegister(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                universityName: form.querySelector('#universityName').value,
+                adminEmail: form.querySelector('#adminEmail').value,
+                adminPassword: form.querySelector('#adminPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('registerSchool', data);
+                // AMÉLIORATION : On redirige systématiquement après une inscription réussie.
+                // Le backend renvoie toujours un token.
+                displayMessageInForm(form, result.message, 'success');
+                setTimeout(() => { window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; }, 1500);
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                email: form.querySelector('#loginEmail').value,
+                password: form.querySelector('#loginPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('loginSchool', data);
+                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleStudentLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const studentId = form.querySelector('#loginStudentId').value;
+            setLoading(true, form);
+            try {
+                const result = await callApi('studentLogin', { studentId });
+                sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
+                window.location.href = PAGE_URLS.STUDENT;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleResponsableLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                email: form.querySelector('#responsableLoginEmail').value,
+                password: form.querySelector('#responsableLoginPassword').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('responsableLogin', data);
+                window.location.href = `${PAGE_URLS.RESPONSABLE}?token=${encodeURIComponent(result.token)}`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // NOUVEAU: Gère la réponse de Google Sign-In
+        async function handleGoogleCredentialResponse(response) {
+            const credential = response.credential;
+            const currentPage = document.querySelector('.page:not(.hidden)');
+            const form = currentPage.querySelector('form');
+            
+            setLoading(true, form || document.body); // Utilise le formulaire ou le body comme fallback
+            displayMessageInForm(form || document.body, 'Vérification du compte Google...', 'info');
+
+            try {
+                // Si l'utilisateur est sur la page d'inscription, on envoie aussi le nom de l'école
+                const payload = { credential };
+                if (currentPage.id === 'page-register') {
+                    const universityName = document.getElementById('universityName').value;
+                    if (universityName) {
+                        payload.universityName = universityName;
+                    }
+                }
+
+                const result = await callApi('authWithGoogle', payload);
+                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; // Redirection
+            } catch (error) {
+                // Si le backend nous dit que l'utilisateur doit finaliser son inscription
+                if (error.needsRegistration) {
+                    // NOUVEAU: Ouvrir la modale pour demander le nom de l'école
+                    const params = new URLSearchParams();
+                    params.set('credential', credential);
+                    params.set('name', error.name);
+                    openModalWithTemplate('google-finalize-register-template', params);
+                } else {
+                    // AMÉLIORATION: Afficher un message générique pour les autres erreurs Google.
+                    // L'erreur technique est enregistrée dans le backend (Google Sheet).
+                    displayMessageInForm(form, "Une erreur est survenue lors de l'authentification Google. Veuillez réessayer ou utiliser l'inscription manuelle. L'incident a été enregistré.", 'error');
+                }
+            } finally {
+                setLoading(false, form || document.body);
+            }
+        }
+
+        // NOUVEAU: Gère la soumission du formulaire de finalisation Google
+        async function handleGoogleFinalizeSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const payload = {
+                credential: form.querySelector('#googleCredential').value,
+                universityName: form.querySelector('#googleUniversityName').value
+            };
+
+            setLoading(true, form);
+            try {
+                // On rappelle la même action, mais cette fois avec le nom de l'école
+                const result = await callApi('authWithGoogle', payload);
+                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleClassRegisterSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                name: form.querySelector('#studentName').value,
+                studentId: form.querySelector('#studentId').value,
+                email: form.querySelector('#studentEmail').value,
+                classId: form.querySelector('#classId').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('registerStudentInClass', data);
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"><span class="text-4xl text-green-600"><i class="fas fa-check"></i></span></div><h1 class="text-xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-3">${result.message}</p><button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        async function handleAttendanceSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: form.querySelector('#studentId').value,
+                classe: form.querySelector('#classe').value,
+                matiere: form.querySelector('#matiere').value
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('recordAttendance', data);
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"><span class="text-4xl text-green-600"><i class="fas fa-check"></i></span></div><h1 class="text-xl font-bold text-gray-800">Présence Enregistrée</h1><p class="text-gray-600 mt-3">${result.message}</p><button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // --- UTILITAIRES API / UI (préservés, petites améliorations non invasives) ---
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'cors',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data })
+            });
+
+            const result = await response.json();
+            // CORRECTION: Transmettre l'objet d'erreur complet pour une meilleure gestion
+            if (!result.success) {
+                const err = new Error(result.error || 'Erreur inconnue de l\'API.');
+                throw Object.assign(err, result); // Ajoute les autres propriétés de la réponse (ex: needsRegistration)
+            }
+            return result;
+        }
+
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement ? formElement.querySelector('.submitBtn') : null;
+            const btnText = formElement ? formElement.querySelector('.btnText') : null;
+            const btnSpinner = formElement ? formElement.querySelector('.btnSpinner') : null;
+            if (!submitBtn) return;
+
+            submitBtn.disabled = isLoading;
+            if (btnText) btnText.classList.toggle('hidden', isLoading);
+            if (btnSpinner) btnSpinner.classList.toggle('hidden', !isLoading);
+        }
+
+        function displayMessageInForm(formElement, message, type) {
+            // cherche la zone message liée (le premier .messageArea après le form)
+            let messageArea = null;
+            if (!formElement) {
+                // fallback global
+                messageArea = document.querySelector('.messageArea');
+            } else {
+                // si le form est dans une carte, on cherche .messageArea dans la même carte
+                messageArea = formElement.parentElement.querySelector('.messageArea') || formElement.nextElementSibling;
+            } 
+            // Si on ne trouve toujours pas, on prend le premier messageArea de la page visible
+            if (!messageArea) {
+                messageArea = document.querySelector('.page:not(.hidden) .messageArea');
+            }
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
+        }
+
+        function renderConfirmationPage(title, message, type = 'success') {
+            showAuthPage('page-confirmation');
+            const iconContainer = document.getElementById('confirmation-icon');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
+
+            if (type === 'success') {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>`;
+            } else {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-red-600"><i class="fas fa-times"></i></span>`;
+            }
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+        }
+
+        // --- NOUVELLE LOGIQUE D'INITIALISATION GOOGLE ---
+        window.onload = function () {
+          if (typeof google !== 'undefined') {
+            // Initialisation pour les admins
+            google.accounts.id.initialize({
+              client_id: GOOGLE_CLIENT_ID,
+              callback: handleGoogleCredentialResponse
+              // On retire ux_mode: 'redirect' pour utiliser le mode 'popup' par défaut, qui est compatible avec Netlify.
+            });
+            google.accounts.id.renderButton(
+              document.getElementById("google-signin-button-login"),
+              { theme: "outline", size: "large", text: "signin_with", width: "300" } 
+            );
+            google.accounts.id.renderButton(
+              document.getElementById("google-signin-button-register"),
+              { theme: "outline", size: "large", text: "signup_with", width: "300" } 
+            );
+          }
+        }
+
+        // CORRECTION: Nouvelle fonction pour gérer la réponse Google pour l'inscription étudiante
+        async function handleStudentGoogleCredentialResponse(response) {
+            const credential = response.credential;
+            const form = document.getElementById('classRegisterForm');
+            if (!form) return;
+
+            const classId = form.querySelector('#classId').value;
+            setLoading(true, form);
+            displayMessageInForm(form, "Finalisation de l'inscription avec Google...", 'info');
+
+            try {
+                // Appeler le backend avec le credential (ID Token)
+                const result = await callApi('registerStudentWithGoogle', { googleToken: credential, classId: classId });
+                
+                // Afficher le message de succès
+                const successMessage = `${result.message} Votre nouvel ID Étudiant est : <strong class="font-mono text-lg">${result.studentId}</strong>. Conservez-le précieusement pour vous connecter.`;
+                const modalContent = document.getElementById('modal-content');
+                modalContent.innerHTML = `<div class="p-6 text-center"><div class="w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center bg-green-100"><span class="text-4xl text-green-600"><i class="fas fa-check"></i></span></div><h1 class="text-xl font-bold text-gray-800">Inscription Réussie !</h1><p class="text-gray-600 mt-3">${successMessage}</p><button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button></div>`;
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+                setLoading(false, form);
+            }
+        }
+
+
+        // --- NOUVEAU: Logique du Grand Carrousel ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const slidesContainer = document.getElementById('carousel-slides');
+            const prevBtn = document.getElementById('prev-slide');
+            const nextBtn = document.getElementById('next-slide');
+
+            if (!slidesContainer || !prevBtn || !nextBtn) return;
+
+            const slides = document.querySelectorAll('.carousel-slide');
+            const slideCount = slides.length;
+            let currentSlide = 0;
+            let autoSlideInterval;
+
+            function goToSlide(slideIndex) {
+                slidesContainer.style.transform = `translateX(-${slideIndex * 100}%)`;
+                currentSlide = slideIndex;
+            }
+
+            function next() {
+                const nextIndex = (currentSlide + 1) % slideCount;
+                goToSlide(nextIndex);
+            }
+
+            function prev() {
+                const prevIndex = (currentSlide - 1 + slideCount) % slideCount;
+                goToSlide(prevIndex);
+            }
+
+            nextBtn.addEventListener('click', () => {
+                next();
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = setInterval(next, 8000);
+            });
+            prevBtn.addEventListener('click', () => {
+                prev();
+                clearInterval(autoSlideInterval);
+                autoSlideInterval = setInterval(next, 8000);
+            });
+
+            // NOUVEAU: Logique du menu hamburger
+            const hamburgerBtn = document.getElementById('hamburger-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            hamburgerBtn.addEventListener('click', () => {
+                hamburgerBtn.classList.toggle('open');
+                mobileMenu.classList.toggle('hidden');
+                mobileMenu.classList.toggle('flex');
+            });
+            // Fermer le menu en cliquant sur un lien
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    hamburgerBtn.click();
+                });
+            });
+
+            autoSlideInterval = setInterval(next, 8000); // Défilement automatique toutes les 8 secondes
+        });
+
+        // --- NOUVEAU: Logique du Scanner QR Code Intégré ---
+        const scanQrBtn = document.getElementById('scan-qr-btn');
+        const scannerContainer = document.getElementById('qr-scanner-container');
+        const closeScannerBtn = document.getElementById('close-scanner-btn');
+
+        let html5QrCode = null;
+
+        function onScanSuccess(decodedText, decodedResult) {
+            console.log(`Code scanné = ${decodedText}`);
+
+            // Arrêter le scanner
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    scannerContainer.classList.add('hidden');
+                }).catch(err => {
+                    console.error("Impossible d'arrêter le scanner.", err);
+                    scannerContainer.classList.add('hidden');
+                });
+            }
+
+            try {
+                // Analyser l'URL scannée
+                const url = new URL(decodedText);
+                const params = url.searchParams;
+                const page = params.get('page');
+
+                if (decodedText.startsWith("ABM-ETU-ID:")) {
+                    const studentId = decodedText.split(':')[1];
+                    // NOUVEAU: Appeler la fonction publique dédiée
+                    callApi('getPublicStudentProfile', { studentId })
+                        .then(result => {
+                            const student = result.data.student;
+                            const params = new URLSearchParams();
+                            params.set('name', student.NOM_COMPLET);
+                            params.set('email', student.EMAIL);
+                            params.set('class', student.NOM_CLASSE);
+                            params.set('filiereName', student.NOM_FILIERE);
+                            openModalWithTemplate('student-profile-template', params);
+                        })
+                        .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
+                } else if (page === 'class-register' || page === 'attendance') {
+                    // Ouvrir la modale directement au lieu de suivre le lien
+                    openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
+                } else {
+                    alert("QR Code non reconnu par l'application : " + decodedText);
+                }
+            } catch (e) {
+                console.error("URL invalide ou erreur de traitement:", e);
+                alert("QR Code invalide : " + decodedText);
+            }
+        }
+
+        function onScanFailure(error) { /* Ignorer les échecs pour continuer à scanner */ }
+
+        scanQrBtn.addEventListener('click', () => {
+            scannerContainer.classList.remove('hidden');
+            scannerContainer.classList.add('flex'); // pour le centrage
+
+            if (!html5QrCode) html5QrCode = new Html5Qrcode("qr-reader");
+            
+            html5QrCode.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
+            .catch(err => {
+                alert("Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
+                scannerContainer.classList.add('hidden');
+            });
+        });
+
+        closeScannerBtn.addEventListener('click', () => {
+            if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop();
+            scannerContainer.classList.add('hidden');
+        });
+        // fin du script
+    </script>
+
+
+
+</html>
 <head>
     <meta charset="UTF-8">
     <!-- SEO Meta Tags -->
@@ -1362,3 +2758,4 @@
 
 
 </html>
+
