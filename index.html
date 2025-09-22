@@ -879,8 +879,6 @@
 
         async function setupAttendanceForm(params) {
             const classe = params.get('classe');
-            // CORRECTION: Utiliser 'classe' (nom de la classe) au lieu de 'classId' pour l'appel API.
-            // Le QR code de présence généré par le responsable utilise le nom de la classe.
             if (!classe) {
                 const modalContent = document.getElementById('modal-content');
                 modalContent.innerHTML = `<div class="p-6 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
