@@ -1309,7 +1309,14 @@
 
         function showModal(title, content) {
             modalTitle.textContent = title;
-            modalContent.innerHTML = content;
+            // AMÉLIORATION: Ajouter une icône en fonction du titre pour une meilleure UX
+            if (title.toLowerCase().includes('erreur')) {
+                modalContent.innerHTML = `<div class="text-center"><div class="text-5xl text-red-500 mb-4"><i class="fas fa-times-circle"></i></div>${content}</div>`;
+            } else if (title.toLowerCase().includes('succès')) {
+                modalContent.innerHTML = `<div class="text-center"><div class="text-5xl text-green-500 mb-4"><i class="fas fa-check-circle"></i></div>${content}</div>`;
+            } else {
+                modalContent.innerHTML = content;
+            }
             modal.classList.remove('hidden');
         }
 
