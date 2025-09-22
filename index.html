@@ -441,6 +441,10 @@
                     <input type="email" id="studentEmail" name="studentEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: m.diop@email.com">
                 </div>
                 <div>
+                    <label for="studentTelephone" class="block text-sm font-medium text-gray-700">Votre Numéro de Téléphone (Optionnel)</label>
+                    <input type="tel" id="studentTelephone" name="studentTelephone" class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: 771234567">
+                </div>
+                <div>
                     <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
                         <span class="btnText">M'inscrire à la classe</span>
                         <span class="btnSpinner hidden">Vérification...</span>
@@ -502,6 +506,7 @@
                 <p><strong class="font-medium text-gray-700 w-20 inline-block">Email:</strong> <span id="profile-scan-email" class="text-gray-800"></span></p>
                 <p><strong class="font-medium text-gray-700 w-20 inline-block">Classe:</strong> <span id="profile-scan-class" class="text-gray-800"></span></p>
                 <p><strong class="font-medium text-gray-700 w-20 inline-block">Filière:</strong> <span id="profile-scan-filiere" class="text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-700 w-20 inline-block">École:</strong> <span id="profile-scan-university" class="text-gray-800"></span></p>
             </div>
             <button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button>
         </div>
@@ -836,6 +841,7 @@
                 document.getElementById('profile-scan-email').textContent = params.get('email');
                 // CORRECTION: Remplir les champs de classe et filière du profil, au lieu d'appeler setupAttendanceForm
                 document.getElementById('profile-scan-class').textContent = params.get('class');
+                document.getElementById('profile-scan-university').textContent = params.get('universityName'); // NOUVEAU
                 document.getElementById('profile-scan-filiere').textContent = params.get('filiereName');
             }
 
@@ -1003,6 +1009,7 @@
                 name: form.querySelector('#studentName').value,
                 studentId: form.querySelector('#studentId').value,
                 email: form.querySelector('#studentEmail').value,
+                telephone: form.querySelector('#studentTelephone').value, // NOUVEAU
                 classId: form.querySelector('#classId').value
             };
             setLoading(true, form);
@@ -1238,6 +1245,7 @@
                         params.set('email', student.EMAIL);
                         params.set('class', student.NOM_CLASSE);
                         params.set('filiereName', student.NOM_FILIERE);
+                        params.set('universityName', student.NOM_UNIVERSITE); // NOUVEAU
                         openModalWithTemplate('student-profile-template', params);
                     })
                     .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
