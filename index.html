@@ -36,10 +36,8 @@
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f5f3ff; /* bg-violet-50 */
-            /* Le display flex est retiré pour permettre au carrousel de prendre toute la largeur */
-            /* min-height sera géré par le contenu */
-            display: block;
-            
+            /* CORRECTION: Utiliser flexbox pour que le footer reste en bas de page */
+            display: flex; flex-direction: column; min-height: 100vh;
         }
 
         .action-card {
@@ -95,11 +93,6 @@
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="fonctionnement.html">Comment ça marche ?</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="mentions-legales.html">Mentions Légales</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="#contact">Contact</a></li>
-                            <li>
-                                <a href="#app-container" onclick="document.getElementById('app-container').scrollIntoView({ behavior: 'smooth' });" class="ml-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-5 py-2.5 text-center">
-                                    <span>Se Connecter</span>
-                                </a>
-                            </li>
                         </ul>
                     </nav>
 
@@ -179,7 +172,7 @@
     </section>
 
     <!-- Conteneur principal qui pousse le footer vers le bas -->
-    <main id="app-container" class="w-full py-16 px-4 sm:px-6 lg:px-8">
+    <main id="app-container" class="w-full py-16 px-4 sm:px-6 lg:px-8 flex-grow">
 
         <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
         <section id="page-portal" class="page">
@@ -762,6 +755,9 @@
                     } catch (e) { console.error("Erreur lors du traitement du retour Google:", e); }
                 }
             }
+
+            // NOUVEAU: Initialiser le scanner de la page principale
+            setupMainScanner();
 
             // Attacher les gestionnaires pour les pages de base (préservés)
             if (safe$('loginForm')) safe$('loginForm').onsubmit = handleLogin;
