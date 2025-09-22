@@ -26,7 +26,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- CORRECTION: Utilisation d'un lien d'icône moderne et ajout d'un favicon.ico de secours -->
     <link rel="icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
-    <link rel="shortcut icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
+    <link rel="shortcut icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
 
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -772,7 +772,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
             if (studentSessionId) {
-                window.location.href = 'etudiant.html';
+                window.location.href = PAGE_URLS.STUDENT;
                 return;
             } else {
                 const params = new URLSearchParams(window.location.search);
@@ -973,7 +973,7 @@
                 // AMÉLIORATION : On redirige systématiquement après une inscription réussie.
                 // Le backend renvoie toujours un token.
                 displayMessageInForm(form, result.message, 'success');
-                setTimeout(() => { window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`; }, 1500);
+                setTimeout(() => { window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; }, 1500);
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -991,7 +991,7 @@
             setLoading(true, form);
             try {
                 const result = await callApi('loginSchool', data);
-                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
+                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -1007,7 +1007,7 @@
             try {
                 const result = await callApi('studentLogin', { studentId });
                 sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
-                window.location.href = 'etudiant.html';
+                window.location.href = PAGE_URLS.STUDENT;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -1025,7 +1025,7 @@
             setLoading(true, form);
             try {
                 const result = await callApi('responsableLogin', data);
-                window.location.href = `responsable.html?token=${encodeURIComponent(result.token)}`;
+                window.location.href = `${PAGE_URLS.RESPONSABLE}?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -1053,7 +1053,7 @@
                 }
 
                 const result = await callApi('authWithGoogle', payload);
-                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`; // Redirection
+                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; // Redirection
             } catch (error) {
                 // Si le backend nous dit que l'utilisateur doit finaliser son inscription
                 if (error.needsRegistration) {
