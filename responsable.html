@@ -1,22 +1,37 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Espace Responsable - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f5f3ff; /* bg-violet-50 */
         }
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+        }
+        .skeleton-loader {
+            background-color: #e2e8f0;
+            border-radius: 0.5rem;
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="bg-violet-50">
 
@@ -30,12 +45,18 @@
                         <p class="text-xs text-violet-300 -mt-0.5">Espace Responsable</p>
                     </div>
                 </div>
-                <nav><button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button></nav>
+                <div class="flex items-center gap-4">
+                    <button id="profile-button" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
+                </div>
             </div>
         </div>
     </header>
 
     <main id="dashboard-container" class="max-w-6xl mx-auto p-4 sm:p-8">
+        <h2 id="class-name-header" class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Gestion de la classe : Chargement...</h2>
         <!-- NOUVEAU: Interface à onglets -->
         <div class="mb-6 border-b border-gray-200">
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
@@ -53,81 +74,84 @@
 
         <div id="planning-content" class="tab-content grid md:grid-cols-3 gap-8">
             <div class="md:col-span-1 space-y-8">
-                <!-- Formulaire d'ajout de cours -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Planifier un Cours</h3>
-                    <form id="add-course-form" class="space-y-4">
-                        <div>
-                            <label for="course-matiere" class="block text-sm font-medium text-gray-700">Matière</label>
-                            <input type="text" id="course-matiere" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label>
-                            <input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div>
-                            <label for="course-date" class="block text-sm font-medium text-gray-700">Date du cours</label>
-                            <input type="date" id="course-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                        </div>
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label for="course-start-time" class="block text-sm font-medium text-gray-700">Heure Début</label>
-                                <input type="time" id="course-start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                            <div>
-                                <label for="course-end-time" class="block text-sm font-medium text-gray-700">Heure Fin</label>
-                                <input type="time" id="course-end-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                        </div>
-                        <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter au planning</button>
-                    </form>
-                </div>
-                <!-- Génération de lien -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Lien d'Inscription</h3>
-                    <p class="text-sm text-gray-600 mb-4">Partagez ce lien pour que les étudiants s'inscrivent à votre classe.</p>
-                    <button onclick="generateRegLink()" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Générer le lien</button>
-                    <div id="reg-link-container" class="mt-4 hidden text-center">
-                        <input type="text" id="reg-link-input" readonly class="w-full bg-gray-100 px-3 py-2 border border-gray-300 rounded-md">
-                        <div class="flex justify-center gap-2 mt-2">
-                            <button onclick="copyToClipboard('reg-link-input')" class="text-sm bg-gray-600 text-white py-1 px-3 rounded-md hover:bg-gray-700">Copier</button>
-                            <button onclick="shareLink(document.getElementById('reg-link-input').value, 'Lien d\'inscription')" class="text-sm bg-blue-600 text-white py-1 px-3 rounded-md hover:bg-blue-700">Partager</button>
+                <!-- NOUVEAU: Panneau d'outils avec accordéon -->
+                <div class="bg-white p-6 rounded-xl shadow-sm space-y-2">
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Outils & Actions</h3>
+                    <!-- Accordéon 1: Planifier un cours -->
+                    <div class="border-b border-gray-200 pb-2">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left font-semibold text-gray-800 py-2">
+                            <span><i class="fas fa-plus-circle mr-2 text-violet-500"></i>Planifier un Cours</span>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <form id="add-course-form" class="pt-4 space-y-4">
+                                <!-- ... les champs du formulaire restent les mêmes ... -->
+                                <div><label for="course-matiere" class="block text-sm font-medium text-gray-700">Matière</label><input type="text" id="course-matiere" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
+                                <div><label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label><input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
+                                <div><label for="course-date" class="block text-sm font-medium text-gray-700">Date</label><input type="date" id="course-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div><label for="course-start-time" class="block text-sm font-medium text-gray-700">Début</label><input type="time" id="course-start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
+                                    <div><label for="course-end-time" class="block text-sm font-medium text-gray-700">Fin</label><input type="time" id="course-end-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
+                                </div>
+                                <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter</button>
+                            </form>
                         </div>
                     </div>
-                </div>
-                <!-- NOUVEAU: Génération QR Code -->
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">QR Code de Présence</h3>
-                    <p class="text-sm text-gray-600 mb-4">Affichez ce QR code pour que les étudiants puissent pointer leur présence.</p>
-                    <button onclick="generateAttendanceQrCode()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Générer le QR Code</button>
-                    <div id="qr-code-container" class="mt-4 hidden text-center">
-                        <img id="qr-code-img" src="" alt="QR Code de présence" class="mx-auto w-full max-w-[250px] rounded-lg border">
-                        <div class="flex justify-center gap-2 mt-4">
-                            <button id="qr-download-btn" class="text-sm bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700">Télécharger</button>
-                            <button id="qr-share-btn" class="text-sm bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Partager</button>
+                    <!-- Accordéon 2: Lien d'inscription -->
+                    <div class="border-b border-gray-200 pb-2">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left font-semibold text-gray-800 py-2">
+                            <span><i class="fas fa-link mr-2 text-blue-500"></i>Lien d'Inscription</span>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="pt-4 space-y-3">
+                                <p class="text-sm text-gray-600">Partagez ce lien pour que les étudiants s'inscrivent à votre classe.</p>
+                                <button onclick="generateRegLink()" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Générer le lien</button>
+                                <div id="reg-link-container" class="hidden"><input type="text" id="reg-link-input" readonly class="w-full bg-gray-100 px-3 py-2 border rounded-md"><button onclick="copyToClipboard('reg-link-input')" class="mt-2 w-full text-sm bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700">Copier</button></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Accordéon 3: QR Code de présence -->
+                    <div class="pb-2">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left font-semibold text-gray-800 py-2">
+                            <span><i class="fas fa-qrcode mr-2 text-green-500"></i>QR Code de Présence</span>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="pt-4 space-y-3">
+                                <p class="text-sm text-gray-600">Affichez ce QR code pour le pointage des présences.</p>
+                                <button onclick="generateAttendanceQrCode()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Générer le QR Code</button>
+                                <div id="qr-code-container" class="hidden text-center"><img id="qr-code-img" src="" alt="QR Code" class="mx-auto w-full max-w-[200px] rounded-lg border"><button id="qr-download-btn" class="mt-2 w-full text-sm bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700">Télécharger</button></div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="md:col-span-2 bg-white p-6 rounded-xl shadow-sm">
                 <div class="mb-4">
-                    <h3 class="text-lg font-medium text-gray-900">Planning de la Classe</h3>
-                    <p id="class-name-header" class="text-sm text-gray-500">Gestion de la classe : Chargement...</p>
+                    <h3 class="text-xl font-bold text-gray-900">Planning des Cours</h3>
                 </div>
-                <div id="planning-table-container" class="max-h-[70vh] overflow-x-auto pr-2"><p>Chargement du planning...</p></div>
+                <div id="planning-table-container" class="max-h-[80vh] overflow-y-auto pr-2">
+                    <!-- SKELETON LOADER -->
+                    <div class="space-y-4 animate-pulse">
+                        <div class="h-24 bg-gray-200 rounded-lg"></div>
+                        <div class="h-24 bg-gray-200 rounded-lg"></div>
+                        <div class="h-24 bg-gray-200 rounded-lg"></div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- NOUVEAU: Contenu pour la liste des étudiants -->
         <div id="students-content" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Liste des Étudiants de la Classe</h3>
-            <div id="students-list-container" class="max-h-[70vh] overflow-x-auto pr-2"><p>Chargement de la liste des étudiants...</p></div>
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Liste des Étudiants de la Classe</h3>
+            <div id="students-list-container" class="max-h-[80vh] overflow-y-auto pr-2"><p>Chargement de la liste des étudiants...</p></div>
         </div>
 
         <!-- NOUVEAU: Contenu pour l'historique des présences -->
         <div id="attendance-content" class="tab-content hidden bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Historique des Présences de la Classe</h3>
-            <div id="attendance-list-container" class="max-h-[70vh] overflow-x-auto pr-2"><p>Chargement de l'historique...</p></div>
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Historique des Présences de la Classe</h3>
+            <div id="attendance-list-container" class="max-h-[80vh] overflow-y-auto pr-2"><p>Chargement de l'historique...</p></div>
         </div>
     </main>
 
@@ -143,6 +167,21 @@
         <button id="close-scanner-btn" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
     </div>
 
+    <!-- NOUVEAU: Modale pour le profil du responsable -->
+    <div id="profile-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="relative bg-white rounded-xl shadow-lg w-full max-w-md flex flex-col">
+            <div class="p-6 text-center">
+                <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-violet-100 flex items-center justify-center">
+                    <span class="text-5xl text-violet-500"><i class="fas fa-user-tie"></i></span>
+                </div>
+                <h3 id="profile-modal-name" class="text-2xl font-bold text-gray-800">Chargement...</h3>
+                <p id="profile-modal-email" class="text-gray-500 mt-1">...</p>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 rounded-b-xl">
+                <button id="close-profile-modal" class="w-full bg-gray-500 text-white py-2 px-4 rounded-md hover:bg-gray-600">Fermer</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal et Spinner (copiés de admin.html pour la cohérence) -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
@@ -179,6 +218,28 @@
                 setupAddCourseForm(); // NOUVEAU: Initialiser le formulaire une seule fois
                 setupScanner(); // NOUVEAU: Initialiser le scanner
             }
+
+            // NOUVEAU: Logique pour la modale de profil
+            const profileButton = document.getElementById('profile-button');
+            const profileModal = document.getElementById('profile-modal');
+            const closeProfileModalBtn = document.getElementById('close-profile-modal');
+
+            if (profileButton && profileModal && closeProfileModalBtn) {
+                profileButton.addEventListener('click', () => profileModal.classList.remove('hidden'));
+                closeProfileModalBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
+                profileModal.addEventListener('click', (event) => {
+                    if (event.target === profileModal) profileModal.classList.add('hidden');
+                });
+            }
+
+            // NOUVEAU: Logique pour l'accordéon
+            document.querySelectorAll('.accordion-toggle').forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                    button.querySelector('i.fa-chevron-down').classList.toggle('rotate-180');
+                });
+            });
         });
 
         // NOUVEAU: Logique des onglets
@@ -212,8 +273,13 @@
 
         function renderPlanning(courses) {
             const container = document.getElementById('planning-table-container');
-            if (courses.length === 0) {
-                container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour cette classe.</p>';
+            if (!courses || courses.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fas fa-calendar-times text-4xl text-gray-300"></i>
+                        <h4 class="mt-4 text-lg font-semibold text-gray-600">Aucun cours planifié</h4>
+                        <p class="text-sm text-gray-400">Utilisez le formulaire pour ajouter un cours au planning.</p>
+                    </div>`;
                 return;
             }
 
@@ -432,10 +498,15 @@
             container.innerHTML = '<p>Chargement de la liste des étudiants...</p>';
             try {
                 const result = await callResponsableApi('responsableGetStudents');
-                const students = result.data;
+                const students = result.data || [];
 
                 if (students.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun étudiant n\'est inscrit dans cette classe pour le moment.</p>';
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-users-slash text-4xl text-gray-300"></i>
+                            <h4 class="mt-4 text-lg font-semibold text-gray-600">Aucun étudiant inscrit</h4>
+                            <p class="text-sm text-gray-400">Partagez le lien d'inscription pour commencer à remplir la classe.</p>
+                        </div>`;
                     return;
                 }
 
@@ -474,10 +545,15 @@
             container.innerHTML = '<p>Chargement de l\'historique des présences...</p>';
             try {
                 const result = await callResponsableApi('responsableGetAttendance');
-                const scans = result.data;
+                const scans = result.data || [];
 
                 if (scans.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré pour cette classe.</p>';
+                    container.innerHTML = `
+                        <div class="text-center py-12">
+                            <i class="fas fa-history text-4xl text-gray-300"></i>
+                            <h4 class="mt-4 text-lg font-semibold text-gray-600">Aucun pointage enregistré</h4>
+                            <p class="text-sm text-gray-400">Les présences scannées apparaîtront ici.</p>
+                        </div>`;
                     return;
                 }
 
@@ -637,9 +713,16 @@
             if (showSpinnerOnLoad) showSpinner(true);
             try {
                 const result = await callResponsableApi('responsableGetDashboardData');
-                const { className, courses } = result.data;
+                const { profile, className, courses } = result.data;
                 document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
                 renderPlanning(courses);
+
+                // NOUVEAU: Remplir les informations du profil
+                if (profile) {
+                    document.getElementById('profile-modal-name').textContent = profile.name || 'Nom non disponible';
+                    document.getElementById('profile-modal-email').textContent = profile.email || 'Email non disponible';
+                }
+
             } catch (error) {
                 showModal('Erreur', `Impossible de charger le tableau de bord: ${error.message}`);
             } finally {
