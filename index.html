@@ -174,7 +174,7 @@
     <main id="app-container" class="w-full py-16 px-4 sm:px-6 lg:px-8 flex-grow">
 
         <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
-        <section id="page-portal">
+        <section id="page-portal" class="page">
             <div class="max-w-7xl mx-auto text-center">
                 <div class="mb-12">
                     <h1 class="text-4xl md:text-5xl font-bold bg-gradient-to-r from-[#1C2B5A] to-[#7C3AED] text-transparent bg-clip-text">Choisissez votre portail d'accès</h1>
@@ -183,7 +183,7 @@
     
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
                     <!-- Carte pour les administrateurs existants -->
-                    <div onclick="showAuthPage('page-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace administrateur">
+                    <div onclick="showPage('page-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace administrateur">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/Jz4bHyRC/Acc-s-Admin-Une-image-repr-sentant-la-gestion-l-administration-ou-la-technologie-dans-le-contx.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -194,7 +194,7 @@
                     </div>
     
                     <!-- Carte pour les nouvelles écoles -->
-                    <div onclick="showAuthPage('page-register')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Inscrire une nouvelle école">
+                    <div onclick="showPage('page-register')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Inscrire une nouvelle école">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/fLBsLgCN/Carte-Inscrire-une-cole-Une-image-d-une-fa-ade-d-universit-ou-d-un-campus.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -205,7 +205,7 @@
                     </div>
                     
                     <!-- NOUVEAU: Carte pour les responsables -->
-                    <div onclick="showAuthPage('page-responsable-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace responsable">
+                    <div onclick="showPage('page-responsable-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace responsable">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/PJHQJ26d/espace-reesponsabledes-etudiants-de-classe.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -216,7 +216,7 @@
                     </div>
                     
                     <!-- NOUVEAU: Carte pour l'espace étudiant -->
-                    <div onclick="showAuthPage('page-student-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace étudiant">
+                    <div onclick="showPage('page-student-login')" class="action-card group relative aspect-square rounded-2xl overflow-hidden shadow-lg cursor-pointer" role="button" aria-label="Accéder à l'espace étudiant">
                         <div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" style="background-image: url('https://i.postimg.cc/Cx0pYgC2/photo-de-espcae-tudiant-africain.jpg');"></div>
                         <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                         <div class="absolute inset-0 p-6 flex flex-col justify-end text-white">
@@ -228,13 +228,8 @@
                 </div>
             </div>
         </section>
-
-    </main>
-
-    <!-- NOUVEAU: Overlay pour les formulaires de connexion/inscription -->    <div id="auth-overlay" class="fixed inset-0 bg-cover bg-center bg-gray-700 z-50 hidden items-center justify-center p-4" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-        <div class="relative w-full h-full overflow-y-auto flex items-center justify-center">
-            <!-- Les formulaires sont maintenant ici -->
+        
+        <!-- PAGE 2: CONNEXION ADMIN -->
             <section id="page-login" class="page hidden">
                 <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
                 <div class="p-8">
@@ -265,12 +260,13 @@
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
                     <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour à l'accueil</a>
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour à l'accueil</a>
                     </div>
                 </div>
             </div>
             </section>
-
+        
+        <!-- PAGE 3: INSCRIPTION ÉCOLE -->
             <section id="page-register" class="page hidden">
                 <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
                 <div class="p-8">
@@ -305,12 +301,13 @@
                     </form>
                     <div class="messageArea mt-6 text-center"></div>
                      <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour à l'accueil</a>
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour à l'accueil</a>
                     </div>
                 </div>
             </div>
             </section>
-
+        
+        <!-- NOUVEAU: PAGE POUR CONNEXION RESPONSABLE -->
             <section id="page-responsable-login" class="page hidden">
                 <div class="w-full max-w-md mx-auto panel overflow-hidden">
                 <div class="p-8">
@@ -342,12 +339,13 @@
 
                     <div class="messageArea mt-4 text-center" aria-live="polite"></div>
                     <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour</a>
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour</a>
                     </div>
                 </div>
             </div>
             </section>
-
+        
+        <!-- NOUVEAU: PAGE 4: CONNEXION ÉTUDIANT -->
             <section id="page-student-login" class="page hidden">
                 <div class="w-full max-w-md mx-auto panel overflow-hidden">
                 <div class="p-8">
@@ -372,12 +370,13 @@
 
                     <div class="messageArea mt-4 text-center" aria-live="polite"></div>
                     <div class="mt-4 text-center text-sm">
-                        <a href="#" onclick="hideAuthOverlay()" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour</a>
+                        <a href="#" onclick="showPage('page-portal')" class="font-medium text-violet-600 hover:text-violet-500">&larr; Retour</a>
                     </div>
                 </div>
             </div>
             </section>
-
+        
+        <!-- PAGE CONFIRMATION -->
             <section id="page-confirmation" class="page hidden">
                 <div class="w-full max-w-md mx-auto panel p-8 text-center">
                 <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
@@ -385,11 +384,11 @@
                 </div>
                 <h1 id="confirmation-title" class="text-2xl font-bold text-gray-800">Opération Réussie</h1>
                 <p id="confirmation-message" class="text-gray-600 mt-3 text-lg">Votre action a été complétée.</p>
-                <button onclick="hideAuthOverlay()" class="mt-6 inline-block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg transition">Retour à l'accueil</button>
+                <button onclick="showPage('page-portal')" class="mt-6 inline-block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg transition">Retour à l'accueil</button>
             </div>
             </section>
-        </div>
-    </div>
+
+    </main>
 
     <!-- NOUVEAU: Bouton flottant pour le scanner -->
     <button id="scan-qr-btn" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code">
@@ -764,38 +763,32 @@
             if (safe$('responsableLoginForm')) safe$('responsableLoginForm').onsubmit = handleResponsableLogin;
         });
 
-        // NOUVEAU: Fonctions pour gérer l'overlay des formulaires
-        function showAuthPage(pageId) {
-            const authOverlay = document.getElementById('auth-overlay');
-            
-            // Cacher toutes les pages dans l'overlay
-            authOverlay.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
-            
-            // Afficher la page cible
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.add('hidden'));
             const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.remove('hidden');
+            if (targetPage) targetPage.classList.remove('hidden');
+
+            // Close modal if open when switching pages
+            const modal = document.getElementById('modal-container');
+            if (modal && !modal.classList.contains('hidden')) {
+                document.getElementById('hero-carousel').style.display = 'block'; // Réafficher le carrousel
+                modal.classList.add('hidden');
             }
 
-            // Afficher l'overlay
-            authOverlay.classList.remove('hidden');
-            authOverlay.classList.add('flex');
-
-            // Fermer le menu mobile s'il est ouvert
-            const mobileMenu = document.getElementById('mobile-menu');
-            const hamburgerBtn = document.getElementById('hamburger-button');
-            if (mobileMenu && !mobileMenu.classList.contains('hidden')) {
-                mobileMenu.classList.add('hidden');
-                mobileMenu.classList.remove('flex');
+            // Close mobile menu on navigation
+            const mobile = document.getElementById('mobile-menu');
+            if (mobile && !mobile.classList.contains('hidden')) {
+                const hamburgerBtn = document.getElementById('hamburger-button');
+                mobile.classList.add('hidden');
                 hamburgerBtn.classList.remove('open');
             }
-        }
 
-        function hideAuthOverlay() {
-            const authOverlay = document.getElementById('auth-overlay');
-            authOverlay.classList.add('hidden');
-            authOverlay.classList.remove('flex');
-            window.history.replaceState({}, document.title, window.location.pathname); // Nettoyer l'URL
+            // Scroll top for clarity
+            if (pageId === 'page-portal') {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                document.getElementById('app-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
         }
 
         // NOUVEAU: Fonctions modal (préservées)
@@ -908,10 +901,9 @@
             setLoading(true, form);
             try {
                 const result = await callApi('registerSchool', data);
-                // AMÉLIORATION : On redirige systématiquement après une inscription réussie.
-                // Le backend renvoie toujours un token.
-                displayMessageInForm(form, result.message, 'success');
-                setTimeout(() => { window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`; }, 1500);
+                // On affiche une page de confirmation au lieu d'un simple message
+                const confirmationMessage = `${result.message} Vous pouvez maintenant vous connecter à votre espace administrateur.`;
+                renderConfirmationPage('Compte École Créé !', confirmationMessage, 'success');
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -1012,6 +1004,24 @@
                 setLoading(false, form);
             }
         }
+
+        function renderConfirmationPage(title, message, type = 'success') {
+            showPage('page-confirmation');
+            const iconContainer = document.getElementById('confirmation-icon');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
+
+            if (type === 'success') {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>`;
+            } else {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-red-600"><i class="fas fa-times"></i></span>`;
+            }
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+        }
+
 
         // --- UTILITAIRES API / UI (préservés, petites améliorations non invasives) ---
         async function callApi(action, data = {}) {
