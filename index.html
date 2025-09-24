@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -24,20 +25,18 @@
     <meta property="twitter:image" content="https://i.postimg.cc/k4VV7qJ8/contexte-africain-Investir-dans-la-connaissance-Une-image-d-un-groupe-d-tudiants-symbolisant-l.jpg">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- CORRECTION: Utilisation d'un lien d'icône moderne et ajout d'un favicon.ico de secours -->
-    <link rel="icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
-    <link rel="shortcut icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
-
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap');
         body { 
             font-family: 'Inter', sans-serif;
             background-color: #f5f3ff; /* bg-violet-50 */
-            /* CORRECTION: Utiliser flexbox pour que le footer reste en bas de page */
-            display: flex; flex-direction: column; min-height: 100vh;
+            /* Le display flex est retiré pour permettre au carrousel de prendre toute la largeur */
+            /* min-height sera géré par le contenu */
+            display: block;
+            
         }
 
         .action-card {
@@ -93,6 +92,11 @@
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="fonctionnement.html">Comment ça marche ?</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="mentions-legales.html">Mentions Légales</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="#contact">Contact</a></li>
+                            <li>
+                                <a href="#app-container" onclick="document.getElementById('app-container').scrollIntoView({ behavior: 'smooth' });" class="ml-4 btn text-white bg-violet-600 hover:bg-violet-700 w-full sm:w-auto rounded-lg px-5 py-2.5 text-center">
+                                    <span>Se Connecter</span>
+                                </a>
+                            </li>
                         </ul>
                     </nav>
 
@@ -132,7 +136,8 @@
     </div>
 
     <!-- NOUVEAU: Grand Carrousel d'Ouverture -->
-<section id="hero-carousel" class="relative w-full h-[calc(100vh-80px)] overflow-hidden shadow-lg bg-gray-800">        <!-- Slides container -->
+    <section id="hero-carousel" class="relative w-full h-[calc(100vh-80px)] overflow-hidden shadow-lg bg-gray-800">
+        <!-- Slides container -->
         <div id="carousel-slides" class="flex transition-transform duration-700 ease-in-out h-full">
             <!-- Slide 1 -->
             <div class="carousel-slide min-w-full h-full relative bg-cover bg-center" style="background-image: url('https://i.postimg.cc/CK2TpVrW/L-ducation-l-arme-la-plus-puissante-Une-image-inspirante-sur-l-ducation-en-g-n-rale-etudiant-e.jpg');" role="group" aria-label="Slide 1 sur 3">
@@ -171,7 +176,7 @@
     </section>
 
     <!-- Conteneur principal qui pousse le footer vers le bas -->
-    <main id="app-container" class="w-full py-16 px-4 sm:px-6 lg:px-8 flex-grow">
+    <main id="app-container" class="w-full py-16 px-4 sm:px-6 lg:px-8">
 
         <!-- PAGE 1: PORTAIL D'ACCUEIL (défaut) -->
         <section id="page-portal" class="page">
@@ -228,10 +233,10 @@
                 </div>
             </div>
         </section>
-        
+
         <!-- PAGE 2: CONNEXION ADMIN -->
-            <section id="page-login" class="page hidden">
-                <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <section id="page-login" class="page hidden pt-16 sm:pt-24">
+            <div class="w-full max-w-md mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
                 <div class="p-8">
                     <div class="text-center mb-6">
                         <h1 class="text-3xl font-bold text-gray-800"> Accès Administration</h1>
@@ -264,11 +269,11 @@
                     </div>
                 </div>
             </div>
-            </section>
-        
+        </section>
+
         <!-- PAGE 3: INSCRIPTION ÉCOLE -->
-            <section id="page-register" class="page hidden">
-                <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <section id="page-register" class="page hidden pt-16 sm:pt-24">
+            <div class="w-full max-w-lg mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden">
                 <div class="p-8">
                     <div class="text-center mb-6">
                         <h1 class="text-3xl font-bold text-gray-800"> Enregistrer votre École</h1>
@@ -305,11 +310,11 @@
                     </div>
                 </div>
             </div>
-            </section>
-        
+        </section>
+
         <!-- NOUVEAU: PAGE POUR CONNEXION RESPONSABLE -->
-            <section id="page-responsable-login" class="page hidden">
-                <div class="w-full max-w-md mx-auto panel overflow-hidden">
+        <section id="page-responsable-login" class="page hidden pt-16 sm:pt-24">
+            <div class="w-full max-w-md mx-auto panel overflow-hidden">
                 <div class="p-8">
                     <div class="text-center mb-4">
                         <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Espace Responsable</h1>
@@ -319,12 +324,12 @@
                     <form id="responsableLoginForm" class="space-y-5">
                         <div>
                             <label for="responsableLoginEmail" class="block text-sm font-medium text-gray-700 mb-1">Votre Email</label>
-                            <input aria-label="Email responsable" type="email" id="responsableLoginEmail" name="responsableLoginEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="responsable@ecole.com">
+                            <input aria-label="Email responsable" type="email" id="responsableLoginEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="responsable@ecole.com">
                         </div>
                         <div>
                             <label for="responsableLoginPassword" class="block text-sm font-medium text-gray-700 mb-1">Votre Mot de passe</label>
                             <div class="relative">
-                                <input aria-label="Mot de passe responsable" type="password" id="responsableLoginPassword" name="responsableLoginPassword" required class="w-full px-4 py-3 border border-gray-200 rounded-md pr-10" placeholder="••••••••">
+                                <input aria-label="Mot de passe responsable" type="password" id="responsableLoginPassword" required class="w-full px-4 py-3 border border-gray-200 rounded-md pr-10" placeholder="••••••••">
                                 <button type="button" onclick="togglePasswordVisibility('responsableLoginPassword', this)" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-violet-600"><i class="fas fa-eye"></i></button>
                             </div>
                         </div>
@@ -343,11 +348,11 @@
                     </div>
                 </div>
             </div>
-            </section>
-        
+        </section>
+
         <!-- NOUVEAU: PAGE 4: CONNEXION ÉTUDIANT -->
-            <section id="page-student-login" class="page hidden">
-                <div class="w-full max-w-md mx-auto panel overflow-hidden">
+        <section id="page-student-login" class="page hidden pt-16 sm:pt-24">
+            <div class="w-full max-w-md mx-auto panel overflow-hidden">
                 <div class="p-8">
                     <div class="text-center mb-4">
                         <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Espace Étudiant</h1>
@@ -357,7 +362,7 @@
                     <form id="studentLoginForm" class="space-y-5">
                         <div>
                             <label for="loginStudentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
-                            <input aria-label="ID étudiant" type="text" id="loginStudentId" name="loginStudentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
+                            <input aria-label="ID étudiant" type="text" id="loginStudentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
                         </div>
 
                         <div>
@@ -374,11 +379,11 @@
                     </div>
                 </div>
             </div>
-            </section>
-        
+        </section>
+
         <!-- PAGE CONFIRMATION -->
-            <section id="page-confirmation" class="page hidden">
-                <div class="w-full max-w-md mx-auto panel p-8 text-center">
+        <section id="page-confirmation" class="page hidden pt-16 sm:pt-24">
+            <div class="w-full max-w-md mx-auto panel p-8 text-center">
                 <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
                     <span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>
                 </div>
@@ -386,22 +391,9 @@
                 <p id="confirmation-message" class="text-gray-600 mt-3 text-lg">Votre action a été complétée.</p>
                 <button onclick="showPage('page-portal')" class="mt-6 inline-block w-full bg-violet-600 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded-lg transition">Retour à l'accueil</button>
             </div>
-            </section>
+        </section>
 
     </main>
-
-    <!-- NOUVEAU: Bouton flottant pour le scanner -->
-    <button id="scan-qr-btn" class="fixed bottom-6 right-6 bg-violet-600 hover:bg-violet-700 text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code">
-        <i class="fas fa-qrcode text-2xl"></i>
-    </button>
-
-    <!-- NOUVEAU: Conteneur pour le scanner QR Code -->
-    <div id="qr-scanner-container" class="fixed inset-0 bg-black/80 flex-col items-center justify-center p-4 hidden z-50">
-        <p class="text-white text-lg mb-4 font-medium">Veuillez centrer le QR Code dans le cadre</p>
-        <div id="qr-reader" class="w-full max-w-sm bg-gray-800 rounded-lg overflow-hidden border-4 border-violet-500 shadow-lg"></div>
-        <button id="close-scanner-btn" class="mt-6 bg-white/90 text-black font-bold py-2 px-8 rounded-full hover:bg-white transition-all">Annuler</button>
-    </div>
-
 
     <!-- MODAL GENERIQUE -->
     <div id="modal-container" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 hidden z-50" aria-hidden="true">
@@ -420,19 +412,15 @@
                 <input type="hidden" id="classId" name="classId" value="">
                 <div>
                     <label for="studentName" class="block text-sm font-medium text-gray-700">Votre Nom Complet</label>
-                    <input type="text" id="studentName" name="studentName" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: Moussa Diop">
+                    <input type="text" id="studentName" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: Moussa Diop">
                 </div>
                 <div>
                     <label for="studentId" class="block text-sm font-medium text-gray-700">Votre ID Étudiant</label>
-                    <input type="text" id="studentId" name="studentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
+                    <input type="text" id="studentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
                 </div>
                 <div>
                     <label for="studentEmail" class="block text-sm font-medium text-gray-700">Votre Email d'inscription</label>
-                    <input type="email" id="studentEmail" name="studentEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: m.diop@email.com">
-                </div>
-                <div>
-                    <label for="studentTelephone" class="block text-sm font-medium text-gray-700">Numéro de Téléphone (Format international)</label>
-                    <input type="tel" id="studentTelephone" name="studentTelephone" class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: +221771234567" pattern="\+[0-9]+" title="Veuillez entrer le numéro au format international, ex: +221...">
+                    <input type="email" id="studentEmail" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: m.diop@email.com">
                 </div>
                 <div>
                     <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
@@ -475,22 +463,6 @@
         </div>
     </template>
 
-    <!-- NOUVEAU: Template pour afficher le profil étudiant après scan -->
-    <template id="student-profile-template">
-        <div class="p-6 text-center">
-            <h1 class="text-2xl font-bold text-gray-900">Profil Étudiant</h1>
-            <div class="mt-6 text-left space-y-3 bg-gray-50 p-4 rounded-lg border">
-                <p><strong class="font-medium text-gray-700 w-20 inline-block">Nom:</strong> <span id="profile-scan-name" class="text-gray-800"></span></p>
-                <p><strong class="font-medium text-gray-700 w-20 inline-block">Email:</strong> <span id="profile-scan-email" class="text-gray-800"></span></p>
-                <p><strong class="font-medium text-gray-700 w-20 inline-block">Classe:</strong> <span id="profile-scan-class" class="text-gray-800"></span></p>
-                <p><strong class="font-medium text-gray-700 w-20 inline-block">Filière:</strong> <span id="profile-scan-filiere" class="text-gray-800"></span></p>
-                <p><strong class="font-medium text-gray-700 w-20 inline-block">École:</strong> <span id="profile-scan-university" class="text-gray-800"></span></p>
-            </div>
-            <button onclick="closeModal()" class="mt-6 w-full bg-violet-600 text-white py-2 rounded-md">Fermer</button>
-        </div>
-    </template>
-
-
     <!-- MODAL ABM COMPANY -->
     <div id="abm-company-modal" class="fixed inset-0 bg-black/60 flex items-center justify-center p-4 hidden z-50" onclick="closeAbmModal()">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onclick="event.stopPropagation()">
@@ -511,6 +483,7 @@
             </div>
         </div>
     </div>
+
 
    <!-- Footer Professionnel -->
     <footer id="contact" class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] text-white py-8 w-full mt-auto">
@@ -723,7 +696,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
             if (studentSessionId) {
-                window.location.href = PAGE_URLS.STUDENT;
+                window.location.href = 'etudiant.html';
                 return;
             } else {
                 const params = new URLSearchParams(window.location.search);
@@ -736,25 +709,10 @@
                     openModalWithTemplate('class-register-template', params);
                 } else if (page === 'attendance') {
                     openModalWithTemplate('attendance-template', params);
-                } 
-
-                // NOUVEAU: Gérer le retour de l'authentification Google pour l'étudiant
-                const hashParams = new URLSearchParams(window.location.hash.substring(1));
-                const accessToken = hashParams.get('access_token');
-                const state = hashParams.get('state');
-                if (accessToken && state) {
-                    try {
-                        const stateData = JSON.parse(decodeURIComponent(state));
-                        if (stateData.type === 'studentAuth') {
-                            handleStudentGoogleCallback(accessToken, stateData.classId);
-                            window.location.hash = ''; // Nettoyer l'URL pour éviter les re-déclenchements
-                        }
-                    } catch (e) { console.error("Erreur lors du traitement du retour Google:", e); }
+                } else {
+                    showPage('page-portal');
                 }
             }
-
-            // NOUVEAU: Initialiser le scanner de la page principale
-            setupMainScanner();
 
             // Attacher les gestionnaires pour les pages de base (préservés)
             if (safe$('loginForm')) safe$('loginForm').onsubmit = handleLogin;
@@ -777,17 +735,14 @@
 
             // Close mobile menu on navigation
             const mobile = document.getElementById('mobile-menu');
-            if (mobile && !mobile.classList.contains('hidden')) {
-                const hamburgerBtn = document.getElementById('hamburger-button');
-                mobile.classList.add('hidden');
-                hamburgerBtn.classList.remove('open');
-            }
+            if (mobile && !mobile.classList.contains('hidden')) mobile.classList.add('hidden');
 
             // Scroll top for clarity
             if (pageId === 'page-portal') {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             } else {
-                document.getElementById('app-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                const heroCarousel = document.getElementById('hero-carousel');
+                if (heroCarousel) heroCarousel.scrollIntoView({ behavior: 'smooth' });
             }
         }
 
@@ -810,14 +765,6 @@
                 setupClassRegisterForm(params);
             } else if (templateId === 'attendance-template') {
                 setupAttendanceForm(params);
-            } else if (templateId === 'student-profile-template') {
-                // NOUVEAU: Logique pour remplir le profil étudiant
-                document.getElementById('profile-scan-name').textContent = params.get('name');
-                document.getElementById('profile-scan-email').textContent = params.get('email');
-                // CORRECTION: Remplir les champs de classe et filière du profil, au lieu d'appeler setupAttendanceForm
-                document.getElementById('profile-scan-class').textContent = params.get('class');
-                document.getElementById('profile-scan-university').textContent = params.get('universityName'); // NOUVEAU
-                document.getElementById('profile-scan-filiere').textContent = params.get('filiereName');
             }
 
             modalContainer.classList.remove('hidden');
@@ -828,10 +775,6 @@
             const modalContainer = document.getElementById('modal-container');
             modalContainer.classList.add('hidden');
             document.getElementById('hero-carousel').style.display = 'block'; // Réafficher le carrousel
-            // NOUVEAU: Vider le contenu de la modale pour éviter les conflits
-            const modalContent = document.getElementById('modal-content');
-            if (modalContent) modalContent.innerHTML = '';
-
             modalContainer.setAttribute('aria-hidden','true');
             window.history.replaceState({}, document.title, window.location.pathname);
         }
@@ -849,19 +792,17 @@
             if(!form) return;
             form.querySelector('#classId').value = classId;
             form.addEventListener('submit', handleClassRegisterSubmit);
-            
-            // CORRECTION: Réintroduire l'appel API pour obtenir les détails de la classe
-             try {
-                 const result = await callApi('getClassDetails', { classId });
-                 const details = result.data;
-                 document.getElementById('class-name-display').textContent = details.className || '(Nom indisponible)';
-                 const contextEl = document.getElementById('class-context-display');
- 
-                 if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
-             } catch (error) {
-                 document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
-                 displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
-             }
+
+            try {
+                const result = await callApi('getClassDetails', { classId });
+                const details = result.data;
+                document.getElementById('class-name-display').textContent = details.className || '(Nom indisponible)';
+                const contextEl = document.getElementById('class-context-display');
+                if (contextEl) contextEl.textContent = `${details.filiereName || ''} ${details.universityName ? '/ ' + details.universityName : ''}`;
+            } catch (error) {
+                document.getElementById('class-name-display').textContent = `(Classe inconnue)`;
+                displayMessageInForm(form, `Erreur: ${error.message}`, 'error');
+            }
         }
 
         async function setupAttendanceForm(params) {
@@ -871,7 +812,7 @@
                 modalContent.innerHTML = `<div class="p-6 text-center"><h2 class="text-xl font-bold text-red-600">Erreur</h2><p class="text-gray-600 mt-2">Aucune classe spécifiée. Veuillez scanner un QR code valide.</p><button onclick="closeModal()" class="mt-4 bg-gray-500 text-white py-2 px-4 rounded">Fermer</button></div>`;
                 return;
             }
-            
+
             const form = document.getElementById('attendanceForm');
             try {
                 const result = await callApi('getCurrentCourse', { classe: classe });
@@ -901,9 +842,7 @@
             setLoading(true, form);
             try {
                 const result = await callApi('registerSchool', data);
-                // On affiche une page de confirmation au lieu d'un simple message
-                const confirmationMessage = `${result.message} Vous pouvez maintenant vous connecter à votre espace administrateur.`;
-                renderConfirmationPage('Compte École Créé !', confirmationMessage, 'success');
+                renderConfirmationPage('Compte École Créé !', `${result.message} Vous pouvez maintenant vous connecter.`, 'success');
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -921,7 +860,7 @@
             setLoading(true, form);
             try {
                 const result = await callApi('loginSchool', data);
-                window.location.href = `${PAGE_URLS.ADMIN}?token=${encodeURIComponent(result.token)}`;
+                window.location.href = `admin.html?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -934,10 +873,10 @@
             const form = e.target;
             const studentId = form.querySelector('#loginStudentId').value;
             setLoading(true, form);
-           try {
+            try {
                 const result = await callApi('studentLogin', { studentId });
                 sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
-                window.location.href = PAGE_URLS.STUDENT;
+                window.location.href = 'etudiant.html';
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -955,7 +894,7 @@
             setLoading(true, form);
             try {
                 const result = await callApi('responsableLogin', data);
-                window.location.href = `${PAGE_URLS.RESPONSABLE}?token=${encodeURIComponent(result.token)}`;
+                window.location.href = `responsable.html?token=${encodeURIComponent(result.token)}`;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -970,7 +909,6 @@
                 name: form.querySelector('#studentName').value,
                 studentId: form.querySelector('#studentId').value,
                 email: form.querySelector('#studentEmail').value,
-                telephone: form.querySelector('#studentTelephone').value, // NOUVEAU
                 classId: form.querySelector('#classId').value
             };
             setLoading(true, form);
@@ -1005,24 +943,6 @@
             }
         }
 
-        function renderConfirmationPage(title, message, type = 'success') {
-            showPage('page-confirmation');
-            const iconContainer = document.getElementById('confirmation-icon');
-            const titleEl = document.getElementById('confirmation-title');
-            const messageEl = document.getElementById('confirmation-message');
-
-            if (type === 'success') {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>`;
-            } else {
-                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
-                iconContainer.innerHTML = `<span class="text-5xl text-red-600"><i class="fas fa-times"></i></span>`;
-            }
-            titleEl.textContent = title;
-            messageEl.textContent = message;
-        }
-
-
         // --- UTILITAIRES API / UI (préservés, petites améliorations non invasives) ---
         async function callApi(action, data = {}) {
             if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
@@ -1034,11 +954,7 @@
             });
 
             const result = await response.json();
-            // CORRECTION: Transmettre l'objet d'erreur complet pour une meilleure gestion
-            if (!result.success) {
-                const err = new Error(result.error || 'Erreur inconnue de l\'API.');
-                throw Object.assign(err, result); // Ajoute les autres propriétés de la réponse (ex: needsRegistration)
-            }
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
             return result;
         }
 
@@ -1062,24 +978,30 @@
             } else {
                 // si le form est dans une carte, on cherche .messageArea dans la même carte
                 messageArea = formElement.parentElement.querySelector('.messageArea') || formElement.nextElementSibling;
-            } 
-            // Si on ne trouve toujours pas, on prend le premier messageArea de la page visible
-            if (!messageArea) {
-                messageArea = document.querySelector('.page:not(.hidden) .messageArea');
             }
             if (!messageArea) return;
             const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
             const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
-            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
-            
-            messageArea.innerHTML = `
-                <div class="flex items-start p-4 rounded-lg ${bgColorClass} ${colorClass}">
-                    <i class="fas ${icon} mr-3 mt-1"></i>
-                    <div><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'}:</strong> ${message}</div>
-                </div>
-            `;
+            const borderColorClass = type === 'success' ? 'border-green-200' : 'border-red-200';
+            messageArea.innerHTML = `<div class="border ${borderColorClass} ${bgColorClass} ${colorClass} px-4 py-3 rounded-md text-sm"><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'} :</strong> <span> ${message}</span></div>`;
         }
 
+        function renderConfirmationPage(title, message, type = 'success') {
+            showPage('page-confirmation');
+            const iconContainer = document.getElementById('confirmation-icon');
+            const titleEl = document.getElementById('confirmation-title');
+            const messageEl = document.getElementById('confirmation-message');
+
+            if (type === 'success') {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-green-600"><i class="fas fa-check"></i></span>`;
+            } else {
+                iconContainer.className = 'w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-red-100';
+                iconContainer.innerHTML = `<span class="text-5xl text-red-600"><i class="fas fa-times"></i></span>`;
+            }
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+        }
 
         // --- NOUVEAU: Logique du Grand Carrousel ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -1137,78 +1059,6 @@
 
             autoSlideInterval = setInterval(next, 8000); // Défilement automatique toutes les 8 secondes
         });
-
-        // --- NOUVEAU: Logique du Scanner QR Code Intégré ---
-        function setupMainScanner() {
-            const scanQrBtn = document.getElementById('scan-qr-btn');
-            const scannerContainer = document.getElementById('qr-scanner-container');
-            const closeScannerBtn = document.getElementById('close-scanner-btn');
-
-            let html5QrCode_main = null;
-
-            function onScanSuccess(decodedText, decodedResult) {
-                console.log(`Code scanné = ${decodedText}`);
-
-                // Arrêter le scanner
-                if (html5QrCode_main && html5QrCode_main.isScanning) {
-                    html5QrCode_main.stop().then(() => {
-                        scannerContainer.classList.add('hidden');
-                    }).catch(err => {
-                        console.error("Impossible d'arrêter le scanner.", err);
-                        scannerContainer.classList.add('hidden');
-                    });
-                }
-
-                // CORRECTION: Vérifier d'abord si c'est un ID étudiant avant de tenter de parser une URL.
-                if (decodedText.startsWith("ABM-ETU-ID:")) {
-                    const studentId = decodedText.split(':')[1];
-                    callApi('getPublicStudentProfile', { studentId })
-                        .then(result => {
-                            const student = result.data.student;
-                            const params = new URLSearchParams();
-                            params.set('name', student.NOM_COMPLET);
-                            params.set('email', student.EMAIL);
-                            params.set('class', student.NOM_CLASSE);
-                            params.set('filiereName', student.NOM_FILIERE);
-                            params.set('universityName', student.NOM_UNIVERSITE); // NOUVEAU
-                            openModalWithTemplate('student-profile-template', params);
-                        })
-                        .catch(err => alert(`Erreur: Impossible de trouver le profil de l'étudiant. ${err.message}`));
-                } else {
-                    try {
-                        // Si ce n'est pas un ID étudiant, on essaie de le traiter comme une URL.
-                        const url = new URL(decodedText);
-                        const params = url.searchParams;
-                        const page = params.get('page');
-                        // Ouvrir la modale directement au lieu de suivre le lien
-                        openModalWithTemplate(page === 'attendance' ? 'attendance-template' : 'class-register-template', params);
-                    } catch (e) {
-                        console.error("URL invalide ou erreur de traitement:", e);
-                        alert("QR Code invalide ou non reconnu : " + decodedText);
-                    }
-                }
-            }
-
-            function onScanFailure(error) { /* Ignorer les échecs pour continuer à scanner */ }
-
-            scanQrBtn.addEventListener('click', () => {
-                scannerContainer.classList.remove('hidden');
-                scannerContainer.classList.add('flex'); // pour le centrage
-
-                if (!html5QrCode_main) html5QrCode_main = new Html5Qrcode("qr-reader");
-                
-                html5QrCode_main.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, onScanSuccess, onScanFailure)
-                .catch(err => {
-                    alert("Impossible d'accéder à la caméra. Veuillez autoriser l'accès dans les paramètres de votre navigateur.");
-                    scannerContainer.classList.add('hidden');
-                });
-            });
-
-            closeScannerBtn.addEventListener('click', () => {
-                if (html5QrCode_main && html5QrCode_main.isScanning) html5QrCode_main.stop();
-                scannerContainer.classList.add('hidden');
-            });
-        }
         // fin du script
     </script>
 
