@@ -116,9 +116,6 @@
                     <div class="flex flex-wrap gap-4 items-center justify-between">
                         <button id="back-to-classes-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux classes</button>
                         <h2 id="class-details-title" class="text-3xl font-bold text-gray-800">Étudiants de la classe...</h2>
-                        <button id="export-class-students-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
-                            <i class="fas fa-download mr-2"></i>Exporter la liste
-                        </button>
                     </div>
                     <div id="student-list-container" class="bg-white p-6 rounded-lg shadow-sm table-responsive-wrapper">
                         <!-- La liste des étudiants sera injectée ici -->
@@ -659,11 +656,6 @@
             showPage('class-details-page');
             document.getElementById('class-details-title').textContent = `Étudiants de : ${className}`;
             document.getElementById('back-to-classes-btn').onclick = () => showFiliereDetails(filiereId, filiereName);
-            
-            // NOUVEAU: Configurer le bouton d'exportation pour cette classe spécifique
-            const exportBtn = document.getElementById('export-class-students-btn');
-            exportBtn.onclick = () => showExportOptions('students_class', { classId: classId, className: className });
-
 
             const container = document.getElementById('student-list-container');
             container.innerHTML = '<p>Chargement des étudiants...</p>';
