@@ -1435,7 +1435,6 @@
         async function handleDownload(exportType, options = {}) {
             const format = options.format || 'csv';
             showSpinner(true);
-            closeModal(); // Fermer la modale de sélection
             try {
                 // La logique d'export CSV/PDF a été retirée, on ne garde que la logique de la modale
                 const result = await callAdminApi('adminExportData', { exportType, ...options });
@@ -1457,7 +1456,7 @@
             } catch (error) {
                 showModal('Erreur de Téléchargement', `<p class="text-red-500">${error.message}</p>`);
             } finally {
-                closeModal(); // Fermer la modale de sélection après l'action
+                closeModal(); // Fermer la modale de sélection après l'action, qu'elle ait réussi ou non
                 showSpinner(false);
             }
         }
