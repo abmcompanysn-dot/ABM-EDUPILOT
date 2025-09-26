@@ -266,7 +266,7 @@
             <p class="text-gray-600 mt-2">Créez des comptes pour les responsables et assignez-les à une classe.</p>
         </header>
 
-        <div class="grid lg:grid-cols-3 gap-8 items-start">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <!-- Formulaire d'ajout de responsable -->
             <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Ajouter un Responsable</h3>
@@ -929,7 +929,7 @@
 
                 if (courses.length === 0) {
                     container.innerHTML = '<p class="text-gray-500">Aucun cours planifié.</p>';
-                    return;
+                    return; 
                 }
 
                 // Vider le conteneur
