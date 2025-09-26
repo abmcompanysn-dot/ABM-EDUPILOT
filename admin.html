@@ -96,7 +96,7 @@
                         <h2 class="text-3xl font-bold text-gray-800">Vue d'ensemble des Filières</h2>
                         <p class="text-gray-500 mt-1">Cliquez sur une filière pour voir les classes associées.</p>
                     </div>
-                    <div id="filiere-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <div id="filiere-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         <!-- Les cartes des filières seront injectées ici -->
                         <p>Chargement des filières...</p>
                     </div>
@@ -106,7 +106,7 @@
                 <div id="filiere-details-page" class="page-container hidden space-y-6">
                     <button onclick="showPage('main-dashboard')" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux filières</button>
                     <h2 id="filiere-details-title" class="text-3xl font-bold text-gray-800">Classes de la filière...</h2>
-                    <div id="class-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div id="class-list-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                         <!-- La liste des classes sera injectée ici -->
                     </div>
                 </div>
@@ -307,7 +307,7 @@
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Gestion des Étudiants</h1>
             <p class="text-gray-600 mt-2">Consultez et gérez les étudiants inscrits dans votre établissement.</p>
         </header>
-        <div class="bg-white p-6 rounded-lg shadow-sm">
+        <div class="bg-white p-4 sm:p-6 rounded-lg shadow-sm">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Liste des Étudiants</h3>
             <div id="students-table-container" class="max-h-[70vh] table-responsive-wrapper">
                 <p>Chargement des étudiants...</p>
