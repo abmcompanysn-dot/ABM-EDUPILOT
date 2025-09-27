@@ -140,13 +140,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
             if (studentSessionId) {
-                loadStudentDashboard(studentSessionId);
-                // NOUVEAU: Réactivation du rafraîchissement automatique en arrière-plan
-                setInterval(() => {
-                    console.log('Refreshing student data in background...');
-                    // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
-                    loadStudentDashboard(studentSessionId, false); 
-                }, 90000); // Rafraîchit toutes les 90 secondes
+                loadStudentDashboard(studentSessionId, true); // Lancer le chargement initial
             } else {
                 window.location.href = 'index.html'; 
             }
@@ -182,6 +176,15 @@
 
                 // Mettre à jour la carte étudiant
                 renderAndDisplayStudentCard(studentId);
+
+                // NOUVEAU: Démarrer le rafraîchissement en arrière-plan SEULEMENT après le premier chargement réussi.
+                if (isInitialLoad) {
+                    setInterval(() => {
+                        console.log('Refreshing student data in background...');
+                        // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
+                        loadStudentDashboard(studentId, false); 
+                    }, 90000); // Rafraîchit toutes les 90 secondes
+                }
 
             } catch (error) {
                 console.error("Erreur lors du chargement du dashboard étudiant:", error);
