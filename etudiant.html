@@ -10,6 +10,18 @@
     <script src="html2canvas.min.js" defer></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:w
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Espace Étudiant - ABM EduPilote</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
+    <!-- CORRECTION: Ajout de 'defer' pour garantir que les scripts sont chargés avant exécution -->
+    <script src="html2canvas.min.js" defer></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <style>
@@ -387,3 +399,381 @@
 
 </body>
 </html>
+ght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        :root{ --bg:#f5f3ff; --muted:#6b7280; --card-gap:1.5rem; --radius:14px; }
+        html,body{ height:100%; background:var(--bg); font-family: 'Inter', sans-serif; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+        main#app-container{ width:100%; max-width:1200px; margin:32px auto; padding:16px; }
+        .panel{ border-radius:12px; background:linear-gradient(180deg,#ffffff,#fbfdff); box-shadow: 0 6px 18px rgba(15,23,42,.04); }
+        /* NOUVEAU: Style pour la carte étudiant à télécharger */
+        #student-card-generator {
+            font-family: 'Inter', sans-serif;
+            background: white;
+        }
+        input:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,.08); border-color: rgba(99,102,241,.9); }
+    </style>
+    <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
+</head>
+<body class="antialiased">
+
+    <!-- HEADER -->
+    <header class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between py-4">
+                <div class="flex items-center space-x-3">
+                    <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-10 h-10 bg-white p-1 rounded-md">
+                    <div>
+                        <a href="index.html" class="text-white font-semibold text-lg">ABM EduPilote</a>
+                        <p class="text-xs text-violet-300 -mt-0.5">Espace Étudiant</p>
+                    </div>
+                </div>
+                <nav>
+                    <button onclick="studentLogout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN -->
+    <main id="app-container">
+        <!-- TABLEAU DE BORD ÉTUDIANT -->
+        <section id="page-student-dashboard">
+            <div class="panel p-6 lg:p-8">
+                <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Bonjour, <span id="student-dashboard-name">Chargement...</span></h1>
+                        <p class="text-sm text-gray-500 mt-1">Bienvenue dans votre espace personnel.</p>
+                    </div>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Colonne 1 -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mes Informations</h3>
+                            <form id="studentUpdateForm" class="space-y-4">
+                                <div>
+                                    <label for="student-info-name" class="block text-sm font-medium text-gray-700">Nom Complet</label>
+                                    <input type="text" id="student-info-name" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <!-- NOUVEAU: Conteneur pour afficher la carte étudiant -->
+                                <div id="student-card-display" class="w-full max-w-[280px] mx-auto my-4">
+                                    <!-- La carte sera injectée ici par le script -->
+                                </div>
+                                <div class="space-y-2">
+                                    <button type="button" onclick="downloadQrCodeOnly()" class="w-full bg-gray-700 hover:bg-gray-800 text-white py-2 px-4 rounded-md font-semibold text-sm flex items-center justify-center gap-2">
+                                        <i class="fas fa-qrcode"></i> Télécharger mon QR Code (Image)</button>
+                                </div>
+
+                                <div>
+                                    <label for="student-info-email" class="block text-sm font-medium text-gray-700">Email</label>
+                                    <input type="email" id="student-info-email" required class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md">
+                                </div>
+
+                                <div>
+                                    <label for="student-info-telephone" class="block text-sm font-medium text-gray-700">Téléphone (Format international)</label>
+                                    <input type="tel" id="student-info-telephone" class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md" placeholder="Ex: +221771234567" pattern="\+[0-9]+" title="Veuillez entrer le numéro au format international, ex: +221...">
+                                </div>
+
+                                <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white py-2 rounded-md font-semibold flex items-center justify-center gap-3">
+                                    <span class="btnText">Mettre à jour</span>
+                                    <span class="btnSpinner hidden">Sauvegarde...</span>
+                                </button>
+                            </form>
+                            <div class="messageArea mt-3 text-center" aria-live="polite"></div>
+                        </div>
+                    </div>
+
+                    <!-- Colonne 2: Emploi du temps et Historique -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mon Emploi du Temps</h3>
+                            <div id="student-schedule-container" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'emploi du temps...</p></div>
+                        </div>
+                        <div class="bg-white p-5 rounded-lg shadow-sm">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Historique de mes Présences</h3>
+                            <div id="student-attendance-history" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'historique...</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
+    <div id="student-card-generator" class="w-[320px] h-[500px] fixed -left-[9999px] top-0 bg-white shadow-2xl flex flex-col" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
+        <!-- En-tête coloré -->
+        <div class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] p-5 text-white text-center">
+            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mx-auto mb-2" alt="Logo">
+            <h3 id="card-university-name" class="font-bold text-lg"></h3>
+        </div>
+        <!-- Corps de la carte -->
+        <div class="p-6 flex flex-col items-center text-center flex-grow">
+            <!-- Placeholder pour la photo -->
+            <div class="w-32 h-32 bg-gray-200 rounded-full flex items-center justify-center border-4 border-violet-100 mb-4">
+                <i class="fas fa-user text-5xl text-gray-400"></i>
+            </div>
+            <!-- Informations -->
+            <p id="card-student-name" class="text-2xl font-bold text-gray-800"></p>
+            <!-- CORRECTION: Affichage de la filière et de l'université à la place de l'ID -->
+            <p id="card-university-filiere" class="text-base text-gray-600 mt-1"></p> 
+            <!-- QR Code -->
+            <div id="card-qr-code" class="w-40 h-40 mt-auto p-1.5 bg-white border rounded-lg"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        // --- AUTHENTIFICATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+            if (studentSessionId) {
+                loadStudentDashboard(studentSessionId);
+                // NOUVEAU: Réactivation du rafraîchissement automatique en arrière-plan
+                setInterval(() => {
+                    console.log('Refreshing student data in background...');
+                    // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
+                    loadStudentDashboard(studentSessionId, false); 
+                }, 90000); // Rafraîchit toutes les 90 secondes
+            } else {
+                window.location.href = 'index.html'; 
+            }
+        });
+
+        // --- Fonctions pour l'Espace Étudiant ---
+        function studentLogout() 
+        {
+            sessionStorage.removeItem(STUDENT_SESSION_KEY);
+            window.location.href = 'index.html';
+        }
+
+        function loadStudentDashboard(studentId, isInitialLoad = true) {
+            document.getElementById('student-dashboard-name').textContent = '...';
+            loadStudentInfo(studentId);
+            loadStudentAttendance(studentId);
+            loadStudentSchedule(studentId);            
+            // NOUVEAU: Charger et afficher la carte étudiant
+            renderAndDisplayStudentCard(studentId);
+        }
+
+        async function loadStudentInfo(studentId) {
+            const form = document.getElementById('studentUpdateForm');
+            try {
+                const result = await callApi('getStudentData', { studentId });
+                const student = result.data;
+                document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
+                document.getElementById('student-info-name').value = student.name || '';
+                document.getElementById('student-info-email').value = student.email || '';
+                document.getElementById('student-info-telephone').value = student.telephone || ''; // NOUVEAU
+                form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+            } catch (error) {
+                displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
+            }
+        }
+
+        async function handleUpdateStudentInfo(e, studentId) {
+            e.preventDefault();
+            const form = e.target;
+            const data = {
+                studentId: studentId,
+                name: form.querySelector('#student-info-name').value,
+                email: form.querySelector('#student-info-email').value,
+                telephone: form.querySelector('#student-info-telephone').value // NOUVEAU
+            };
+            setLoading(true, form);
+            try {
+                const result = await callApi('updateStudentInfo', data);
+                displayMessageInForm(form, result.message, 'success');
+                // Recharger les informations pour s'assurer que tout est à jour
+                loadStudentInfo(studentId);
+            } catch (error) {
+                displayMessageInForm(form, error.message, 'error');
+            } finally {
+                setLoading(false, form);
+            }
+        }
+
+        // NOUVEAU: Remplit le template de la carte et la retourne en tant qu'élément HTML
+        async function createStudentCardElement(studentId) {
+            try {
+                const result = await callApi('getPublicStudentProfile', { studentId });
+                const student = result.data.student;
+                
+                // Références aux éléments du template original (pour le téléchargement)
+                const originalCard = document.getElementById('student-card-generator');
+                if (!originalCard) throw new Error("Le template de carte #student-card-generator est introuvable.");
+
+                // Remplir le template original
+                originalCard.querySelector('#card-university-name').textContent = student.NOM_UNIVERSITE || 'Université';
+                originalCard.querySelector('#card-student-name').textContent = student.NOM_COMPLET;
+                originalCard.querySelector('#card-university-filiere').textContent = student.NOM_FILIERE || 'Filière non définie';
+                
+                // Générer le QR code pour la carte
+                const qrData = `ABM-ETU-ID:${student.ID_ETUDIANT}`;
+                const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(qrData)}&bgcolor=ffffff&color=000000&qzone=1`;
+                originalCard.querySelector('#card-qr-code').innerHTML = `<img src="${qrApiUrl}" alt="QR Code" class="w-full h-full">`;
+
+                // Attendre que l'image du QR code soit chargée
+                await new Promise(resolve => setTimeout(resolve, 400));
+
+                // Cloner le template maintenant qu'il est rempli, pour l'affichage
+                const cardTemplate = originalCard.cloneNode(true);
+                
+                cardTemplate.removeAttribute('id');
+                cardTemplate.className = "w-full h-auto shadow-lg rounded-lg flex flex-col overflow-hidden border border-gray-200";
+
+                return cardTemplate;
+            } catch (error) {
+                console.error("Erreur lors de la création de la carte:", error);
+                return null;
+            }
+        }
+
+        // NOUVEAU: Télécharge uniquement le QR code au format PNG
+        async function downloadQrCodeOnly() {
+            try {
+                const qrCodeContainer = document.getElementById('card-qr-code');
+                const qrImg = qrCodeContainer ? qrCodeContainer.querySelector('img') : null;
+                if (!qrImg || !qrImg.src) {
+                    throw new Error("Le QR Code n'est pas encore affiché. Veuillez patienter.");
+                }
+                const link = document.createElement('a');
+                link.href = qrImg.src;
+                link.download = `mon-qrcode-abm.png`;
+                link.click();
+            } catch (error) {
+                alert(`Erreur lors du téléchargement du QR Code : ${error.message}`);
+            }
+        }
+
+        // NOUVEAU: Fonction principale pour afficher la carte sur le dashboard
+        async function renderAndDisplayStudentCard(studentId) {
+            const displayContainer = document.getElementById('student-card-display');
+            displayContainer.innerHTML = '<p class="text-xs text-center text-gray-500">Génération de la carte...</p>';
+            
+            const cardElement = await createStudentCardElement(studentId);
+            
+            if (cardElement) {
+                displayContainer.innerHTML = '';
+                displayContainer.appendChild(cardElement);
+            } else {
+                displayContainer.innerHTML = '<p class="text-xs text-center text-red-500">Erreur lors de l\'affichage de la carte.</p>';
+            }
+        }
+
+        async function loadStudentAttendance(studentId) {
+            const container = document.getElementById('student-attendance-history');
+            container.innerHTML = '<p>Chargement de l\'historique...</p>';
+            try {
+                const result = await callApi('getStudentAttendanceHistory', { studentId });
+                const history = result.data;
+                if (!history || history.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
+                    return;
+                }
+                const timeline = document.createElement('div');
+                timeline.className = 'space-y-4';
+                timeline.innerHTML = history.map(item => `
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 text-green-600">
+                            <i class="fas fa-check"></i>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
+                        </div>
+                    </div>
+                `).join('');
+                container.innerHTML = '';
+                container.appendChild(timeline);
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // NOUVEAU: Charge et affiche l'emploi du temps de l'étudiant
+        async function loadStudentSchedule(studentId) {
+            const container = document.getElementById('student-schedule-container');
+            container.innerHTML = '<p class="text-gray-500">Chargement de l\'emploi du temps...</p>';
+            try {
+                const result = await callApi('getStudentSchedule', { studentId });
+                const courses = result.data;
+
+                if (!courses || courses.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour votre classe.</p>';
+                    return;
+                }
+
+                const scheduleHtml = courses.map(course => {
+                    const statusColor = course.STATUT === 'Confirmé' ? 'bg-green-100 text-green-800' : (course.STATUT === 'Annulé' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800');
+                    const statusIcon = course.STATUT === 'Confirmé' ? '✅' : (course.STATUT === 'Annulé' ? '❌' : '⏳');
+                    return `
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="font-semibold text-gray-800">${course.MATIERE}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                                    <p class="text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                                </div>
+                                <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${statusColor}">${statusIcon} ${course.STATUT}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                container.innerHTML = `<div class="space-y-4">${scheduleHtml}</div>`;
+
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
+            }
+        }
+
+        // --- FONCTIONS UTILITAIRES ---
+        async function callApi(action, data = {}) {
+            if (!WEB_APP_URL) throw new Error('URL de l\'API non configurée.');
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify({ action, data })
+            });
+            const result = await response.json();
+            if (!result.success) throw new Error(result.error || 'Erreur inconnue de l\'API.');
+            return result;
+        }
+
+        function setLoading(isLoading, formElement) {
+            const submitBtn = formElement ? formElement.querySelector('.submitBtn') : null;
+            const btnText = formElement ? formElement.querySelector('.btnText') : null;
+            const btnSpinner = formElement ? formElement.querySelector('.btnSpinner') : null;
+            if (!submitBtn) return;
+            submitBtn.disabled = isLoading;
+            if (btnText) btnText.classList.toggle('hidden', isLoading);
+            if (btnSpinner) btnSpinner.classList.toggle('hidden', !isLoading);
+        }
+
+        function displayMessageInForm(formElement, message, type) {
+            let messageArea = formElement.parentElement.querySelector('.messageArea') || formElement.nextElementSibling;
+            if (!messageArea) return;
+            const colorClass = type === 'success' ? 'text-green-600' : 'text-red-600';
+            const bgColorClass = type === 'success' ? 'bg-green-50' : 'bg-red-50';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-triangle';
+            
+            messageArea.innerHTML = `
+                <div class="flex items-start p-4 rounded-lg ${bgColorClass} ${colorClass}">
+                    <i class="fas ${icon} mr-3 mt-1"></i>
+                    <div><strong class="font-semibold">${type === 'success' ? 'Succès' : 'Erreur'}:</strong> ${message}</div>
+                </div>
+            `;
+        }
+
+        // Spinner global simple
+        function showSpinner(show) {
+            // Pour l'instant, on peut utiliser un simple log ou une future implémentation de spinner
+            console.log(`Spinner: ${show}`);
+        }
+    </script>
+
+</body>
+</html>
+
