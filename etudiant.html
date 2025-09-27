@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -5,8 +6,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>Espace Étudiant - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
-    <!-- CORRECTION: Utilisation d'un CDN pour html2canvas pour corriger l'erreur de chargement -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoeqMV/TJlSKda6FXzoEyYGjTe+vXA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
+    <!-- CORRECTION: Ajout de 'defer' pour garantir que les scripts sont chargés avant exécution -->
+    <script src="html2canvas.min.js" defer></script> 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
@@ -140,7 +141,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
             if (studentSessionId) {
-                loadStudentDashboard(studentSessionId, true); // Lancer le chargement initial
+                loadStudentDashboard(studentSessionId);
+                // NOUVEAU: Réactivation du rafraîchissement automatique en arrière-plan
+                setInterval(() => {
+                    console.log('Refreshing student data in background...');
+                    // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
+                    loadStudentDashboard(studentSessionId, false); 
+                }, 90000); // Rafraîchit toutes les 90 secondes
             } else {
                 window.location.href = 'index.html'; 
             }
@@ -153,44 +160,27 @@
             window.location.href = 'index.html';
         }
 
-        // OPTIMISATION: Charge toutes les données du dashboard en un seul appel API
-        async function loadStudentDashboard(studentId, isInitialLoad = true) {
-            if (isInitialLoad) {
-                document.getElementById('student-dashboard-name').textContent = '...';
-            }
+        function loadStudentDashboard(studentId, isInitialLoad = true) {
+            document.getElementById('student-dashboard-name').textContent = '...';
+            loadStudentInfo(studentId);
+            loadStudentAttendance(studentId);
+            loadStudentSchedule(studentId);            
+            // NOUVEAU: Charger et afficher la carte étudiant
+            renderAndDisplayStudentCard(studentId);
+        }
+
+        async function loadStudentInfo(studentId) {
+            const form = document.getElementById('studentUpdateForm');
             try {
-                const result = await callApi('getStudentDashboardData', { studentId });
-                const { profile, schedule, attendance } = result.data;
-
-                // Mettre à jour le profil
-                const form = document.getElementById('studentUpdateForm');
-                document.getElementById('student-dashboard-name').textContent = profile.name || 'Étudiant';
-                document.getElementById('student-info-name').value = profile.name || '';
-                document.getElementById('student-info-email').value = profile.email || '';
-                document.getElementById('student-info-telephone').value = profile.telephone || '';
+                const result = await callApi('getStudentData', { studentId });
+                const student = result.data;
+                document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
+                document.getElementById('student-info-name').value = student.name || '';
+                document.getElementById('student-info-email').value = student.email || '';
+                document.getElementById('student-info-telephone').value = student.telephone || ''; // NOUVEAU
                 form.onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
-
-                // Mettre à jour l'emploi du temps et l'historique
-                renderStudentSchedule(schedule);
-                renderStudentAttendance(attendance);
-
-                // Mettre à jour la carte étudiant
-                renderAndDisplayStudentCard(studentId);
-
-                // NOUVEAU: Démarrer le rafraîchissement en arrière-plan SEULEMENT après le premier chargement réussi.
-                if (isInitialLoad) {
-                    setInterval(() => {
-                        console.log('Refreshing student data in background...');
-                        // On ne veut pas de spinner pour les rafraîchissements en arrière-plan
-                        loadStudentDashboard(studentId, false); 
-                    }, 90000); // Rafraîchit toutes les 90 secondes
-                }
-
             } catch (error) {
-                console.error("Erreur lors du chargement du dashboard étudiant:", error);
-                // Afficher une erreur globale si nécessaire
-                const nameSpan = document.getElementById('student-dashboard-name');
-                if (nameSpan) nameSpan.textContent = "Erreur de chargement";
+                displayMessageInForm(form, `Erreur: Impossible de charger vos informations. ${error.message}`, 'error');
             }
         }
 
@@ -208,7 +198,7 @@
                 const result = await callApi('updateStudentInfo', data);
                 displayMessageInForm(form, result.message, 'success');
                 // Recharger les informations pour s'assurer que tout est à jour
-                loadStudentDashboard(studentId, false); // Recharger tout sans spinner visible
+                loadStudentInfo(studentId);
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
             } finally {
@@ -284,15 +274,17 @@
             }
         }
 
-        // OPTIMISATION: Fonction de rendu, ne fait plus d'appel API
-        function renderStudentAttendance(history) {
+        async function loadStudentAttendance(studentId) {
             const container = document.getElementById('student-attendance-history');
+            container.innerHTML = '<p>Chargement de l\'historique...</p>';
             try {
+                const result = await callApi('getStudentAttendanceHistory', { studentId });
+                const history = result.data;
                 if (!history || history.length === 0) {
                     container.innerHTML = '<p class="text-gray-500">Aucun pointage enregistré.</p>';
                     return;
                 }
-                 const timeline = document.createElement('div');
+                const timeline = document.createElement('div');
                 timeline.className = 'space-y-4';
                 timeline.innerHTML = history.map(item => `
                     <div class="flex items-center space-x-4">
@@ -312,10 +304,14 @@
             }
         }
 
-        // OPTIMISATION: Fonction de rendu, ne fait plus d'appel API
-        function renderStudentSchedule(courses) {
+        // NOUVEAU: Charge et affiche l'emploi du temps de l'étudiant
+        async function loadStudentSchedule(studentId) {
             const container = document.getElementById('student-schedule-container');
+            container.innerHTML = '<p class="text-gray-500">Chargement de l\'emploi du temps...</p>';
             try {
+                const result = await callApi('getStudentSchedule', { studentId });
+                const courses = result.data;
+
                 if (!courses || courses.length === 0) {
                     container.innerHTML = '<p class="text-gray-500">Aucun cours planifié pour votre classe.</p>';
                     return;
