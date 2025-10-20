@@ -29,6 +29,9 @@
     <link rel="icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
     <link rel="shortcut icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" type="image/png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
+    <!-- NOUVEAU: Lien vers le manifest pour la PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1C2B5A">
 
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -1199,6 +1202,19 @@
             closeScannerBtn.addEventListener('click', () => {
                 if (html5QrCode_main && html5QrCode_main.isScanning) html5QrCode_main.stop();
                 scannerContainer.classList.add('hidden');
+            });
+        }
+
+        // --- NOUVEAU: Enregistrement du Service Worker pour la PWA ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker enregistré avec succès: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('Échec de l\'enregistrement du ServiceWorker: ', error);
+                    });
             });
         }
         // fin du script

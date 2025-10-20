@@ -1,0 +1,24 @@
+{
+  "name": "ABM EduPilote",
+  "short_name": "EduPilote",
+  "description": "Plateforme de gestion universitaire tout-en-un pour simplifier l'administration, le suivi des présences et la communication.",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f5f3ff",
+  "theme_color": "#1C2B5A",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ]
+}
