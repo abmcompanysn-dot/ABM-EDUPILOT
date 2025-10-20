@@ -126,7 +126,13 @@
                             <div class="pt-4 space-y-3">
                                 <p class="text-sm text-gray-600">Affichez ce QR code pour le pointage des présences.</p>
                                 <button onclick="generateAttendanceQrCode()" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Générer le QR Code</button>
-                                <div id="qr-code-container" class="hidden text-center"><img id="qr-code-img" src="" alt="QR Code" class="mx-auto w-full max-w-[200px] rounded-lg border"><button id="qr-download-btn" class="mt-2 w-full text-sm bg-gray-600 text-white py-2 rounded-md hover:bg-gray-700">Télécharger</button></div>
+                                <div id="qr-code-container" class="hidden text-center">
+                                    <img id="qr-code-img" src="" alt="QR Code" class="mx-auto w-full max-w-[200px] rounded-lg border">
+                                    <div class="mt-2 grid grid-cols-2 gap-2">
+                                        <button id="qr-download-btn" class="w-full text-sm bg-gray-700 text-white py-2 rounded-md hover:bg-gray-800">Télécharger</button>
+                                        <button id="qr-share-btn" class="w-full text-sm bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Partager</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
