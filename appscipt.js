@@ -175,6 +175,8 @@ function doPost(e) {
       return getUniversityInfo(data);
     } else if (action === 'getCurrentCourse') { // CORRECTION: Réintroduction de l'action
       return getCurrentCourse(data);
+    } else if (action === 'recordAttendanceFromScan') { // NOUVEAU: Pour le scan étudiant
+      return recordAttendanceFromScan(data, ctx);
     } else if (action === 'scanStudentForAttendance') { // CORRECTION: Réintroduction de l'action
         return scanStudentForAttendance(data, ctx);
     } else {
