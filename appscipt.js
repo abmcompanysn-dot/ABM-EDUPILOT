@@ -194,6 +194,10 @@ function doPost(e) {
         return responsableGetSentMessages(data, ctx);
     } else if (action === 'responsableDeleteMessage') { // NOUVEAU
         return responsableDeleteMessage(data, ctx);
+    } else if (action === 'adminGetSentMessages') { // NOUVEAU
+        return adminGetSentMessages(data, ctx);
+    } else if (action === 'adminDeleteMessage') { // NOUVEAU
+        return adminDeleteMessage(data, ctx);
     } else if (action === 'adminSendMessageToClass') { // NOUVEAU
         return adminSendMessageToClass(data);
     } else if (action === 'getUserNotifications') { // NOUVEAU
@@ -292,6 +296,69 @@ function _getRawSheetData(sheetName, ctx) {
 // FONCTIONS DE L'API (appelées par doPost)
 // ============================================================================
 
+/**
+ * NOUVEAU: Récupère les messages envoyés par un administrateur pour son université.
+ * @param {object} data - Contient { universityId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function adminGetSentMessages(data, ctx) {
+    try {
+        const { universityId } = data;
+        if (!universityId) throw new Error("ID de l'université manquant.");
+
+        const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
+        const headers = messagesData[0];
+        const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+        const authorIdx = headers.indexOf('AUTEUR_INFO');
+
+        const classMap = new Map(_getRawSheetData(SHEET_NAMES.CLASSES, ctx).slice(1).map(row => [row[0], row[1]]));
+
+        const sentMessages = messagesData.slice(1)
+            .filter(row => row[univFkIdx] === universityId && row[authorIdx] === "Administration")
+            .map(row => {
+                const msg = Object.fromEntries(headers.map((h, i) => [h, row[i]]));
+                msg.NOM_CLASSE = classMap.get(msg.ID_CLASSE_FK); // Ajouter le nom de la classe pour l'affichage
+                return msg;
+            })
+            .sort((a, b) => new Date(b.TIMESTAMP) - new Date(a.TIMESTAMP));
+
+        return createJsonResponse({ success: true, data: sentMessages });
+    } catch (error) {
+        logError('adminGetSentMessages', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: Supprime un message envoyé par un administrateur.
+ * @param {object} data - Contient { universityId, messageId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function adminDeleteMessage(data, ctx) {
+    try {
+        const { universityId, messageId } = data;
+        if (!universityId || !messageId) throw new Error("Données de suppression incomplètes.");
+
+        const messagesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MESSAGES);
+        const messagesData = messagesSheet.getDataRange().getValues();
+        const headers = messagesData[0];
+        const msgIdIdx = headers.indexOf('ID_MESSAGE');
+        const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+
+        const rowIndexToDelete = messagesData.findIndex((row, index) => index > 0 && row[msgIdIdx] === messageId);
+
+        if (rowIndexToDelete === -1) throw new Error("Message non trouvé.");
+        if (messagesData[rowIndexToDelete][univFkIdx] !== universityId) {
+            throw new Error("Action non autorisée. Ce message n'appartient pas à votre établissement.");
+        }
+
+        messagesSheet.deleteRow(rowIndexToDelete + 1);
+        return createJsonResponse({ success: true, message: "Le message a été supprimé avec succès." });
+    } catch (error) {
+        logError('adminDeleteMessage', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 /**
  * NOUVEAU: Récupère les messages envoyés par un responsable.
  * @param {object} data - Contient { responsableId }.
