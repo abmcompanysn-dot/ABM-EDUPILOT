@@ -314,6 +314,7 @@
                             ${course.STATUT !== 'Confirmé' ? `<button onclick="updateStatus('${course.ID_COURS}', 'Confirmé')" class="font-medium text-green-600 hover:text-green-900">Confirmer</button>` : ''}
                             ${course.STATUT !== 'Annulé' ? `<button onclick="updateStatus('${course.ID_COURS}', 'Annulé')" class="font-medium text-red-600 hover:text-red-900">Annuler</button>` : ''}
                             <button onclick="deleteCourse('${course.ID_COURS}')" class="font-medium text-gray-500 hover:text-red-900">Supprimer</button>
+                            <button onclick="exportAttendanceBySubject('${course.MATIERE}')" class="font-medium text-blue-600 hover:text-blue-900">Exporter Présences</button>
                         </div>
                     </div>
                 `;
@@ -699,6 +700,32 @@
             }
         }
 
+        // NOUVEAU: Exporte la liste de présence pour une matière spécifique
+        async function exportAttendanceBySubject(matiere) {
+            if (!confirm(`Voulez-vous télécharger la liste de présence pour le cours de "${matiere}" ?`)) return;
+            showSpinner(true);
+            try {
+                const result = await callResponsableApi('responsableExportAttendanceBySubject', { matiere });
+                const { csvContent, fileName } = result.data;
+
+                // Créer et télécharger le fichier CSV
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                if (link.download !== undefined) {
+                    const url = URL.createObjectURL(blob);
+                    link.setAttribute("href", url);
+                    link.setAttribute("download", fileName);
+                    link.style.visibility = 'hidden';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+            } catch (error) {
+                showModal('Erreur d\'Exportation', error.message);
+            } finally {
+                showSpinner(false);
+            }
+        }
         // --- FONCTIONS UTILITAIRES ---
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');

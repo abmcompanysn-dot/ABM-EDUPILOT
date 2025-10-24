@@ -65,6 +65,9 @@
                 <a href="#" onclick="showPage('attendance-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Présences
                 </a>
+                <a href="#" onclick="showPage('stats-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
+                    Statistiques
+                </a>
                 <a href="#" onclick="showPage('tools-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Outils (QR/Liens)
                 </a>
@@ -307,6 +310,24 @@
         </div>
     </div>
 
+    <!-- NOUVEAU: Page de statistiques -->
+    <div id="stats-page" class="page-container hidden">
+        <header class="mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Statistiques de Présence</h1>
+            <p class="text-gray-600 mt-2">Visualisez les données de participation de votre établissement.</p>
+        </header>
+
+        <div class="space-y-12">
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Taux de Participation par Classe</h3>
+                <canvas id="attendanceByClassChart"></canvas>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Évolution des Pointages Journaliers</h3>
+                <canvas id="attendanceOverTimeChart"></canvas>
+            </div>
+        </div>
+    </div>
     <!-- NOUVEAU: Page de gestion des étudiants -->
     <div id="students-page" class="page-container hidden">
         <header class="mb-10">
@@ -471,6 +492,7 @@
                 'responsables-page': 'Responsables',
                 'planning-page': 'Planning',
                 'attendance-page': 'Présences',
+                'stats-page': 'Statistiques', // NOUVEAU
                 'tools-page': 'Outils',
                 'students-page': 'Étudiants',
                 'student-profile-page': 'Profil Étudiant' // NOUVEAU
@@ -505,6 +527,8 @@
                 setupResponsablesPage();
             } else if (pageId === 'students-page') {
                 setupStudentsPage();
+            } else if (pageId === 'stats-page') { // NOUVEAU
+                setupStatsPage();
             } else if (pageId === 'main-dashboard') {
                 loadInteractiveDashboard(); // NOUVEAU
             }
@@ -999,6 +1023,90 @@
             }
         }
 
+        // NOUVEAU: Initialise la page de statistiques
+        function setupStatsPage() {
+            loadAndRenderStats();
+        }
+
+        // NOUVEAU: Charge et affiche les graphiques de statistiques
+        async function loadAndRenderStats() {
+            const byClassCanvas = document.getElementById('attendanceByClassChart');
+            const overTimeCanvas = document.getElementById('attendanceOverTimeChart');
+            
+            // Détruire les anciens graphiques s'ils existent pour éviter les bugs d'affichage
+            if (window.attendanceByClassChartInstance) window.attendanceByClassChartInstance.destroy();
+            if (window.attendanceOverTimeChartInstance) window.attendanceOverTimeChartInstance.destroy();
+
+            try {
+                const result = await callAdminApi('adminGetAttendanceStats');
+                const { byClass, attendanceOverTime } = result.data;
+
+                // Graphique 1: Participation par classe
+                const classLabels = byClass.map(c => c.className);
+                const totalStudentsData = byClass.map(c => c.totalStudents);
+                const presentStudentsData = byClass.map(c => c.uniquePresentStudents);
+
+                window.attendanceByClassChartInstance = new Chart(byClassCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: classLabels,
+                        datasets: [
+                            {
+                                label: 'Étudiants Inscrits',
+                                data: totalStudentsData,
+                                backgroundColor: 'rgba(139, 92, 246, 0.5)', // Violet clair
+                                borderColor: 'rgba(139, 92, 246, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Étudiants Ayant Pointé (uniques)',
+                                data: presentStudentsData,
+                                backgroundColor: 'rgba(5, 150, 105, 0.7)', // Vert
+                                borderColor: 'rgba(5, 150, 105, 1)',
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: { scales: { y: { beginAtZero: true } } }
+                });
+
+                // Graphique 2: Évolution des pointages
+                const sortedDates = Object.keys(attendanceOverTime).sort();
+                const timeLabels = sortedDates.map(date => new Date(date).toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'}));
+                const timeData = sortedDates.map(date => attendanceOverTime[date]);
+
+                window.attendanceOverTimeChartInstance = new Chart(overTimeCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: timeLabels,
+                        datasets: [{
+                            label: 'Nombre Total de Pointages par Jour',
+                            data: timeData,
+                            fill: true,
+                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                            borderColor: 'rgba(99, 102, 241, 1)',
+                            tension: 0.1
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true } },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: function(context) {
+                                        // Affiche la date complète dans l'infobulle
+                                        const originalDate = sortedDates[context[0].dataIndex];
+                                        return new Date(originalDate).toLocaleDateString('fr-FR', {dateStyle: 'long'});
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                byClassCanvas.getContext('2d').fillText(`Erreur: ${error.message}`, 10, 50);
+            }
+        }
         // NOUVEAU: Gère la soumission du formulaire de planning
         function setupPlanningForm() {
             const form = document.getElementById('add-course-form');
