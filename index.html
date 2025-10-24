@@ -891,8 +891,8 @@
 
                 form.querySelector('#classe').value = course.classe;
                 document.getElementById('classe-display').textContent = course.classe;
-                form.querySelector('#matiere').value = course.matiere;
-                document.getElementById('matiere-display').textContent = course.matiere;
+                form.querySelector('#matiere').value = course.module; // CORRECTION: Use module
+                document.getElementById('matiere-display').textContent = course.module; // CORRECTION: Use module
 
                 form.addEventListener('submit', handleAttendanceSubmit);
             } catch (error) {
@@ -1004,7 +1004,7 @@
             const data = {
                 studentId: form.querySelector('#studentId').value,
                 classe: form.querySelector('#classe').value,
-                matiere: form.querySelector('#matiere').value
+                module: form.querySelector('#matiere').value // CORRECTION: Use module
             };
             setLoading(true, form);
             try {

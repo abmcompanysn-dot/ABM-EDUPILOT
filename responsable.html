@@ -303,7 +303,6 @@
                     }
                     if (tab.dataset.target === 'modules-content' && !targetContent.dataset.loaded) {
                         loadClassModules();
-                        setupResponsableModuleForm();
                         targetContent.dataset.loaded = 'true';
                     }
                     if (tab.dataset.target === 'attendance-content' && !targetContent.dataset.loaded) {
@@ -313,15 +312,6 @@
                 }
             });
         });
-
-        // NOUVEAU: Charger les modules dans le sélecteur du planning
-        async function populatePlanningModuleSelect() {
-            const select = document.getElementById('course-module-select');
-            select.innerHTML = '<option>Chargement...</option>';
-            const result = await callResponsableApi('responsableGetModules');
-            const modules = result.data.filter(m => m.STATUT === 'En cours');
-            select.innerHTML = '<option value="">-- Sélectionnez un module --</option>' + modules.map(m => `<option value="${m.ID_MODULE}">${m.NOM_MODULE} (${m.NOM_ENSEIGNANT})</option>`).join('');
-        }
 
         // ... (le reste du code est déplacé pour une meilleure organisation)
 
@@ -544,32 +534,6 @@
             } finally {
                 showSpinner(false);
             }
-        }
-
-        // NOUVEAU: Gère la soumission du formulaire d'ajout de module par le responsable
-        function setupResponsableModuleForm() {
-            const form = document.getElementById('add-module-form');
-            form.onsubmit = async (e) => {
-                e.preventDefault();
-                const payload = {
-                    name: document.getElementById('module-name').value,
-                    enseignant: document.getElementById('module-enseignant').value,
-                };
-                showSpinner(true);
-                try {
-                    e.submitter.disabled = true;
-                    const result = await callResponsableApi('responsableAddModule', { payload });
-                    showModal('Succès', result.message);
-                    form.reset();
-                    loadClassModules(); // Recharger la liste des modules
-                    populatePlanningModuleSelect(); // Mettre à jour le sélecteur du planning
-                } catch (error) {
-                    showModal('Erreur', error.message);
-                } finally {
-                    showSpinner(false);
-                    if (e.submitter) e.submitter.disabled = false;
-                }
-            };
         }
 
         // NOUVEAU: Charge et affiche la liste des étudiants de la classe
@@ -853,7 +817,6 @@
                 const { profile, className, courses } = result.data;
                 document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
                 renderPlanning(courses);
-                populatePlanningModuleSelect(); // NOUVEAU: Remplir le sélecteur de modules
 
                 // NOUVEAU: Remplir les informations du profil
                 if (profile) {

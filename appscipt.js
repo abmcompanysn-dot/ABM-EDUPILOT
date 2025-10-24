@@ -165,6 +165,8 @@ function doPost(e) {
       return responsableExportAttendanceByModule(data);
     } else if (action === 'adminGetAttendanceStats') { // NOUVEAU
       return adminGetAttendanceStats(data);
+    } else if (action === 'adminGetModulesForClass') { // NOUVEAU
+      return adminGetModulesForClass(data);
     } else if (action === 'getPublicStudentProfile') { // NOUVEAU
       return getPublicStudentProfile(data);
     } else if (action === 'getUniversityInfo') { // NOUVEAU: Ajout de l'action manquante
@@ -347,8 +349,7 @@ function loginSchool(data) {
  */
 function getEntitiesForAdmin(data) {
     try {
-        // NOUVEAU: Ajout de parentId pour filtrer les modules par classe
-        const { entityType, universityId, parentId } = data;
+        const { entityType, universityId } = data;
         if (!universityId) {
             return createJsonResponse({ success: false, error: "Session administrateur invalide." });
         }
@@ -375,35 +376,13 @@ function getEntitiesForAdmin(data) {
             const allowedFiliereIds = getFiliereIdsForUniversity(universityId);
             const classeFkIdx = headers.indexOf('ID_FILIERE_FK');
             filteredValues = values.filter(row => allowedFiliereIds.includes(row[classeFkIdx]));
-        } else if (entityType === 'module') {
-            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
-            const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
-            if (parentId) { // Si un ID de classe est fourni, on filtre par classe
-                filteredValues = values.filter(row => row[classFkIdx] === parentId);
-            } else { // Sinon, on filtre par université
-                filteredValues = values.filter(row => row[univFkIdx] === universityId);
-            }
         }
 
-        let entities = filteredValues.map(row => {
+        const entities = filteredValues.map(row => {
             const entity = {};
             headers.forEach((header, i) => entity[header] = row[i]);
             return entity;
         });
-
-        // NOUVEAU: Enrichir les données des modules avec le nom de la classe
-        if (entityType === 'module') {
-            const ctx = createRequestContext();
-            const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
-            const classMap = new Map(classesData.slice(1).map(row => [row[0], row[1]])); // ID_CLASSE -> NOM_CLASSE
-            
-            entities = entities.map(module => {
-                return {
-                    ...module,
-                    NOM_CLASSE: classMap.get(module.ID_CLASSE_FK) || 'Classe inconnue'
-                };
-            });
-        }
 
         cache.put(cacheKey, JSON.stringify(entities), 300); // Cache pour 5 minutes
         return createJsonResponse({ success: true, data: entities });
@@ -715,7 +694,7 @@ function getPlanningForAdmin(data) {
 function addCourseForAdmin(data) {
     try {
         const { payload, universityId } = data;
-        const { moduleId, date, startTime, endTime } = payload;
+        const { moduleId, date, startTime, endTime } = payload; // NOUVEAU: Utilise moduleId
         const newId = `CRS-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
         const newCourseRow = [newId, moduleId, new Date(date), startTime, endTime, 'Confirmé'];
         SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING).appendRow(newCourseRow);
@@ -745,7 +724,7 @@ function deleteCourseForAdmin(data) {
         const planningData = planningSheet.getDataRange().getValues();
         const headers = planningData[0];
         const idIdx = headers.indexOf('ID_COURS');
-        const classeIdx = headers.indexOf('CLASSE');
+        const moduleIdFkIdx = headers.indexOf('ID_MODULE_FK'); // NOUVEAU
 
         // Find the row index to delete
         const rowIndexToDelete = planningData.findIndex((row, index) => index > 0 && row[idIdx] === courseId);
@@ -753,18 +732,27 @@ function deleteCourseForAdmin(data) {
         if (rowIndexToDelete === -1) {
             throw new Error("Cours non trouvé.");
         }
-
-        // Security check: Does this course belong to the admin's university?
-        const courseClassName = planningData[rowIndexToDelete][classeIdx];
-        const allowedFiliereIds = getFiliereIdsForUniversity(universityId);
-        const classesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CLASSES);
-        const classesValues = classesSheet.getDataRange().getValues();
-        const classesHeaders = classesValues.shift();
-        const classNameIdx_c = classesHeaders.indexOf('NOM_CLASSE');
-        const filiereFkIdx_c = classesHeaders.indexOf('ID_FILIERE_FK');
-        const classRow = classesValues.find(row => row[classNameIdx_c] === courseClassName);
         
-        if (classRow && allowedFiliereIds.includes(classRow[filiereFkIdx_c])) {
+        // NOUVEAU: Security check: Does this course belong to the admin's university?
+        const courseModuleId = planningData[rowIndexToDelete + 1][moduleIdFkIdx]; // +1 because planningData is shifted
+        const ctx = createRequestContext();
+        const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+        const moduleHeaders = modulesData[0];
+        const modIdIdx = moduleHeaders.indexOf('ID_MODULE');
+        const modUnivFkIdx = moduleHeaders.indexOf('ID_UNIVERSITE_FK');
+        const moduleRow = modulesData.slice(1).find(row => row[modIdIdx] === courseModuleId);
+
+        if (!moduleRow || moduleRow[modUnivFkIdx] !== universityId) {
+            throw new Error("Vous n'êtes pas autorisé à supprimer ce cours.");
+        }
+
+        // // Check if the class associated with the module belongs to an allowed filiere (redundant if moduleUnivFkIdx is checked)
+        // const classId = moduleRow[modClassFkIdx];
+        // const classInfo = _getRawSheetData(SHEET_NAMES.CLASSES, ctx).slice(1).find(row => row[0] === classId);
+        // if (!classInfo || !getFiliereIdsForUniversity(universityId).includes(classInfo[2])) { // classInfo[2] is ID_FILIERE_FK
+        //     throw new Error("Vous n'êtes pas autorisé à supprimer ce cours.");
+        // }
+
             planningSheet.deleteRow(rowIndexToDelete + 1);
             
             // Invalider les caches pertinents après suppression
@@ -772,9 +760,6 @@ function deleteCourseForAdmin(data) {
             logAction('adminDeleteCourse', { courseId, universityId });
 
             return createJsonResponse({ success: true, message: "Le cours a été supprimé avec succès." });
-        } else {
-            throw new Error("Vous n'êtes pas autorisé à supprimer ce cours.");
-        }
     } catch (error) {
         logError('adminDeleteCourse', error);
         return createJsonResponse({ success: false, error: error.message });
@@ -1632,58 +1617,43 @@ function updateCourseStatusForResponsable(data) {
  * NOUVEAU: Ajoute un cours pour la classe d'un responsable.
  */
 function addCourseForResponsable(data) {
-    try {
-        const { responsableId, payload } = data;
-        const { module: moduleName, enseignant, date, startTime, endTime } = payload;
+  try {
+    const { responsableId, payload } = data;
+    const { moduleId, date, startTime, endTime } = payload;
+    if (!moduleId || !date || !startTime || !endTime) {
+      throw new Error("Toutes les informations du cours sont requises.");
+    }
 
-        // Security check: find responsable's class
-        const ss = SpreadsheetApp.getActiveSpreadsheet();
-        const respHeaders = ss.getSheetByName(SHEET_NAMES.RESPONSABLES).getRange(1, 1, 1, ss.getSheetByName(SHEET_NAMES.RESPONSABLES).getLastColumn()).getValues()[0];
-        const respSheet = ss.getSheetByName(SHEET_NAMES.RESPONSABLES);
-        const respData = respSheet.getDataRange().getValues();
-        const respIdIdx = respData[0].indexOf('ID_RESPONSABLE');
-        const classFkIdx = respData[0].indexOf('ID_CLASSE_FK');
-        const responsableRow = respData.find(row => row[respIdIdx] === responsableId);
-        if (!responsableRow) throw new Error('Responsable non trouvé.');
-        const classId = responsableRow[classFkIdx];
-        
-        const classesSheet = ss.getSheetByName(SHEET_NAMES.CLASSES);
-        const classData = classesSheet.getDataRange().getValues();
-        const classIdIdx = classData[0].indexOf('ID_CLASSE');
-        const classNameIdx = classData[0].indexOf('NOM_CLASSE');
-        const classRow = classData.find(row => row[classIdIdx] === classId);
-        const className = classRow[classNameIdx];
+    const ctx = createRequestContext();
+    const classInfo = getResponsableClassInfo(responsableId, ctx);
 
-        // NOUVEAU: Vérifier ou créer le module
-        const modulesSheet = ss.getSheetByName(SHEET_NAMES.MODULES);
-        const modulesData = modulesSheet.getDataRange().getValues();
-        const moduleNameIdx = modulesData[0].indexOf('NOM_MODULE');
-        const moduleClassFkIdx = modulesData[0].indexOf('ID_CLASSE_FK');
-        
-        let existingModule = modulesData.find(row => row[moduleNameIdx] === moduleName && row[moduleClassFkIdx] === classId);
+    // Vérifier que le module appartient bien à la classe du responsable et n'est pas terminé
+    const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+    const modIdIdx = modulesData[0].indexOf('ID_MODULE');
+    const modClassFkIdx = modulesData[0].indexOf('ID_CLASSE_FK');
+    const modStatusIdx = modulesData[0].indexOf('STATUT');
+    const moduleRow = modulesData.slice(1).find(row => row[modIdIdx] === moduleId); // Slice(1) to skip headers
 
-        if (!existingModule) {
-            const newModuleId = `MOD-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
-            modulesSheet.appendRow([newModuleId, moduleName, classId, 'En cours']);
-            logAction('responsableCreateModule', { responsableId, moduleName, classId });
-        } else {
-            // Si le module existe et est "Terminé", on ne peut pas ajouter de cours
-            const moduleStatusIdx = modulesData[0].indexOf('STATUT');
-            if (existingModule[moduleStatusIdx] === 'Terminé') {
-                throw new Error(`Le module "${moduleName}" est terminé. Vous ne pouvez plus y ajouter de cours.`);
-            }
-        }
+    if (!moduleRow) {
+      throw new Error("Module non trouvé.");
+    }
+    if (moduleRow[modClassFkIdx] !== classInfo.classId) {
+      throw new Error("Action non autorisée. Ce module n'appartient pas à votre classe.");
+    }
+    if (moduleRow[modStatusIdx] === 'Terminé') {
+      throw new Error(`Ce module est terminé. Vous ne pouvez plus y ajouter de cours.`);
+    }
 
-        const newId = `CRS-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
-        const newCourseRow = [newId, className, moduleName, enseignant, new Date(date), startTime, endTime, 'En attente'];
+    const newId = `CRS-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+    const newCourseRow = [newId, moduleId, new Date(date), startTime, endTime, 'En attente'];
         SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING).appendRow(newCourseRow);
         
         // Invalider les caches pertinents après l'ajout
-        cache.removeAll([`dashboard_resp_${responsableId}`, `modules_resp_${responsableId}`]); // Cache du responsable
-        clearAllCachesForUniversity(responsableRow[respHeaders.indexOf('ID_UNIVERSITE_FK')], ['planning']); // Cache de l'admin
-        logAction('addCourseForResponsable', { responsableId, module: moduleName });
+        cache.remove(`dashboard_resp_${responsableId}`);
+        clearAllCachesForUniversity(classInfo.universityId, ['planning', 'module']); // Invalidate module cache as well
+        logAction('addCourseForResponsable', { responsableId, moduleId });
 
-        return createJsonResponse({ success: true, message: `Le cours du module ${moduleName} a été ajouté au planning avec le statut "En attente".` });
+    return createJsonResponse({ success: true, message: `Le cours a été ajouté au planning avec le statut "En attente".` });
     } catch (error) {
         logError('addCourseForResponsable', error);
         return createJsonResponse({ success: false, error: error.message });
@@ -1701,7 +1671,8 @@ function deleteCourseForResponsable(data) {
     }
 
     // Security check: find responsable's class info
-    const classInfo = getResponsableClassInfo(responsableId);
+    const ctx = createRequestContext();
+    const classInfo = getResponsableClassInfo(responsableId, ctx);
     const className = classInfo.className;
     const universityId = classInfo.universityId;
 
@@ -1710,18 +1681,26 @@ function deleteCourseForResponsable(data) {
     const planningData = planningSheet.getDataRange().getValues();
     const planningHeaders = planningData.shift();
     const courseIdIdx = planningHeaders.indexOf('ID_COURS');
-    const planningClassIdx = planningHeaders.indexOf('CLASSE');
+    const moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK'); // NOUVEAU
 
     const rowIndex = planningData.findIndex(row => row[courseIdIdx] === courseId);
     if (rowIndex === -1) throw new Error('Cours non trouvé.');
 
-    // Final security check: Does this course belong to the responsable's class?
-    if (planningData[rowIndex][planningClassIdx] !== className) {
+    // NOUVEAU: Final security check: Does this course belong to the responsable's class?
+    const courseModuleId = planningData[rowIndex][moduleIdFkIdx];
+    const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+    const moduleHeaders = modulesData[0];
+    const modIdIdx = moduleHeaders.indexOf('ID_MODULE');
+    const modClassFkIdx = moduleHeaders.indexOf('ID_CLASSE_FK');
+    const moduleRow = modulesData.slice(1).find(row => row[modIdIdx] === courseModuleId);
+
+    if (!moduleRow || moduleRow[modClassFkIdx] !== classInfo.classId) {
       throw new Error("Action non autorisée. Ce cours n'appartient pas à votre classe.");
     }
 
     planningSheet.deleteRow(rowIndex + 2); // +2 because findIndex is 0-based and headers were shifted
     cache.remove(`dashboard_resp_${responsableId}`);
+    cache.remove(`modules_resp_${responsableId}`); // Invalidate module cache
     logAction('responsableDeleteCourse', { responsableId, courseId });
     return createJsonResponse({ success: true, message: 'Le cours a été supprimé avec succès.' });
   } catch (error) {
@@ -1848,13 +1827,24 @@ function getCurrentCourse(data) {
     const headers = planningData.shift();
     
     const classeIdx = headers.indexOf('CLASSE');
-    const moduleIdx = headers.indexOf('MODULE');
+    const moduleIdFkIdx = headers.indexOf('ID_MODULE_FK'); // NOUVEAU
     const dateIdx = headers.indexOf('DATE_COURS');
     const startIdx = headers.indexOf('HEURE_DEBUT');
     const endIdx = headers.indexOf('HEURE_FIN');
     const statutIdx = headers.indexOf('STATUT');
 
-    if ([classeIdx, moduleIdx, dateIdx, startIdx, endIdx, statutIdx].includes(-1)) {
+    // NOUVEAU: Récupérer les informations du module et de la classe
+    const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, createRequestContext());
+    const moduleHeaders = modulesData[0];
+    const modIdIdx = moduleHeaders.indexOf('ID_MODULE');
+    const modNameIdx = moduleHeaders.indexOf('NOM_MODULE');
+    const modClassFkIdx = moduleHeaders.indexOf('ID_CLASSE_FK');
+    const moduleMap = new Map(modulesData.slice(1).map(row => [row[modIdIdx], { name: row[modNameIdx], classId: row[modClassFkIdx] }]));
+
+    const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, createRequestContext());
+    const classMap = new Map(classesData.slice(1).map(row => [row[0], row[1]])); // ID_CLASSE -> NOM_CLASSE
+
+    if ([moduleIdFkIdx, dateIdx, startIdx, endIdx, statutIdx].includes(-1)) {
         return createJsonResponse({ success: false, error: 'Erreur de Configuration: Colonnes manquantes dans Planning.' });
     }
 
@@ -1871,7 +1861,15 @@ function getCurrentCourse(data) {
       const requestClassName = classe ? classe.toString().trim() : '';
       const status = row[statutIdx] ? row[statutIdx].toString().trim() : '';
 
-      if (sheetClassName.toLowerCase() === requestClassName.toLowerCase() && courseDateStr === todayStr && status.toLowerCase() === 'confirmé') {
+      // NOUVEAU: Vérifier la classe via le module
+      const courseModuleId = row[moduleIdFkIdx];
+      const moduleInfo = moduleMap.get(courseModuleId);
+      if (!moduleInfo) continue;
+
+      const courseClassName = classMap.get(moduleInfo.classId);
+      if (!courseClassName) continue;
+
+      if (courseClassName.toLowerCase() === requestClassName.toLowerCase() && courseDateStr === todayStr && status.toLowerCase() === 'confirmé') {
         // AMÉLIORATION: Vérification stricte de l'heure avec une marge de tolérance.
         const startTime = new Date(row[startIdx]);
         const endTime = new Date(row[endIdx]);
@@ -1886,7 +1884,7 @@ function getCurrentCourse(data) {
 
         if (nowTimeOnly >= tolerantStartTime && nowTimeOnly <= tolerantEndTime) {
           // C'est le bon cours, on le renvoie immédiatement.
-          const courseFound = { classe: row[classeIdx], module: row[moduleIdx] };
+          const courseFound = { classe: courseClassName, module: moduleInfo.name };
           return createJsonResponse({ success: true, data: courseFound });
         } else {
           // C'est un cours pour aujourd'hui, mais pas à la bonne heure. On le garde en mémoire.
@@ -2031,10 +2029,20 @@ function setup() {
     const today = new Date();
     const tomorrow = new Date();
     tomorrow.setDate(today.getDate() + 1);
+
+    // NOUVEAU: Ajouter des modules de démonstration
+    const modulesSheet = ss.getSheetByName(SHEET_NAMES.MODULES);
+    const demoModules = [
+      ['MOD-ALGO', 'ALGO101 - Algorithmique', 'CLS-L1INFO', univId, 'Prof. Ba', 'En cours'],
+      ['MOD-DROIT', 'DROIT101 - Introduction au Droit', 'CLS-L1DROIT', univId, 'Prof. Ndiaye', 'En cours'],
+      ['MOD-BDD', 'BDD101 - Bases de données', 'CLS-L1INFO', univId, 'Prof. Sow', 'En cours']
+    ];
+    modulesSheet.getRange(2, 1, demoModules.length, demoModules[0].length).setValues(demoModules);
+
     const demoPlanning = [
-      ['C001', 'L1-Info', 'ALGO101 - Algorithmique', 'Prof. Ba', today, '08:00', '10:00', 'Confirmé'],
-      ['C002', 'L1-Droit', 'DROIT101 - Introduction au Droit', 'Prof. Ndiaye', today, '10:00', '12:00', 'Confirmé'],
-      ['C003', 'L1-Info', 'BDD101 - Bases de données', 'Prof. Sow', tomorrow, '08:00', '10:00', 'En attente']
+      ['CRS-001', 'MOD-ALGO', today, '08:00', '10:00', 'Confirmé'],
+      ['CRS-002', 'MOD-DROIT', today, '10:00', '12:00', 'Confirmé'],
+      ['CRS-003', 'MOD-BDD', tomorrow, '08:00', '10:00', 'En attente']
     ];
     planningSheet.getRange(2, 1, demoPlanning.length, demoPlanning[0].length).setValues(demoPlanning);
     planningSheet.getRange('E:E').setNumberFormat('dd/mm/yyyy');
@@ -2068,42 +2076,42 @@ function setup() {
  * Ajoute les onglets et les colonnes manquants sans supprimer les données existantes.
  */
  function updateSystem() {
-     const ss = SpreadsheetApp.getActiveSpreadsheet();
-     const ui = SpreadsheetApp.getUi();
- 
-     const response = ui.alert(
-         'Confirmation de la Mise à Jour',
-         'Cette action va vérifier et AJOUTER les onglets ou colonnes manquants pour assurer la compatibilité. Aucune donnée ou colonne ne sera supprimée. Voulez-vous continuer ?',
-         ui.ButtonSet.YES_NO
-     );
- 
-     if (response !== ui.Button.YES) {
-         ui.alert('Mise à jour annulée.');
-         return;
-     }
- 
-     try {
-         const sheetConfigs = getSheetConfigs();
- 
-         Object.entries(sheetConfigs).forEach(([name, config]) => {
-             let sheet = ss.getSheetByName(name);
-             if (!sheet) {
-                 sheet = ss.insertSheet(name);
-                 sheet.setTabColor(config.color);
-                 Logger.log(`Onglet '${name}' créé.`);
-             }
- 
-             if (config.headers.length > 0) {
-                 const currentHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
-                 const missingHeaders = config.headers.filter(h => !currentHeaders.includes(h));
- 
-                 if (missingHeaders.length > 0) {
-                     const startColumn = sheet.getLastColumn() + 1;
-                     sheet.getRange(1, startColumn, 1, missingHeaders.length).setValues([missingHeaders]);
-                     Logger.log(`Colonnes manquantes ajoutées à '${name}': ${missingHeaders.join(', ')}`);
-                 }
- 
-                 // Appliquer les validations de données (non destructif)
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ui = SpreadsheetApp.getUi();
+
+    const response = ui.alert(
+        'Confirmation de la Mise à Jour',
+        'Cette action va vérifier et AJOUTER les onglets ou colonnes manquants pour assurer la compatibilité. Aucune donnée ou colonne ne sera supprimée. Voulez-vous continuer ?',
+        ui.ButtonSet.YES_NO
+    );
+
+    if (response !== ui.Button.YES) {
+        ui.alert('Mise à jour annulée.');
+        return;
+    }
+
+    try {
+        const sheetConfigs = getSheetConfigs();
+
+        Object.entries(sheetConfigs).forEach(([name, config]) => {
+            let sheet = ss.getSheetByName(name);
+            if (!sheet) {
+                sheet = ss.insertSheet(name);
+                sheet.setTabColor(config.color);
+                Logger.log(`Onglet '${name}' créé.`);
+            }
+
+            if (config.headers.length > 0) {
+                const currentHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
+                const missingHeaders = config.headers.filter(h => !currentHeaders.includes(h));
+
+                if (missingHeaders.length > 0) {
+                    const startColumn = sheet.getLastColumn() + 1;
+                    sheet.getRange(1, startColumn, 1, missingHeaders.length).setValues([missingHeaders]);
+                    Logger.log(`Colonnes manquantes ajoutées à '${name}': ${missingHeaders.join(', ')}`);
+                }
+
+                // Appliquer les validations de données (non destructif)
                 if (config.validations) {
                     const updatedHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
                     for (const colName in config.validations) {
@@ -2138,7 +2146,7 @@ function getSheetConfigs() {
         [SHEET_NAMES.CLASSES]: { headers: ['ID_CLASSE', 'NOM_CLASSE', 'ID_FILIERE_FK'], color: '#a61c00' },
         [SHEET_NAMES.RESPONSABLES]: { headers: ['ID_RESPONSABLE', 'NOM_RESPONSABLE', 'EMAIL_RESPONSABLE', 'PASSWORD_HASH', 'SALT', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK'], color: '#1a237e' },
         [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
-        [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } },
+        [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
         [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
         [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
         [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
@@ -2367,8 +2375,7 @@ function getSheetNameForEntity(entityType) {
     filiere: SHEET_NAMES.FILIERES,
     classe: SHEET_NAMES.CLASSES,
     responsable: SHEET_NAMES.RESPONSABLES,
-    student: SHEET_NAMES.STUDENTS,
-    module: SHEET_NAMES.MODULES // CORRECTION: Ajout de l'entité module
+    student: SHEET_NAMES.STUDENTS
   };
 
   const sheetName = map[entityType];
@@ -2474,6 +2481,9 @@ function clearAllCachesForUniversity(universityId, types = []) {
             case 'planning': keysToRemove.add(`planning_${universityId}`); break;
             case 'dashboard': keysToRemove.add(`dashboard_stats_${universityId}`); break;
         }
+        // NOUVEAU: Invalidation des caches liés aux modules
+        keysToRemove.add(`modules_resp_${universityId}`); // Cache spécifique au responsable
+        keysToRemove.add(`entities_module_${universityId}`); // Cache général des modules pour l'admin
     });
 
     const keysArray = Array.from(keysToRemove); // Convertir le Set en Array
@@ -2703,20 +2713,35 @@ function findStudentSchedule(studentId) {
     const studentRow = studentsData.find(row => row[studentIdIdx] && row[studentIdIdx].toString().trim().toUpperCase() === studentId.trim().toUpperCase());
     if (!studentRow) return []; // Étudiant non trouvé, retourne un planning vide
     const classId = studentRow[classFkIdx];
+    if (!classId) return [];
 
-    const classesSheet = ss.getSheetByName(SHEET_NAMES.CLASSES);
-    const classesData = classesSheet.getDataRange().getValues();
-    const classInfoRow = classesData.find(row => row[0] === classId);
-    const className = classInfoRow ? classInfoRow[1] : null;
-    if (!className) return []; // Classe non trouvée, retourne un planning vide
+    // 2. Récupérer les modules de cette classe
+    const modulesSheet = ss.getSheetByName(SHEET_NAMES.MODULES);
+    const modulesData = modulesSheet.getDataRange().getValues();
+    const modulesHeaders = modulesData.shift();
+    const modClassFkIdx = modulesHeaders.indexOf('ID_CLASSE_FK');
+    const modIdIdx = modulesHeaders.indexOf('ID_MODULE');
+    const moduleIdsForClass = new Set(
+        modulesData.filter(row => row[modClassFkIdx] === classId).map(row => row[modIdIdx])
+    );
 
-    // 2. Récupérer le planning pour cette classe
+    // 3. Récupérer le planning pour ces modules
     const planningData = planningSheet.getDataRange().getValues();
     const planningHeaders = planningData.shift();
-    const planningClassIdx = planningHeaders.indexOf('CLASSE');
+    const moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+
+    // Enrichir avec les infos du module (comme dans getPlanningForAdmin)
+    const moduleMap = new Map(modulesData.map(row => [row[modIdIdx], { name: row[modulesHeaders.indexOf('NOM_MODULE')], teacher: row[modulesHeaders.indexOf('NOM_ENSEIGNANT')] }]));
+
     return planningData
-        .filter(row => row[planningClassIdx] === className)
-        .map(row => Object.fromEntries(planningHeaders.map((header, i) => [header, row[i]])))
+        .filter(row => moduleIdsForClass.has(row[moduleIdFkIdx]))
+        .map(row => {
+            const course = Object.fromEntries(planningHeaders.map((header, i) => [header, row[i]]));
+            const moduleInfo = moduleMap.get(course.ID_MODULE_FK);
+            course.MODULE = moduleInfo ? moduleInfo.name : 'Module Inconnu';
+            course.ENSEIGNANT = moduleInfo ? moduleInfo.teacher : 'N/A';
+            return course;
+        })
         .sort((a, b) => new Date(a.DATE_COURS) - new Date(b.DATE_COURS));
 }
 /**
