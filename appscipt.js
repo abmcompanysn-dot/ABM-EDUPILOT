@@ -347,7 +347,8 @@ function loginSchool(data) {
  */
 function getEntitiesForAdmin(data) {
     try {
-        const { entityType, universityId } = data;
+        // NOUVEAU: Ajout de parentId pour filtrer les modules par classe
+        const { entityType, universityId, parentId } = data;
         if (!universityId) {
             return createJsonResponse({ success: false, error: "Session administrateur invalide." });
         }
@@ -374,13 +375,35 @@ function getEntitiesForAdmin(data) {
             const allowedFiliereIds = getFiliereIdsForUniversity(universityId);
             const classeFkIdx = headers.indexOf('ID_FILIERE_FK');
             filteredValues = values.filter(row => allowedFiliereIds.includes(row[classeFkIdx]));
+        } else if (entityType === 'module') {
+            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
+            const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+            if (parentId) { // Si un ID de classe est fourni, on filtre par classe
+                filteredValues = values.filter(row => row[classFkIdx] === parentId);
+            } else { // Sinon, on filtre par université
+                filteredValues = values.filter(row => row[univFkIdx] === universityId);
+            }
         }
 
-        const entities = filteredValues.map(row => {
+        let entities = filteredValues.map(row => {
             const entity = {};
             headers.forEach((header, i) => entity[header] = row[i]);
             return entity;
         });
+
+        // NOUVEAU: Enrichir les données des modules avec le nom de la classe
+        if (entityType === 'module') {
+            const ctx = createRequestContext();
+            const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
+            const classMap = new Map(classesData.slice(1).map(row => [row[0], row[1]])); // ID_CLASSE -> NOM_CLASSE
+            
+            entities = entities.map(module => {
+                return {
+                    ...module,
+                    NOM_CLASSE: classMap.get(module.ID_CLASSE_FK) || 'Classe inconnue'
+                };
+            });
+        }
 
         cache.put(cacheKey, JSON.stringify(entities), 300); // Cache pour 5 minutes
         return createJsonResponse({ success: true, data: entities });
@@ -581,6 +604,11 @@ function addEntityForAdmin(data) {
     } else if (entityType === 'classe') {
         if (!payload.filiereId) return createJsonResponse({ success: false, error: 'ID Filière manquant.' });
         rowData = [newId, payload.name, payload.filiereId];
+    } else if (entityType === 'module') {
+        if (!payload.classeId || !payload.enseignant) {
+            return createJsonResponse({ success: false, error: 'Classe et enseignant sont requis pour créer un module.' });
+        }
+        rowData = [newId, payload.name, payload.classeId, universityId, payload.enseignant, 'En cours'];
     } else {
         throw new Error('Type d\'entité non géré pour l\'ajout.');
     }
@@ -638,26 +666,39 @@ function getPlanningForAdmin(data) {
     try {
         // Utilisation du cache pour accélérer la récupération du planning
         const planning = getCachedData(cacheKey, () => {
-            const allowedFiliereIds = getFiliereIdsForUniversity(universityId);
-            const classesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.CLASSES);
-            const classesData = classesSheet.getDataRange().getValues();
-            const classesHeaders = classesData.shift();
-            const allowedClassNames = new Set(classesData
-                .filter(row => allowedFiliereIds.includes(row[classesHeaders.indexOf('ID_FILIERE_FK')]))
-                .map(row => row[classesHeaders.indexOf('NOM_CLASSE')]));
+            const ctx = createRequestContext();
+            
+            // 1. Créer des maps pour une recherche rapide
+            const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+            const moduleMap = new Map(modulesData.slice(1).map(row => [row[0], { name: row[1], classId: row[2], teacher: row[4] }])); // ID_MODULE -> {name, classId, teacher}
+            
+            const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
+            const classMap = new Map(classesData.slice(1).map(row => [row[0], { name: row[1], filiereId: row[2] }])); // ID_CLASSE -> {name, filiereId}
 
-            const planningSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING);
-            const planningData = planningSheet.getDataRange().getValues();
+            const allowedFiliereIds = new Set(getFiliereIdsForUniversity(universityId));
+
+            // 2. Filtrer le planning
+            const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
             const planningHeaders = planningData.shift();
-            const classeIdx = planningHeaders.indexOf('CLASSE');
+            const moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
 
-            const filteredPlanning = planningData.filter(row => allowedClassNames.has(row[classeIdx]));
-
-            return filteredPlanning.map(row => {
+            return planningData.map(row => {
                 const course = {};
                 planningHeaders.forEach((header, i) => course[header] = row[i]);
+                
+                const moduleInfo = moduleMap.get(course.ID_MODULE_FK);
+                if (!moduleInfo) return null; // Si le module n'existe pas, on ignore le cours
+                
+                const classInfo = classMap.get(moduleInfo.classId);
+                if (!classInfo || !allowedFiliereIds.has(classInfo.filiereId)) return null; // Si la classe n'appartient pas à l'université, on ignore
+
+                // Enrichir l'objet cours avec les informations lisibles
+                course.CLASSE = classInfo.name;
+                course.MODULE = moduleInfo.name;
+                course.ENSEIGNANT = moduleInfo.teacher;
                 return course;
-            }).sort((a, b) => new Date(b.DATE_COURS) - new Date(a.DATE_COURS)); // Trier par date décroissante
+            }).filter(Boolean) // Enlever les cours nuls (ceux qui ont été ignorés)
+              .sort((a, b) => new Date(b.DATE_COURS) - new Date(a.DATE_COURS));
         }, 180); // Cache de 3 minutes pour le planning
 
         return createJsonResponse({ success: true, data: planning });
@@ -674,16 +715,16 @@ function getPlanningForAdmin(data) {
 function addCourseForAdmin(data) {
     try {
         const { payload, universityId } = data;
-        const { classe, module, enseignant, date, startTime, endTime } = payload;
+        const { moduleId, date, startTime, endTime } = payload;
         const newId = `CRS-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
-        const newCourseRow = [newId, classe, module, enseignant, new Date(date), startTime, endTime, 'Confirmé'];
+        const newCourseRow = [newId, moduleId, new Date(date), startTime, endTime, 'Confirmé'];
         SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.PLANNING).appendRow(newCourseRow);
         
         // Invalider les caches pertinents après ajout
         clearAllCachesForUniversity(universityId, ['planning', 'dashboard']);
-        logAction('adminAddCourse', { classe, module, universityId });
+        logAction('adminAddCourse', { moduleId, universityId });
 
-        return createJsonResponse({ success: true, message: `Le cours du module ${module} pour la classe ${classe} a été ajouté au planning.` });
+        return createJsonResponse({ success: true, message: `Le cours a été ajouté au planning.` });
     } catch (error) {
         logError('adminAddCourse', error);
         return createJsonResponse({ success: false, error: error.message });
@@ -2027,56 +2068,42 @@ function setup() {
  * Ajoute les onglets et les colonnes manquants sans supprimer les données existantes.
  */
  function updateSystem() {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const ui = SpreadsheetApp.getUi();
-
-    const response = ui.alert(
-        'Confirmation de la Mise à Jour',
-        'Cette action va vérifier et mettre à jour la structure de votre Google Sheet (ajout/suppression/renommage de colonnes et onglets) pour correspondre à la dernière version du script, sans supprimer les données existantes. Voulez-vous continuer ?',
-        ui.ButtonSet.YES_NO
-    );
-
-    if (response !== ui.Button.YES) {
-        ui.alert('Mise à jour annulée.');
-        return;
-    }
-
-    try {
-        const sheetConfigs = getSheetConfigs(); // Utiliser la fonction centralisée
-
-        Object.entries(sheetConfigs).forEach(([name, config]) => {
-            let sheet = ss.getSheetByName(name);
-            if (!sheet) {
-                sheet = ss.insertSheet(name);
-                sheet.setTabColor(config.color);
-                Logger.log(`Onglet '${name}' créé.`);
-            }
-
-            if (config.headers.length > 0) {
-                const currentHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
-                const targetHeaders = config.headers;
-
-                const currentHeaderSet = new Set(currentHeaders);
-                const targetHeaderSet = new Set(targetHeaders);
-
-                // 1. Colonnes à ajouter
-                const toAdd = targetHeaders.filter(h => !currentHeaderSet.has(h));
-                if (toAdd.length > 0) {
-                    const startColumn = sheet.getLastColumn() + 1;
-                    sheet.getRange(1, startColumn, 1, toAdd.length).setValues([toAdd]);
-                    Logger.log(`Colonnes ajoutées à '${name}': ${toAdd.join(', ')}`);
-                }
-
-                // 2. Colonnes à supprimer
-                const toDelete = currentHeaders.map((h, i) => ({ name: h, index: i + 1 }))
-                    .filter(h => h.name && !targetHeaderSet.has(h));
-                // Supprimer de la fin vers le début pour éviter les décalages d'index
-                toDelete.reverse().forEach(col => {
-                    sheet.deleteColumn(col.index);
-                    Logger.log(`Colonne supprimée de '${name}': ${col.name}`);
-                });
-
-                // 3. Appliquer les validations de données
+     const ss = SpreadsheetApp.getActiveSpreadsheet();
+     const ui = SpreadsheetApp.getUi();
+ 
+     const response = ui.alert(
+         'Confirmation de la Mise à Jour',
+         'Cette action va vérifier et AJOUTER les onglets ou colonnes manquants pour assurer la compatibilité. Aucune donnée ou colonne ne sera supprimée. Voulez-vous continuer ?',
+         ui.ButtonSet.YES_NO
+     );
+ 
+     if (response !== ui.Button.YES) {
+         ui.alert('Mise à jour annulée.');
+         return;
+     }
+ 
+     try {
+         const sheetConfigs = getSheetConfigs();
+ 
+         Object.entries(sheetConfigs).forEach(([name, config]) => {
+             let sheet = ss.getSheetByName(name);
+             if (!sheet) {
+                 sheet = ss.insertSheet(name);
+                 sheet.setTabColor(config.color);
+                 Logger.log(`Onglet '${name}' créé.`);
+             }
+ 
+             if (config.headers.length > 0) {
+                 const currentHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
+                 const missingHeaders = config.headers.filter(h => !currentHeaders.includes(h));
+ 
+                 if (missingHeaders.length > 0) {
+                     const startColumn = sheet.getLastColumn() + 1;
+                     sheet.getRange(1, startColumn, 1, missingHeaders.length).setValues([missingHeaders]);
+                     Logger.log(`Colonnes manquantes ajoutées à '${name}': ${missingHeaders.join(', ')}`);
+                 }
+ 
+                 // Appliquer les validations de données (non destructif)
                 if (config.validations) {
                     const updatedHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
                     for (const colName in config.validations) {
@@ -2088,22 +2115,15 @@ function setup() {
                         }
                     }
                 }
-
-                // 4. Appliquer le style aux en-têtes
-                if (sheet.getLastColumn() > 0) {
-                    const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
-                    headerRange.setBackground(config.color).setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
-                    sheet.setFrozenRows(1);
-                }
-            }
-        });
-
-        ui.alert('Mise à jour du système terminée avec succès !');
-    } catch (e) {
-        Logger.log(e);
-        ui.alert('Erreur lors de la mise à jour', e.message, ui.ButtonSet.OK);
-    }
-}
+             }
+         });
+ 
+         ui.alert('Mise à jour du système terminée avec succès ! Les onglets et colonnes manquants ont été ajoutés.');
+     } catch (e) {
+         Logger.log(e);
+         ui.alert('Erreur lors de la mise à jour', e.message, ui.ButtonSet.OK);
+     }
+ }
 
 /**
  * NOUVEAU: Fonction centralisée pour obtenir la configuration des feuilles.
@@ -2347,7 +2367,8 @@ function getSheetNameForEntity(entityType) {
     filiere: SHEET_NAMES.FILIERES,
     classe: SHEET_NAMES.CLASSES,
     responsable: SHEET_NAMES.RESPONSABLES,
-    student: SHEET_NAMES.STUDENTS
+    student: SHEET_NAMES.STUDENTS,
+    module: SHEET_NAMES.MODULES // CORRECTION: Ajout de l'entité module
   };
 
   const sheetName = map[entityType];

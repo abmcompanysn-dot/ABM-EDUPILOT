@@ -93,9 +93,10 @@
                         </button>
                         <div class="accordion-content">
                             <form id="add-course-form" class="pt-4 space-y-4">
-                                <!-- ... les champs du formulaire restent les mêmes ... -->
-                                <div><label for="course-module" class="block text-sm font-medium text-gray-700">Module</label><input type="text" id="course-module" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
-                                <div><label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label><input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
+                                <div>
+                                    <label for="course-module-select" class="block text-sm font-medium text-gray-700">Choisir un Module</label>
+                                    <select id="course-module-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-white"></select>
+                                </div>
                                 <div><label for="course-date" class="block text-sm font-medium text-gray-700">Date</label><input type="date" id="course-date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div><label for="course-start-time" class="block text-sm font-medium text-gray-700">Début</label><input type="time" id="course-start-time" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></div>
@@ -165,10 +166,26 @@
         <!-- NOUVEAU: Contenu pour la gestion des modules -->
         <div id="modules-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
             <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Gestion des Modules</h3>
+                <h3 class="text-xl font-bold text-gray-900">Vos Modules</h3>
                 <button onclick="exportModulesSummary()" class="text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"><i class="fas fa-download mr-2"></i>Exporter le résumé</button>
             </div>
-            <div id="modules-list-container" class="max-h-[80vh] overflow-y-auto pr-2"><p>Chargement des modules...</p></div>
+            <div class="grid lg:grid-cols-3 gap-8 items-start">
+                <div class="lg:col-span-1 bg-gray-50 p-6 rounded-lg border">
+                    <h4 class="text-lg font-medium text-gray-900">Ajouter un Module</h4>
+                    <form id="add-module-form" class="mt-4 space-y-4">
+                        <div>
+                            <label for="module-name" class="block text-sm font-medium text-gray-700">Nom du module (ex: ALGO-101)</label>
+                            <input type="text" id="module-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="module-enseignant" class="block text-sm font-medium text-gray-700">Enseignant Principal</label>
+                            <input type="text" id="module-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                        </div>
+                        <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Créer le Module</button>
+                    </form>
+                </div>
+                <div id="modules-list-container" class="lg:col-span-2 max-h-[70vh] overflow-y-auto pr-2"><p>Chargement des modules...</p></div>
+            </div>
         </div>
 
         <!-- NOUVEAU: Contenu pour l'historique des présences -->
@@ -286,6 +303,7 @@
                     }
                     if (tab.dataset.target === 'modules-content' && !targetContent.dataset.loaded) {
                         loadClassModules();
+                        setupResponsableModuleForm();
                         targetContent.dataset.loaded = 'true';
                     }
                     if (tab.dataset.target === 'attendance-content' && !targetContent.dataset.loaded) {
@@ -295,6 +313,15 @@
                 }
             });
         });
+
+        // NOUVEAU: Charger les modules dans le sélecteur du planning
+        async function populatePlanningModuleSelect() {
+            const select = document.getElementById('course-module-select');
+            select.innerHTML = '<option>Chargement...</option>';
+            const result = await callResponsableApi('responsableGetModules');
+            const modules = result.data.filter(m => m.STATUT === 'En cours');
+            select.innerHTML = '<option value="">-- Sélectionnez un module --</option>' + modules.map(m => `<option value="${m.ID_MODULE}">${m.NOM_MODULE} (${m.NOM_ENSEIGNANT})</option>`).join('');
+        }
 
         // ... (le reste du code est déplacé pour une meilleure organisation)
 
@@ -346,8 +373,7 @@
             form.onsubmit = async (e) => {
                 e.preventDefault();
                 const payload = {
-                    module: document.getElementById('course-module').value,
-                    enseignant: document.getElementById('course-enseignant').value,
+                    moduleId: document.getElementById('course-module-select').value,
                     date: document.getElementById('course-date').value,
                     startTime: document.getElementById('course-start-time').value,
                     endTime: document.getElementById('course-end-time').value,
@@ -518,6 +544,32 @@
             } finally {
                 showSpinner(false);
             }
+        }
+
+        // NOUVEAU: Gère la soumission du formulaire d'ajout de module par le responsable
+        function setupResponsableModuleForm() {
+            const form = document.getElementById('add-module-form');
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const payload = {
+                    name: document.getElementById('module-name').value,
+                    enseignant: document.getElementById('module-enseignant').value,
+                };
+                showSpinner(true);
+                try {
+                    e.submitter.disabled = true;
+                    const result = await callResponsableApi('responsableAddModule', { payload });
+                    showModal('Succès', result.message);
+                    form.reset();
+                    loadClassModules(); // Recharger la liste des modules
+                    populatePlanningModuleSelect(); // Mettre à jour le sélecteur du planning
+                } catch (error) {
+                    showModal('Erreur', error.message);
+                } finally {
+                    showSpinner(false);
+                    if (e.submitter) e.submitter.disabled = false;
+                }
+            };
         }
 
         // NOUVEAU: Charge et affiche la liste des étudiants de la classe
@@ -801,6 +853,7 @@
                 const { profile, className, courses } = result.data;
                 document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
                 renderPlanning(courses);
+                populatePlanningModuleSelect(); // NOUVEAU: Remplir le sélecteur de modules
 
                 // NOUVEAU: Remplir les informations du profil
                 if (profile) {
