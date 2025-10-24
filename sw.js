@@ -1,21 +1,18 @@
 const CACHE_NAME = 'abm-edupilote-cache-v1';
 const urlsToCache = [
   '/',
-  'index.html',
-  'fonctionnement.html',
-  'mentions-legales.html',
-  'admin.html',
-  'responsable.html',
-  'etudiant.html',
-  'config.js',
-  'html2canvas.min.js',
-  'https://cdn.tailwindcss.com',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css',
+  '/index.html',
+  '/admin.html',
+  '/etudiant.html',
+  '/responsable.html',
+  '/fonctionnement.html',
+  '/mentions-legales.html',
+  '/config.js',
   'https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png',
-  'https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500&display=swap'
+  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css'
 ];
 
-// Étape 1: Installation du Service Worker et mise en cache des ressources
+// Installation du Service Worker et mise en cache des ressources
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -26,7 +23,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// Étape 2: Interception des requêtes et service depuis le cache
+// Interception des requêtes réseau
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -35,24 +32,9 @@ self.addEventListener('fetch', event => {
         if (response) {
           return response;
         }
-        // Sinon, on la récupère sur le réseau
+        // Sinon, on effectue la requête réseau
         return fetch(event.request);
-      })
-  );
-});
-
-// Étape 3: Nettoyage des anciens caches
-self.addEventListener('activate', event => {
-  const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+      }
+    )
   );
 });
