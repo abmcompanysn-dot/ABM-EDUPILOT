@@ -1019,7 +1019,9 @@
         async function handleStudentLogin(e) {
             e.preventDefault();
             const form = e.target;
-            const studentId = form.querySelector('#loginStudentId').value;
+            // CORRECTION: Utiliser l'ID du formulaire pour trouver le bon champ d'input.
+            // Cela permet à la fonction de marcher pour le login normal ET le quick-login.
+            const studentId = form.id === 'quickStudentLoginForm' ? form.querySelector('#quickLoginStudentId').value : form.querySelector('#loginStudentId').value;
             setLoading(true, form);
            try {
                 const result = await callApi('studentLogin', { studentId });
