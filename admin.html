@@ -158,6 +158,7 @@
             <nav class="-mb-px flex space-x-8" aria-label="Tabs">
                 <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-violet-500 text-violet-600" data-target="filiere-content">Filières</button>
                 <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="classe-content">Classes</button>
+                <button class="management-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="module-content">Modules</button>
             </nav>
         </div>
 
@@ -216,6 +217,33 @@
                     </div>
                 </div>
             </div>
+            <!-- NOUVEAU: Contenu Modules -->
+            <div id="module-content" class="management-tab-content hidden">
+                 <div class="grid lg:grid-cols-3 gap-8 items-start">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter un Module</h3>
+                        <form id="add-module-form" class="mt-4 space-y-4">
+                            <div>
+                                <label for="module-classe-select" class="block text-sm font-medium text-gray-700">Classe Concernée</label>
+                                <select id="module-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
+                            </div>
+                            <div>
+                                <label for="module-name" class="block text-sm font-medium text-gray-700">Nom du module (ex: ALGO-101)</label>
+                                <input type="text" id="module-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
+                            </div>
+                            <div>
+                                <label for="module-enseignant" class="block text-sm font-medium text-gray-700">Enseignant Principal</label>
+                                <input type="text" id="module-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
+                            </div>
+                            <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Créer le Module</button>
+                        </form>
+                    </div>
+                    <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-medium text-gray-900">Modules Existants</h3>
+                        <div id="module-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper"><ul id="module-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -236,12 +264,8 @@
                         <select id="course-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
                     </div>
                     <div>
-                        <label for="course-matiere" class="block text-sm font-medium text-gray-700">Module</label>
-                        <input type="text" id="course-matiere" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm" placeholder="Ex: ALGO101 - Algorithmique">
-                    </div>
-                    <div>
-                        <label for="course-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label>
-                        <input type="text" id="course-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
+                        <label for="course-module-select" class="block text-sm font-medium text-gray-700">Module</label>
+                        <select id="course-module-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm" disabled></select>
                     </div>
                     <div>
                         <label for="course-date" class="block text-sm font-medium text-gray-700">Date du cours</label>
@@ -523,6 +547,7 @@
             const pageTitles = {
                 'main-dashboard': 'Tableau de Bord',
                 'management-page': 'Filières & Classes',
+                'module-content': 'Modules', // NOUVEAU
                 'responsables-page': 'Responsables',
                 'planning-page': 'Planning',
                 'attendance-page': 'Présences',
@@ -613,6 +638,7 @@
 
             setupEntityForm('filiere', {});
             setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
+            setupEntityForm('module', { parent: 'classe', parentSelectId: 'module-classe-select', extraFields: ['enseignant'] });
         }
 
         // NOUVEAU: Charge les données pour le tableau de bord interactif
@@ -883,10 +909,17 @@
                 const name = nameInput.value.trim();
                 if (!name) return;
                 
-                const payload = { name };
+                let payload = { name };
                 if (options.parent) {
                     const parentSelect = document.getElementById(options.parentSelectId);
                     payload[`${options.parent}Id`] = parentSelect.value; // ex: payload.filiereId = 'FIL-XXXX'
+                }
+                // NOUVEAU: Gérer les champs supplémentaires pour les modules
+                if (options.extraFields) {
+                    options.extraFields.forEach(field => {
+                        const fieldInput = document.getElementById(`${entityType}-${field}`);
+                        payload[field] = fieldInput.value;
+                    });
                 }
                 
                 showSpinner(true);
@@ -899,7 +932,7 @@
 
                     // CORRECTION: Si une classe est ajoutée, on rafraîchit les listes sur les autres pages.
                     if (entityType === 'classe') {
-                        await refreshClassDropdowns();
+                        await refreshDropdowns(['classe', 'module']);
                         await loadInteractiveDashboard(); // AMÉLIORATION: On attend que le tableau de bord soit complètement rafraîchi
                     }
 
@@ -917,16 +950,25 @@
          * NOUVEAU: Rafraîchit les listes déroulantes de classes sur les pages Planning et Responsables.
          * Cette fonction est appelée après l'ajout d'une nouvelle classe.
          */
-        async function refreshClassDropdowns() {
+        async function refreshDropdowns(types = ['classe']) {
             try { // On ne met pas de spinner ici car c'est une action de fond
-                const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-                const classes = classesResult.data;
-                const optionsHtml = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-                const optionsHtmlByName = '<option value="">-- Sélectionnez une classe --</option>' + classes.map(c => `<option value="${c.NOM_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
-
-                document.getElementById('responsable-classe-select').innerHTML = optionsHtml;
-                document.getElementById('course-classe-select').innerHTML = optionsHtmlByName;
-                console.log('Listes déroulantes des classes mises à jour.');
+                if (types.includes('classe')) {
+                    const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
+                    const classes = classesResult.data;
+                    const optionsHtmlById = '<option value="">-- Sélectionnez --</option>' + classes.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
+                    
+                    document.getElementById('responsable-classe-select').innerHTML = optionsHtmlById;
+                    document.getElementById('module-classe-select').innerHTML = optionsHtmlById;
+                    document.getElementById('course-classe-select').innerHTML = optionsHtmlById;
+                    console.log('Listes déroulantes des classes mises à jour.');
+                }
+                if (types.includes('module')) {
+                    const courseModuleSelect = document.getElementById('course-module-select');
+                    if (courseModuleSelect) {
+                        courseModuleSelect.innerHTML = '<option value="">-- Sélectionnez d\'abord une classe --</option>';
+                        courseModuleSelect.disabled = true;
+                    }
+                }
             } catch (error) { console.error("Erreur lors du rafraîchissement des listes de classes:", error); }
         }
 
@@ -942,11 +984,19 @@
                 const result = await callAdminApi('adminGetEntities', { entityType });
                 const entities = result.data;
                 
-                if (entityType === 'filiere') {
+                if (entityType === 'filiere' || entityType === 'classe') {
                     const parentSelect = document.getElementById('classe-filiere-select');
                     if (parentSelect) { // On met à jour la liste déroulante des filières dans l'onglet "Classes"
                         parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
                             + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
+                    }
+                    // NOUVEAU: Mettre à jour les listes de classes pour les modules
+                    if (entityType === 'classe') {
+                        const moduleClassSelect = document.getElementById('module-classe-select');
+                        if (moduleClassSelect) {
+                            moduleClassSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
+                                + entities.map(e => `<option value="${e.ID_CLASSE}">${e.NOM_CLASSE}</option>`).join('');
+                        }
                     }
                 }
                 
@@ -959,10 +1009,16 @@
                     itemsHtml = entities.map(entity => {
                         const idKey = `ID_${entityType.toUpperCase()}`;
                         const nameKey = `NOM_${entityType.toUpperCase()}`;
+                        let subtext = `<span class="block text-xs text-gray-400 font-mono">${entity[idKey]}</span>`;
+                        if (entityType === 'module') {
+                            // Pour les modules, afficher la classe et le prof
+                            subtext = `<span class="block text-xs text-gray-500">${entity.NOM_CLASSE || 'Classe?'} - ${entity.NOM_ENSEIGNANT || 'Prof?'}</span>`;
+                        }
+
                         return `<li class="p-3 bg-white border rounded-md flex justify-between items-center">
                                     <div>
                                         <span class="font-medium">${entity[nameKey]}</span>
-                                        <span class="block text-xs text-gray-400 font-mono">${entity[idKey]}</span>
+                                        ${subtext}
                                     </div>
                                     <button onclick="handleDeleteEntity('${entityType}', '${entity[idKey]}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Supprimer</button>
                                 </li>`;
@@ -988,14 +1044,28 @@
         // NOUVEAU: Charge et affiche le planning
         async function loadAndRenderPlanning() {
             const container = document.getElementById('planning-table-container');
-            const classSelect = document.getElementById('course-classe-select');
+            const courseClassSelect = document.getElementById('course-classe-select');
+            const courseModuleSelect = document.getElementById('course-module-select');
             container.innerHTML = '<p>Chargement du planning...</p>';
 
             try {
                 // Charger les classes pour le formulaire
-                const classesResult = await callAdminApi('adminGetEntities', { entityType: 'classe' });
-                classSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
-                    + classesResult.data.map(c => `<option value="${c.NOM_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
+                await refreshDropdowns(['classe']);
+
+                // NOUVEAU: Charger les modules quand une classe est sélectionnée
+                courseClassSelect.addEventListener('change', async () => {
+                    const classId = courseClassSelect.value;
+                    courseModuleSelect.innerHTML = '<option value="">Chargement...</option>';
+                    courseModuleSelect.disabled = true;
+                    if (!classId) {
+                        courseModuleSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>';
+                        return;
+                    }
+                    const modulesResult = await callAdminApi('adminGetEntities', { entityType: 'module', parentId: classId });
+                    courseModuleSelect.innerHTML = '<option value="">-- Sélectionnez un module --</option>' 
+                        + modulesResult.data.map(m => `<option value="${m.ID_MODULE}">${m.NOM_MODULE} (${m.NOM_ENSEIGNANT})</option>`).join('');
+                    courseModuleSelect.disabled = false;
+                });
 
                 // Charger le planning
                 const planningResult = await callAdminApi('adminGetPlanning');
@@ -1227,9 +1297,7 @@
             form.onsubmit = async (e) => {
                 e.preventDefault();
                 const payload = {
-                    classe: document.getElementById('course-classe-select').value,
-                    module: document.getElementById('course-matiere').value,
-                    enseignant: document.getElementById('course-enseignant').value,
+                    moduleId: document.getElementById('course-module-select').value,
                     date: document.getElementById('course-date').value,
                     startTime: document.getElementById('course-start-time').value,
                     endTime: document.getElementById('course-end-time').value,

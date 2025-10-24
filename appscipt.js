@@ -20,7 +20,7 @@ const SHEET_NAMES = {
   RESPONSABLES: 'Responsables', // NOUVEAU
   ACTION_LOG: 'Historique_Actions', // NOUVEAU
   ERROR_LOG: 'Historique_Erreurs',   // NOUVEAU
-  MODULES: 'Modules' // NOUVEAU: Pour la gestion des modules
+  MODULES: 'Modules' // NOUVEAU
 };
 
 const CONFIG_KEYS = {
@@ -1916,8 +1916,8 @@ function setup() {
       [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
       [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
       [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },      
-      [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
-      [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'CLASSE', 'MODULE', 'ENSEIGNANT', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
+      [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
+      [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
       [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
       [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
       [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
@@ -2026,66 +2026,107 @@ function setup() {
  * NOUVEAU: Met à jour la structure du Google Sheet de manière non-destructive.
  * Ajoute les onglets et les colonnes manquants sans supprimer les données existantes.
  */
-function updateSystem() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const ui = SpreadsheetApp.getUi();
+ function updateSystem() {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ui = SpreadsheetApp.getUi();
 
-  const response = ui.alert(
-    'Confirmation de la Mise à Jour',
-    'Cette action va vérifier et mettre à jour la structure de votre Google Sheet (ajout d\'onglets ou de colonnes manquants) sans supprimer les données existantes. Voulez-vous continuer ?',
-    ui.ButtonSet.YES_NO
-  );
+    const response = ui.alert(
+        'Confirmation de la Mise à Jour',
+        'Cette action va vérifier et mettre à jour la structure de votre Google Sheet (ajout/suppression/renommage de colonnes et onglets) pour correspondre à la dernière version du script, sans supprimer les données existantes. Voulez-vous continuer ?',
+        ui.ButtonSet.YES_NO
+    );
 
-  if (response !== ui.Button.YES) {
-    ui.alert('Mise à jour annulée.');
-    return;
-  }
+    if (response !== ui.Button.YES) {
+        ui.alert('Mise à jour annulée.');
+        return;
+    }
 
-  try {
-    const sheetConfigs = {
-      [SHEET_NAMES.DASHBOARD]: { headers: [], color: '#6a1b9a' },
-      [SHEET_NAMES.CONFIG]: { headers: ['Clé', 'Valeur'], color: '#f4b400' },
-      [SHEET_NAMES.UNIVERSITIES]: { headers: ['ID_UNIVERSITE', 'NOM_UNIVERSITE'], color: '#a61c00' },
-      [SHEET_NAMES.FILIERES]: { headers: ['ID_FILIERE', 'NOM_FILIERE', 'ID_UNIVERSITE_FK', 'DATE_CREATION'], color: '#a61c00' },
-      [SHEET_NAMES.CLASSES]: { headers: ['ID_CLASSE', 'NOM_CLASSE', 'ID_FILIERE_FK'], color: '#a61c00' },
-      [SHEET_NAMES.RESPONSABLES]: { headers: ['ID_RESPONSABLE', 'NOM_RESPONSABLE', 'EMAIL_RESPONSABLE', 'PASSWORD_HASH', 'SALT', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK'], color: '#1a237e' },
-      [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
-      [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00' },
-      [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4' },
-      [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'STATUT'], color: '#fbc02d' },
-      [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'CLASSE', 'MODULE', 'ENSEIGNANT', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58' },
-      [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437' },
-      [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
-      [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
-      [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
+    try {
+        const sheetConfigs = getSheetConfigs(); // Utiliser la fonction centralisée
+
+        Object.entries(sheetConfigs).forEach(([name, config]) => {
+            let sheet = ss.getSheetByName(name);
+            if (!sheet) {
+                sheet = ss.insertSheet(name);
+                sheet.setTabColor(config.color);
+                Logger.log(`Onglet '${name}' créé.`);
+            }
+
+            if (config.headers.length > 0) {
+                const currentHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
+                const targetHeaders = config.headers;
+
+                const currentHeaderSet = new Set(currentHeaders);
+                const targetHeaderSet = new Set(targetHeaders);
+
+                // 1. Colonnes à ajouter
+                const toAdd = targetHeaders.filter(h => !currentHeaderSet.has(h));
+                if (toAdd.length > 0) {
+                    const startColumn = sheet.getLastColumn() + 1;
+                    sheet.getRange(1, startColumn, 1, toAdd.length).setValues([toAdd]);
+                    Logger.log(`Colonnes ajoutées à '${name}': ${toAdd.join(', ')}`);
+                }
+
+                // 2. Colonnes à supprimer
+                const toDelete = currentHeaders.map((h, i) => ({ name: h, index: i + 1 }))
+                    .filter(h => h.name && !targetHeaderSet.has(h));
+                // Supprimer de la fin vers le début pour éviter les décalages d'index
+                toDelete.reverse().forEach(col => {
+                    sheet.deleteColumn(col.index);
+                    Logger.log(`Colonne supprimée de '${name}': ${col.name}`);
+                });
+
+                // 3. Appliquer les validations de données
+                if (config.validations) {
+                    const updatedHeaders = sheet.getLastColumn() > 0 ? sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0] : [];
+                    for (const colName in config.validations) {
+                        const colIndex = updatedHeaders.indexOf(colName);
+                        if (colIndex !== -1) {
+                            const rule = SpreadsheetApp.newDataValidation().requireValueInList(config.validations[colName]).setAllowInvalid(false).build();
+                            sheet.getRange(2, colIndex + 1, sheet.getMaxRows() - 1, 1).setDataValidation(rule);
+                            Logger.log(`Validation appliquée à la colonne '${colName}' dans '${name}'.`);
+                        }
+                    }
+                }
+
+                // 4. Appliquer le style aux en-têtes
+                if (sheet.getLastColumn() > 0) {
+                    const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn());
+                    headerRange.setBackground(config.color).setFontColor('#ffffff').setFontWeight('bold').setHorizontalAlignment('center');
+                    sheet.setFrozenRows(1);
+                }
+            }
+        });
+
+        ui.alert('Mise à jour du système terminée avec succès !');
+    } catch (e) {
+        Logger.log(e);
+        ui.alert('Erreur lors de la mise à jour', e.message, ui.ButtonSet.OK);
+    }
+}
+
+/**
+ * NOUVEAU: Fonction centralisée pour obtenir la configuration des feuilles.
+ * @returns {object} La configuration complète des feuilles.
+ */
+function getSheetConfigs() {
+    return {
+        [SHEET_NAMES.DASHBOARD]: { headers: [], color: '#6a1b9a' },
+        [SHEET_NAMES.CONFIG]: { headers: ['Clé', 'Valeur'], color: '#f4b400' },
+        [SHEET_NAMES.UNIVERSITIES]: { headers: ['ID_UNIVERSITE', 'NOM_UNIVERSITE'], color: '#a61c00' },
+        [SHEET_NAMES.FILIERES]: { headers: ['ID_FILIERE', 'NOM_FILIERE', 'ID_UNIVERSITE_FK', 'DATE_CREATION'], color: '#a61c00' },
+        [SHEET_NAMES.CLASSES]: { headers: ['ID_CLASSE', 'NOM_CLASSE', 'ID_FILIERE_FK'], color: '#a61c00' },
+        [SHEET_NAMES.RESPONSABLES]: { headers: ['ID_RESPONSABLE', 'NOM_RESPONSABLE', 'EMAIL_RESPONSABLE', 'PASSWORD_HASH', 'SALT', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK'], color: '#1a237e' },
+        [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
+        [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } },
+        [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
+        [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
+        [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
+        [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
+        [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
+        [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
+        [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
     };
-
-    Object.entries(sheetConfigs).forEach(([name, config]) => {
-      let sheet = ss.getSheetByName(name);
-      if (!sheet) {
-        sheet = ss.insertSheet(name);
-        sheet.setTabColor(config.color);
-        Logger.log(`Onglet '${name}' créé.`);
-      }
-
-      if (config.headers.length > 0) {
-        const headerRange = sheet.getRange(1, 1, 1, sheet.getLastColumn() || 1);
-        const currentHeaders = headerRange.getValues()[0];
-        const missingHeaders = config.headers.filter(h => !currentHeaders.includes(h));
-
-        if (missingHeaders.length > 0) {
-          const startColumn = sheet.getLastColumn() + 1;
-          sheet.getRange(1, startColumn, 1, missingHeaders.length).setValues([missingHeaders]);
-          Logger.log(`Colonnes manquantes ajoutées à '${name}': ${missingHeaders.join(', ')}`);
-        }
-      }
-    });
-
-    ui.alert('Mise à jour du système terminée avec succès !');
-  } catch (e) {
-    Logger.log(e);
-    ui.alert('Erreur lors de la mise à jour', e.message, ui.ButtonSet.OK);
-  }
 }
 
 /**
@@ -2173,40 +2214,13 @@ function generateQrCodeUrls() {
       if (!universityId) {
           ui.alert('L\'ID de l\'université ne peut pas être vide.');
           return;
-      }
+        }
       const htmlContent = generateQrCodeUrlsLogic(universityId.trim());
       const htmlOutput = HtmlService.createHtmlOutput(htmlContent).setWidth(600).setHeight(500);
       ui.showModalDialog(htmlOutput, 'Générateur d\'URLs pour QR Codes');
     }
   } catch (error) {
     logError('generateQrCodeUrls_menu', error);
-    SpreadsheetApp.getUi().alert(`Erreur: ${error.message}`);
-  }
-}
-
-/**
- * NOUVEAU : Génère des liens d'inscription spécifiques à chaque classe.
- */
-function generateRegistrationLinks() {
-  try {
-    const ui = SpreadsheetApp.getUi();
-    const result = ui.prompt(
-        'Génération des Liens d\'Inscription',
-        'Veuillez entrer l\'ID de l\'université (ex: UNIV-DEMO) :',
-        ui.ButtonSet.OK_CANCEL);
-    
-    if (result.getSelectedButton() == ui.Button.OK) {
-        const universityId = result.getResponseText();
-        if (!universityId) {
-            ui.alert('L\'ID de l\'université ne peut pas être vide.');
-            return;
-        }
-        const htmlContent = generateRegistrationLinksLogic(universityId.trim());
-        const htmlOutput = HtmlService.createHtmlOutput(htmlContent).setWidth(600).setHeight(400);
-        ui.showModalDialog(htmlOutput, 'Générateur de Liens d\'Inscription');
-    }
-  } catch (error) {
-    logError('generateRegistrationLinks_menu', error);
     SpreadsheetApp.getUi().alert(`Erreur: ${error.message}`);
   }
 }
