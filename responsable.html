@@ -56,6 +56,10 @@
                     </button>
                     <button id="notifications-button" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition relative">
                         <i class="fas fa-bell"></i>
+                        <!-- NOUVEAU: Badge de notification -->
+                        <span id="notification-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-gray-800 hidden">
+                            0
+                        </span>
                     </button>
                     <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
                 </div>
@@ -339,14 +343,7 @@
             // NOUVEAU: Logique pour la modale de notifications
             const notifButton = document.getElementById('notifications-button');
             if (notifButton) {
-                notifButton.addEventListener('click', async () => {
-                    showSpinner(true);
-                    try {
-                        await loadAndShowNotifications();
-                    } finally {
-                        showSpinner(false);
-                    }
-                });
+                notifButton.addEventListener('click', loadAndShowNotifications);
             }
 
             // NOUVEAU: Logique pour la modale de notifications
@@ -362,6 +359,20 @@
                 });
             }
 
+            // NOUVEAU: Logique pour la modale d'envoi de message
+            const sendMessageModal = document.getElementById('send-message-modal');
+            const closeSendMessageBtn = document.getElementById('close-send-message-modal');
+            if (sendMessageModal && closeSendMessageBtn) {
+                const closeAction = () => sendMessageModal.classList.add('hidden');
+                closeSendMessageBtn.addEventListener('click', closeAction);
+                sendMessageModal.addEventListener('click', (event) => {
+                    if (event.target === sendMessageModal) closeAction();
+                });
+            }
+            const sendMessageForm = document.getElementById('send-message-form');
+            if (sendMessageForm) {
+                sendMessageForm.addEventListener('submit', handleSendMessage);
+            }
 
             // NOUVEAU: Logique pour l'accordéon
             document.querySelectorAll('.accordion-toggle').forEach(button => {
@@ -380,12 +391,11 @@
             if (!modal || !contentContainer) return;
 
             modal.classList.remove('hidden');
+            // NOUVEAU: Cacher le badge et le remettre à zéro
+            updateNotificationBadge(0);
             contentContainer.innerHTML = `<div class="space-y-4"><div class="skeleton h-20 w-full"></div><div class="skeleton h-20 w-full"></div></div>`;
 
             try {
-                const result = await callResponsableApi('getUserNotifications');
-                const notifications = result.data;
-
                 if (!notifications || notifications.length === 0) {
                     contentContainer.innerHTML = '<p class="text-center text-gray-500">Aucune notification pour le moment.</p>';
                     return;
@@ -412,6 +422,48 @@
             }
         }
 
+        // NOUVEAU: Met à jour le badge de notification
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notification-badge');
+            if (!badge) return;
+
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+
+        // NOUVEAU: Ouvre la modale pour envoyer un message
+        function openSendMessageModal() {
+            const modal = document.getElementById('send-message-modal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                document.getElementById('send-message-form').reset();
+            }
+        }
+
+        // NOUVEAU: Gère la soumission du formulaire de message
+        async function handleSendMessage(event) {
+            event.preventDefault();
+            const subject = document.getElementById('message-subject').value;
+            const body = document.getElementById('message-body').value;
+
+            if (!confirm("Êtes-vous sûr de vouloir envoyer ce message à votre classe ?")) return;
+
+            showSpinner(true);
+            try {
+                const result = await callResponsableApi('responsableSendMessageToClass', { subject, body });
+                document.getElementById('send-message-modal').classList.add('hidden');
+                showModal('Succès', result.message);
+            } catch (error) {
+                showModal('Erreur', error.message);
+            } finally {
+                showSpinner(false);
+            }
+        }
         // NOUVEAU: Logique des onglets
         document.querySelectorAll('.resp-tab').forEach(tab => {
             tab.addEventListener('click', () => {
@@ -1041,6 +1093,11 @@
                     document.getElementById('profile-modal-name').textContent = profile.name || 'Nom non disponible';
                     document.getElementById('profile-modal-email').textContent = profile.email || 'Email non disponible';
                 }
+                
+                // NOUVEAU: Charger le statut des notifications
+                const notifResult = await callResponsableApi('getUserNotificationStatus');
+                const { unreadCount } = notifResult.data;
+                updateNotificationBadge(unreadCount);
 
             } catch (error) {
                 showModal('Erreur', `Impossible de charger le tableau de bord: ${error.message}`);

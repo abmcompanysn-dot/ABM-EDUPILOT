@@ -109,8 +109,17 @@
                     <p class="font-semibold">Emploi du Temps</p>
                 </button>
                 <button onclick="openModal('attendance')" class="text-left p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-all">
-                    <i class="fas fa-check-circle text-2xl text-green-500 mb-2"></i>
+                    <i class="fas fa-history text-2xl text-green-500 mb-2"></i>
                     <p class="font-semibold">Mon Historique</p>
+                </button>
+                <!-- NOUVEAU: Bouton de notifications -->
+                <button onclick="openModal('notifications')" class="relative text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all col-span-2">
+                    <i class="fas fa-bell text-2xl text-blue-500 mb-2"></i>
+                    <p class="font-semibold">Notifications</p>
+                    <!-- NOUVEAU: Badge de notification -->
+                    <span id="notification-badge" class="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white hidden">
+                        0
+                    </span>
                 </button>
             </div>
         </div>
@@ -172,6 +181,13 @@
             <!-- Squelette pour l'historique -->
             <div class="skeleton h-16 w-full"></div>
             <div class="skeleton h-16 w-full"></div>
+        </div>
+    </template>
+
+    <!-- NOUVEAU: Template pour les notifications -->
+    <template id="notifications-template">
+        <div id="student-notifications-container" class="space-y-4">
+            <div class="skeleton h-20 w-full"></div>
         </div>
     </template>
 
@@ -517,6 +533,10 @@
             const container = document.getElementById('student-notifications-container');
             try {
                 const result = await callApi('getUserNotifications', { studentId });
+
+                // NOUVEAU: Cacher le badge après avoir ouvert les notifications
+                updateNotificationBadge(0);
+
                 const notifications = result.data;
 
                 if (!notifications || notifications.length === 0) {
@@ -526,8 +546,10 @@
 
                 const notificationsHtml = notifications.map(notif => {
                     const isGlobal = notif.ID_CLASSE_FK === 'ALL';
+                    const author = notif.AUTEUR_INFO === 'Administration' ? 'Annonce Générale' : 'Message de votre classe';
+                    const colorClass = isGlobal ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200';
                     return `
-                        <div class="p-4 rounded-lg ${isGlobal ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'} border">
+                        <div class="p-4 rounded-lg ${colorClass} border">
                             <div class="flex justify-between items-center mb-2">
                                 <p class="font-bold text-gray-800">${notif.SUJET}</p>
                                 ${isGlobal ? '<span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">GÉNÉRAL</span>' : ''}
@@ -544,6 +566,20 @@
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
             }
         }
+
+        // NOUVEAU: Charge le statut des notifications pour mettre à jour le badge
+        async function loadNotificationStatus(studentId) {
+            try {
+                const result = await callApi('getUserNotificationStatus', { studentId });
+                const { unreadCount } = result.data;
+                updateNotificationBadge(unreadCount);
+            } catch (error) {
+                console.error("Erreur de chargement du statut des notifications:", error);
+                // On ne montre pas d'erreur à l'utilisateur pour cette fonction de fond
+            }
+        }
+
+
         // NOUVEAU: Logique du Scanner QR Code pour l'étudiant
         function setupStudentScanner() {
             const scanBtn = document.getElementById('scan-qr-btn-student');

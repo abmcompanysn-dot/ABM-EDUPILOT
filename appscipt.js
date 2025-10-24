@@ -22,6 +22,8 @@ const SHEET_NAMES = {
   ERROR_LOG: 'Historique_Erreurs',   // NOUVEAU
   MODULES: 'Modules', // NOUVEAU
   MESSAGES: 'Messages' // NOUVEAU: Pour les notifications
+,
+  MESSAGE_READS: 'Lectures_Messages' // NOUVEAU: Pour suivre les lectures
 };
 
 const CONFIG_KEYS = {
@@ -202,6 +204,8 @@ function doPost(e) {
         return adminSendMessageToClass(data);
     } else if (action === 'getUserNotifications') { // NOUVEAU
         return getUserNotifications(data, ctx);
+    } else if (action === 'getUserNotificationStatus') { // NOUVEAU
+        return getUserNotificationStatus(data, ctx);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -602,9 +606,6 @@ function responsableSendMessageToClass(data, ctx) {
         const emailBody = `Bonjour,\n\nUn message a été envoyé par votre responsable de classe, ${responsableName}:\n\n---\n${body}\n---\n\nCordialement,\nL'équipe ABM EduPilote`;
         MailApp.sendEmail("", emailSubject, emailBody, { bcc: recipientEmails.join(','), name: `Responsable ${classInfo.className}` });
 
-        // Invalider les caches de notifications
-        cache.removeAll([`notifs_univ_${universityId}_${classId}`]);
-
         return createJsonResponse({ success: true, message: `Message envoyé avec succès à ${recipientEmails.length} étudiant(s) de votre classe.` });
     } catch (error) {
         logError('responsableSendMessageToClass', error);
@@ -649,22 +650,72 @@ function adminSendMessageToClass(data) {
  * @param {object} data - Contient { studentId } ou { responsableId }.
  */
 function getUserNotifications(data, ctx) {
+  try {
+    const { studentId, responsableId } = data;
+    const userId = studentId ? studentId.toUpperCase() : responsableId;
+    if (!userId) throw new Error("ID utilisateur manquant.");
+
+    const userInfo = studentId ? getStudentMap()[userId] : getResponsableClassInfo(responsableId, ctx);
+    if (!userInfo) throw new Error("Utilisateur non trouvé.");
+
+    const { classId, universityId } = userInfo;
+    const cacheKey = `notifs_status_${userId}`; // Utiliser un cache par utilisateur
+
+    // 1. Récupérer les notifications
+    const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
+    const headers = messagesData[0];
+    const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+    const classFkIdx = headers.indexOf('ID_CLASSE_FK');
+    const msgIdIdx = headers.indexOf('ID_MESSAGE');
+
+    const notifications = messagesData.slice(1)
+      .filter(row => row[univFkIdx] === universityId && (row[classFkIdx] === classId || row[classFkIdx] === 'ALL'))
+      .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
+      .sort((a, b) => new Date(b.TIMESTAMP) - new Date(a.TIMESTAMP));
+
+    // 2. Marquer tous ces messages comme lus pour l'utilisateur
+    const readsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MESSAGE_READS);
+    const messageIdsToMark = notifications.map(n => n.ID_MESSAGE);
+    const existingReadsData = readsSheet.getDataRange().getValues();
+    const existingReadsSet = new Set(existingReadsData.map(row => `${row[0]}_${row[1]}`));
+
+    const newReads = [];
+    messageIdsToMark.forEach(msgId => {
+      if (!existingReadsSet.has(`${userId}_${msgId}`)) {
+        newReads.push([userId, msgId, new Date()]);
+      }
+    });
+
+    if (newReads.length > 0) {
+      readsSheet.getRange(readsSheet.getLastRow() + 1, 1, newReads.length, 3).setValues(newReads);
+    }
+
+    // 3. Invalider le cache de statut de notification pour cet utilisateur
+    cache.remove(cacheKey);
+
+    return createJsonResponse({ success: true, data: notifications });
+  } catch (error) {
+    logError('getUserNotifications', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * NOUVEAU: Récupère le statut des notifications (nombre de non-lus) pour un utilisateur.
+ * @param {object} data - Contient { studentId } ou { responsableId }.
+ */
+function getUserNotificationStatus(data, ctx) {
     try {
         const { studentId, responsableId } = data;
-        if (!studentId && !responsableId) throw new Error("ID utilisateur manquant.");
+        const userId = studentId ? studentId.toUpperCase() : responsableId;
+        if (!userId) throw new Error("ID utilisateur manquant.");
 
-        const userInfo = studentId ? getStudentMap()[studentId.toUpperCase()] : getResponsableClassInfo(responsableId, ctx);
+        const userInfo = studentId ? getStudentMap()[userId] : getResponsableClassInfo(responsableId, ctx);
         if (!userInfo) throw new Error("Utilisateur non trouvé.");
 
-        const { classId, universityId } = userInfo;
-        const cacheKey = `notifs_univ_${universityId}_${classId}`;
-
-        const notifications = getCachedData(cacheKey, () => {
-            const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
-            const headers = messagesData.shift();
-            const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
-            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
-
+        const allMessages = (() => {
+            const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx).slice(1);
+            const univFkIdx = 0, classFkIdx = 3; // Indices basés sur la structure de la feuille
             return messagesData
                 .filter(row => row[univFkIdx] === universityId && (row[classFkIdx] === classId || row[classFkIdx] === 'ALL'))
                 .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
@@ -2467,6 +2518,7 @@ function setup() {
       [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
         [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
       [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },      
+        [SHEET_NAMES.MESSAGE_READS]: { headers: ['ID_UTILISATEUR', 'ID_MESSAGE_FK', 'TIMESTAMP_LECTURE'], color: '#546e7a' },
       [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
       [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
       [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
@@ -2661,6 +2713,7 @@ function getSheetConfigs() {
         [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
         [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
         [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
+        [SHEET_NAMES.MESSAGE_READS]: { headers: ['ID_UTILISATEUR', 'ID_MESSAGE_FK', 'TIMESTAMP_LECTURE'], color: '#546e7a' },
         [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
         [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
         [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
