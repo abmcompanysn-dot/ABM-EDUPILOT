@@ -23,6 +23,15 @@
             background: white;
         }
         input:focus, textarea:focus{ outline: none; box-shadow: 0 0 0 4px rgba(99,102,241,.08); border-color: rgba(99,102,241,.9); }
+        /* NOUVEAU: Styles pour les squelettes de chargement */
+        .skeleton {
+            background-color: #e2e8f0; /* bg-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            50% { opacity: .5; }
+        }
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
 </head>
@@ -53,7 +62,10 @@
             <div class="panel p-6 lg:p-8">
                 <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h1 class="text-2xl font-bold text-gray-900">Bonjour, <span id="student-dashboard-name">Chargement...</span></h1>
+                        <h1 class="text-2xl font-bold text-gray-900">Bonjour, <span id="student-dashboard-name">
+                            <!-- Squelette pour le nom -->
+                            <span class="skeleton inline-block h-8 w-48"></span>
+                        </span></h1>
                         <p class="text-sm text-gray-500 mt-1">Bienvenue dans votre espace personnel.</p>
                     </div>
                 </header>
@@ -100,12 +112,24 @@
                     <!-- Colonne 2: Emploi du temps et Historique -->
                     <div class="lg:col-span-2 space-y-6">
                         <div class="bg-white p-5 rounded-lg shadow-sm">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Emploi du Temps</h3>
-                            <div id="student-schedule-container" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'emploi du temps...</p></div>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Mon Emploi du Temps</h3>
+                            <div id="student-schedule-container" class="max-h-[60vh] overflow-y-auto pr-2">
+                                <!-- Squelette pour l'emploi du temps -->
+                                <div class="space-y-4">
+                                    <div class="skeleton h-20 w-full"></div>
+                                    <div class="skeleton h-20 w-full"></div>
+                                </div>
+                            </div>
                         </div>
                         <div class="bg-white p-5 rounded-lg shadow-sm">
                             <h3 class="text-lg font-semibold text-gray-900 mb-3">Historique de mes Présences</h3>
-                            <div id="student-attendance-history" class="max-h-[60vh] overflow-y-auto pr-2"><p class="text-gray-500">Chargement de l'historique...</p></div>
+                            <div id="student-attendance-history" class="max-h-[60vh] overflow-y-auto pr-2">
+                                <!-- Squelette pour l'historique -->
+                                <div class="space-y-4">
+                                    <div class="skeleton h-16 w-full"></div>
+                                    <div class="skeleton h-16 w-full"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -161,7 +185,7 @@
         }
 
         function loadStudentDashboard(studentId, isInitialLoad = true) {
-            document.getElementById('student-dashboard-name').textContent = '...';
+            // Le squelette est déjà affiché, plus besoin de texte de chargement
             loadStudentInfo(studentId);
             loadStudentAttendance(studentId);
             loadStudentSchedule(studentId);            
@@ -276,7 +300,13 @@
 
         async function loadStudentAttendance(studentId) {
             const container = document.getElementById('student-attendance-history');
-            container.innerHTML = '<p>Chargement de l\'historique...</p>';
+            // Afficher le squelette au lieu du texte
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                </div>
+            `;
             try {
                 const result = await callApi('getStudentAttendanceHistory', { studentId });
                 const history = result.data;
@@ -307,13 +337,19 @@
         // NOUVEAU: Charge et affiche l'emploi du temps de l'étudiant
         async function loadStudentSchedule(studentId) {
             const container = document.getElementById('student-schedule-container');
-            container.innerHTML = '<p class="text-gray-500">Chargement de l\'emploi du temps...</p>';
+            // Afficher le squelette au lieu du texte
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="skeleton h-20 w-full"></div>
+                    <div class="skeleton h-20 w-full"></div>
+                </div>
+            `;
             try {
                 const result = await callApi('getStudentSchedule', { studentId });
                 const courses = result.data;
 
                 if (!courses || courses.length === 0) {
-                   container.innerHTML = '<p class="text-gray-500">Aucun emploi du temps planifié pour votre classe.</p>';
+                    container.innerHTML = '<p class="text-gray-500">Aucun emploi du temps planifié pour votre classe.</p>';
                     return;
                 }
 

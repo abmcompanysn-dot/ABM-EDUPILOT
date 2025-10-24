@@ -31,6 +31,15 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch; /* Pour un défilement fluide sur iOS */
         }
+        /* NOUVEAU: Styles pour les squelettes de chargement */
+        .skeleton {
+            background-color: #e2e8f0; /* bg-gray-200 */
+            border-radius: 0.375rem; /* rounded-md */
+            animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            50% { opacity: .5; }
+        }
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
     <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
@@ -100,8 +109,15 @@
                         <p class="text-gray-500 mt-1">Cliquez sur une filière pour voir les classes associées.</p>
                     </div>
                     <div id="filiere-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- Les cartes des filières seront injectées ici -->
-                        <p>Chargement des filières...</p>
+                        <!-- Squelette pour les cartes de filières -->
+                        <div class="skeleton h-32"></div>
+                        <div class="skeleton h-32"></div>
+                        <div class="skeleton h-32 hidden sm:block"></div>
+                        <div class="skeleton h-32 hidden lg:block"></div>
+                        <div class="skeleton h-32 hidden xl:block"></div>
+                        <div class="skeleton h-32 hidden xl:block"></div>
+                        <div class="skeleton h-32 hidden xl:block"></div>
+                        <div class="skeleton h-32 hidden xl:block"></div>
                     </div>
                 </div>
 
@@ -110,7 +126,10 @@
                     <button onclick="showPage('main-dashboard')" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour aux filières</button>
                     <h2 id="filiere-details-title" class="text-3xl font-bold text-gray-800">Classes de la filière...</h2>
                     <div id="class-list-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        <!-- La liste des classes sera injectée ici -->
+                        <!-- Squelette pour les cartes de classes -->
+                        <div class="skeleton h-24"></div>
+                        <div class="skeleton h-24"></div>
+                        <div class="skeleton h-24 hidden sm:block"></div>
                     </div>
                 </div>
 
@@ -121,7 +140,15 @@
                         <h2 id="class-details-title" class="text-3xl font-bold text-gray-800">Étudiants de la classe...</h2>
                     </div>
                     <div id="student-list-container" class="bg-white p-6 rounded-lg shadow-sm table-responsive-wrapper">
-                        <!-- La liste des étudiants sera injectée ici -->
+                        <!-- Squelette pour la liste des étudiants -->
+                        <div class="space-y-4">
+                            <div class="skeleton h-8 w-full"></div>
+                            <div class="skeleton h-8 w-full"></div>
+                            <div class="skeleton h-8 w-full"></div>
+                            <div class="skeleton h-8 w-full"></div>
+                            <div class="skeleton h-8 w-full"></div>
+                            <div class="skeleton h-8 w-full"></div>
+                        </div>
                     </div>
                 </div>
 
@@ -130,19 +157,31 @@
                     <button id="back-to-student-list-btn" class="text-violet-600 hover:text-violet-800 font-medium">&larr; Retour à la liste des étudiants</button>
                     
                     <div class="bg-white p-6 rounded-lg shadow-sm">
-                        <div id="student-profile-header">
-                            <!-- Le header du profil sera injecté ici -->
+                        <div id="student-profile-header" class="space-y-3">
+                            <!-- Squelette pour l'en-tête du profil -->
+                            <div class="skeleton h-8 w-3/4"></div>
+                            <div class="skeleton h-4 w-full"></div>
+                            <div class="skeleton h-4 w-1/2"></div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="text-xl font-bold text-gray-800 mb-4">Historique des Présences</h3>
-                            <div id="student-profile-attendance" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+                            <div id="student-profile-attendance" class="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                                <!-- Squelette pour l'historique -->
+                                <div class="skeleton h-12 w-full"></div>
+                                <div class="skeleton h-12 w-full"></div>
+                                <div class="skeleton h-12 w-full"></div>
+                            </div>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow-sm">
                             <h3 class="text-xl font-bold text-gray-800 mb-4">Emploi du Temps de la Classe</h3>
-                            <div id="student-profile-schedule" class="max-h-[60vh] overflow-y-auto pr-2"></div>
+                            <div id="student-profile-schedule" class="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                                <!-- Squelette pour l'emploi du temps -->
+                                <div class="skeleton h-16 w-full"></div>
+                                <div class="skeleton h-16 w-full"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -186,7 +225,13 @@
                             <button onclick="showExportOptions('filieres')" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-3 rounded-lg">
                                 <i class="fas fa-download mr-1"></i> Exporter
                             </button>
-                        </div><div id="filiere-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper"><ul id="filiere-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
+                        </div><div id="filiere-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper">
+                            <div id="filiere-list" class="mt-4 space-y-2">
+                                <!-- Squelette pour la liste -->
+                                <div class="skeleton h-12 w-full"></div>
+                                <div class="skeleton h-12 w-full"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -220,7 +265,13 @@
                             <button onclick="showExportOptions('classes')" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-3 rounded-lg">
                                 <i class="fas fa-download mr-1"></i> Exporter
                             </button>
-                        </div><div id="classe-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper"><ul id="classe-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
+                        </div><div id="classe-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper">
+                            <div id="classe-list" class="mt-4 space-y-2">
+                                <!-- Squelette pour la liste -->
+                                <div class="skeleton h-12 w-full"></div>
+                                <div class="skeleton h-12 w-full"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -256,7 +307,13 @@
                     </div>
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Modules Existants</h3>
-                        <div id="module-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper"><ul id="module-list" class="mt-4 space-y-2"><li class="p-3 bg-gray-100 rounded-md">Chargement...</li></ul></div>
+                        <div id="module-list-container" class="max-h-[70vh] overflow-y-auto table-responsive-wrapper">
+                            <div id="module-list" class="mt-4 space-y-2">
+                                <!-- Squelette pour la liste -->
+                                <div class="skeleton h-12 w-full"></div>
+                                <div class="skeleton h-12 w-full"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -303,7 +360,13 @@
             <!-- Affichage du planning -->
             <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Planning des Cours</h3>
-                <div id="planning-table-container" class="max-h-[60vh] table-responsive-wrapper"><p>Chargement du planning...</p></div>
+                <div id="planning-table-container" class="max-h-[60vh] table-responsive-wrapper">
+                    <div class="space-y-4">
+                        <div class="skeleton h-16 w-full"></div>
+                        <div class="skeleton h-16 w-full"></div>
+                        <div class="skeleton h-16 w-full"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -345,7 +408,11 @@
             <!-- Affichage des responsables -->
             <div class="lg:col-span-2 bg-white p-4 sm:p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Responsables Actuels</h3>
-                <div id="responsables-table-container" class="max-h-[60vh] table-responsive-wrapper"><p>Chargement des responsables...</p></div>
+                <div id="responsables-table-container" class="max-h-[60vh] table-responsive-wrapper">
+                    <div class="space-y-4">
+                        <div class="skeleton h-12 w-full"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -418,7 +485,11 @@
                 <input type="text" id="student-search-input" onkeyup="loadAndRenderStudents()" placeholder="Filtrer par nom, ID, email, classe..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-violet-500 focus:border-violet-500 sm:text-sm">
             </div>
             <div id="students-table-container" class="max-h-[70vh] table-responsive-wrapper">
-                <p>Chargement des étudiants...</p>
+                <div class="space-y-4">
+                    <div class="skeleton h-10 w-full"></div>
+                    <div class="skeleton h-10 w-full"></div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -434,7 +505,12 @@
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-medium text-gray-900">Historique des Pointages</h3>
             </div>
-            <div id="attendance-table-container" class="max-h-[70vh] table-responsive-wrapper"><p>Chargement des données de présence...</p></div>
+            <div id="attendance-table-container" class="max-h-[70vh] table-responsive-wrapper">
+                <div class="space-y-4">
+                    <div class="skeleton h-10 w-full"></div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -660,7 +736,14 @@
         // NOUVEAU: Charge les données pour le tableau de bord interactif
         async function loadInteractiveDashboard() {
             const container = document.getElementById('filiere-cards-container');
-            container.innerHTML = '<p>Chargement des filières...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="skeleton h-32"></div>
+                <div class="skeleton h-32"></div>
+                <div class="skeleton h-32 hidden sm:block"></div>
+                <div class="skeleton h-32 hidden lg:block"></div>
+            `;
+
             try {
                 const [filieresResult, classesResult, studentsResult] = await Promise.all([
                     callAdminApi('adminGetEntities', { entityType: 'filiere' }),
@@ -719,7 +802,12 @@
             showPage('filiere-details-page');
             document.getElementById('filiere-details-title').textContent = `Classes de la filière : ${filiereName}`;
             const container = document.getElementById('class-list-container');
-            container.innerHTML = '<p>Chargement des classes...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="skeleton h-24"></div>
+                <div class="skeleton h-24"></div>
+                <div class="skeleton h-24 hidden sm:block"></div>
+            `;
 
             try {
                 const [classesResult, studentsResult] = await Promise.all([
@@ -755,7 +843,13 @@
             document.getElementById('back-to-classes-btn').onclick = () => showFiliereDetails(filiereId, filiereName);
 
             const container = document.getElementById('student-list-container');
-            container.innerHTML = '<p>Chargement des étudiants...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="space-y-2">
+                    <div class="skeleton h-10 w-full"></div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+            `;
 
             try {
                 const studentsResult = await callAdminApi('adminGetStudents');
@@ -839,9 +933,19 @@
             const headerContainer = document.getElementById('student-profile-header');
             const attendanceContainer = document.getElementById('student-profile-attendance');
             const scheduleContainer = document.getElementById('student-profile-schedule');
-            headerContainer.innerHTML = '<p>Chargement du profil...</p>';
-            attendanceContainer.innerHTML = '';
-            scheduleContainer.innerHTML = '';
+            // NOUVEAU: Afficher les squelettes
+            headerContainer.innerHTML = `
+                <div class="space-y-3">
+                    <div class="skeleton h-8 w-3/4"></div>
+                    <div class="skeleton h-4 w-full"></div>
+                    <div class="skeleton h-4 w-1/2"></div>
+                </div>`;
+            attendanceContainer.innerHTML = `
+                <div class="space-y-4"><div class="skeleton h-12 w-full"></div><div class="skeleton h-12 w-full"></div></div>
+            `;
+            scheduleContainer.innerHTML = `
+                <div class="space-y-3"><div class="skeleton h-16 w-full"></div><div class="skeleton h-16 w-full"></div></div>
+            `;
 
             try {
                 // AMÉLIORATION: On fait 3 appels séparés et fiables au lieu d'un seul qui échoue.
@@ -1059,7 +1163,13 @@
             const listContainer = document.getElementById(`${entityType}-list-container`);
             if (!listElement) return;
             listElement.dataset.loaded = 'false'; // Marquer comme non chargé pour forcer le rechargement si nécessaire
-            listElement.innerHTML = '<li class="p-3 bg-gray-100 rounded-md">Chargement...</li>';
+            // NOUVEAU: Afficher le squelette
+            listElement.innerHTML = `
+                <div class="space-y-2">
+                    <div class="skeleton h-12 w-full"></div>
+                    <div class="skeleton h-12 w-full"></div>
+                </div>
+            `;
 
             try {
                 const result = await callAdminApi('adminGetEntities', { entityType });
@@ -1085,7 +1195,7 @@
                 listElement.innerHTML = '';
                 
                 if (entities.length === 0) {
-                    itemsHtml = '<li class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</li>';
+                    itemsHtml = '<div class="p-3 bg-gray-100 rounded-md text-gray-500">Aucune entité trouvée.</div>';
                 } else {
                     itemsHtml = entities.map(entity => {
                         const idKey = `ID_${entityType.toUpperCase()}`;
@@ -1096,7 +1206,7 @@
                             subtext = `<span class="block text-xs text-gray-500">${entity.NOM_CLASSE || 'Classe?'} - ${entity.NOM_ENSEIGNANT || 'Prof?'}</span>`;
                         }
 
-                        return `<li class="p-3 bg-white border rounded-md flex justify-between items-center">
+                        return `<div class="p-3 bg-white border rounded-md flex justify-between items-center">
                                     <div>
                                         <span class="font-medium">${entity[nameKey]}</span>
                                         ${subtext}
@@ -1112,7 +1222,7 @@
                 
                 listElement.dataset.loaded = 'true'; // Marquer comme chargé
             } catch (error) {
-                listElement.innerHTML = `<li class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</li>`;
+                listElement.innerHTML = `<div class="p-3 bg-red-100 text-red-700 rounded-md">Erreur: ${error.message}</div>`;
             }
         }
 
@@ -1127,7 +1237,13 @@
             const container = document.getElementById('planning-table-container');
             const courseClassSelect = document.getElementById('course-classe-select');
             const courseModuleSelect = document.getElementById('course-module-select');
-            container.innerHTML = '<p>Chargement du planning...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                </div>
+            `;
 
             try {
                 // Charger les classes pour le formulaire
@@ -1406,7 +1522,13 @@
         // NOUVEAU: Charge et affiche les données de présence
         async function loadAndRenderAttendance() {
             const container = document.getElementById('attendance-table-container');
-            container.innerHTML = '<p>Chargement des données de présence...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="space-y-2">
+                    <div class="skeleton h-10 w-full"></div>
+                    <div class="skeleton h-10 w-full"></div>
+                </div>
+            `;
 
             try {
                 const result = await callAdminApi('adminGetAttendance');
@@ -1458,7 +1580,12 @@
         // NOUVEAU: Charge et affiche les responsables
         async function loadAndRenderResponsables() {
             const container = document.getElementById('responsables-table-container');
-            container.innerHTML = '<p>Chargement des responsables...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="space-y-2">
+                    <div class="skeleton h-12 w-full"></div>
+                </div>
+            `;
             try {
                 // CORRECTION: On charge les responsables ET les classes pour pouvoir afficher le nom de la classe.
                 const [responsablesResult, classesResult] = await Promise.all([
@@ -1552,7 +1679,13 @@
 
             // Afficher le spinner seulement au premier chargement
             if (!container.dataset.loaded) {
-                container.innerHTML = '<p>Chargement des étudiants...</p>';
+                // NOUVEAU: Afficher le squelette
+                container.innerHTML = `
+                    <div class="space-y-2">
+                        <div class="skeleton h-10 w-full"></div>
+                        <div class="skeleton h-10 w-full"></div>
+                    </div>
+                `;
             }
 
             try {

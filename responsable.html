@@ -25,12 +25,12 @@
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-        .skeleton-loader {
+        .skeleton {
             background-color: #e2e8f0;
             border-radius: 0.5rem;
             animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
-        @keyframes pulse {
+        @keyframes pulse { 
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
         }
@@ -148,10 +148,10 @@
                 </div>
                 <div id="planning-table-container" class="max-h-[80vh] overflow-y-auto pr-2 table-responsive-wrapper">
                     <!-- SKELETON LOADER -->
-                    <div class="space-y-4 animate-pulse">
-                        <div class="h-24 bg-gray-200 rounded-lg"></div>
-                        <div class="h-24 bg-gray-200 rounded-lg"></div>
-                        <div class="h-24 bg-gray-200 rounded-lg"></div>
+                    <div class="space-y-4">
+                        <div class="skeleton h-24"></div>
+                        <div class="skeleton h-24"></div>
+                        <div class="skeleton h-24"></div>
                     </div>
                 </div>
             </div>
@@ -160,7 +160,13 @@
         <!-- NOUVEAU: Contenu pour la liste des étudiants -->
         <div id="students-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-4">Liste des Étudiants</h3>
-            <div id="students-list-container" class="max-h-[80vh] overflow-y-auto table-responsive-wrapper"><p>Chargement de la liste des étudiants...</p></div>
+            <div id="students-list-container" class="max-h-[80vh] overflow-y-auto table-responsive-wrapper">
+                <div class="space-y-4">
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                </div>
+            </div>
         </div>
 
         <!-- NOUVEAU: Contenu pour la gestion des modules -->
@@ -191,7 +197,13 @@
         <!-- NOUVEAU: Contenu pour l'historique des présences -->
         <div id="attendance-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-4">Historique des Présences</h3>
-            <div id="attendance-list-container" class="max-h-[80vh] overflow-y-auto table-responsive-wrapper"><p>Chargement de l'historique...</p></div>
+            <div id="attendance-list-container" class="max-h-[80vh] overflow-y-auto table-responsive-wrapper">
+                <div class="space-y-4">
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -539,7 +551,13 @@
         // NOUVEAU: Charge et affiche la liste des étudiants de la classe
         async function loadClassStudents() {
             const container = document.getElementById('students-list-container');
-            container.innerHTML = '<p>Chargement de la liste des étudiants...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                </div>
+            `;
             try {
                 const result = await callResponsableApi('responsableGetStudents');
                 const students = result.data || [];
@@ -602,7 +620,13 @@
         // NOUVEAU: Charge et affiche l'historique des présences de la classe
         async function loadClassAttendance() {
             const container = document.getElementById('attendance-list-container');
-            container.innerHTML = '<p>Chargement de l\'historique des présences...</p>';
+            // NOUVEAU: Afficher le squelette
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="skeleton h-16 w-full"></div>
+                    <div class="skeleton h-16 w-full"></div>
+                </div>
+            `;
             try {
                 const result = await callResponsableApi('responsableGetAttendance');
                 const scans = result.data || [];

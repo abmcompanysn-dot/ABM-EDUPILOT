@@ -1524,31 +1524,35 @@ function getResponsableDashboardData(data) {
     try {
         const dashboardData = getCachedData(cacheKey, () => {
             const ctx = createRequestContext();
+            // 1. Récupérer les informations de base (classe, université)
             const classInfo = getResponsableClassInfo(responsableId, ctx);
 
-            // NOUVEAU: Récupérer les informations du profil du responsable
+            // 2. Récupérer les informations du profil du responsable
             const respData = _getRawSheetData(SHEET_NAMES.RESPONSABLES, ctx);
-            const respHeaders = respData[0]; // Ne pas utiliser shift() pour ne pas altérer le contexte
+            const respHeaders = respData[0];
             const respIdIdx = respHeaders.indexOf('ID_RESPONSABLE');
             const respNameIdx = respHeaders.indexOf('NOM_RESPONSABLE');
             const respEmailIdx = respHeaders.indexOf('EMAIL_RESPONSABLE');
             const responsableRow = respData.slice(1).find(row => row[respIdIdx] === responsableId);
-
             const profile = responsableRow ? { name: responsableRow[respNameIdx], email: responsableRow[respEmailIdx] } : {};
-            const ss = SpreadsheetApp.getActiveSpreadsheet();
+            
+            // 3. Récupérer les modules de la classe pour le formulaire d'ajout
+            const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+            const modulesHeaders = modulesData[0];
+            const modClassFkIdx = modulesHeaders.indexOf('ID_CLASSE_FK');
+            const classModules = modulesData.slice(1)
+                .filter(row => row[modClassFkIdx] === classInfo.classId)
+                .map(row => Object.fromEntries(modulesHeaders.map((h, i) => [h, row[i]])));
 
-            // 3. Récupérer le planning de cette classe
-            const planningSheet = ss.getSheetByName(SHEET_NAMES.PLANNING);
-            const planningData = planningSheet.getDataRange().getValues();
-            const planningHeaders = planningData.shift();
-            const planningClassIdx = planningHeaders.indexOf('CLASSE');
-            const filteredPlanning = planningData.filter(row => row[planningClassIdx] === classInfo.className);
-
-            const courses = filteredPlanning.map(row => {
-                const course = {};
-                planningHeaders.forEach((header, i) => course[header] = row[i]);
-                return course;
-            }).sort((a, b) => new Date(a.DATE_COURS) - new Date(b.DATE_COURS));
+            // 4. Récupérer le planning de la classe
+            const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+            const planningHeaders = planningData[0];
+            const planningModuleFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+            const moduleIdsForClass = new Set(classModules.map(m => m.ID_MODULE));
+            const courses = planningData.slice(1)
+                .filter(row => moduleIdsForClass.has(row[planningModuleFkIdx]))
+                .map(row => Object.fromEntries(planningHeaders.map((h, i) => [h, row[i]])))
+                .sort((a, b) => new Date(a.DATE_COURS) - new Date(b.DATE_COURS));
             
             return { profile, className: classInfo.className, courses };
         }, 180); // Cache de 3 minutes pour le dashboard du responsable
