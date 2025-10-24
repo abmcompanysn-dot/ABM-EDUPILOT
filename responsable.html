@@ -349,6 +349,20 @@
                 });
             }
 
+            // NOUVEAU: Logique pour la modale de notifications
+            const notifModal = document.getElementById('notifications-modal');
+            const closeNotifModalBtn = document.getElementById('close-notifications-modal');
+            const closeNotifModalFooterBtn = document.getElementById('close-notifications-modal-footer');
+            if (notifModal && closeNotifModalBtn && closeNotifModalFooterBtn) {
+                const closeAction = () => notifModal.classList.add('hidden');
+                closeNotifModalBtn.addEventListener('click', closeAction);
+                closeNotifModalFooterBtn.addEventListener('click', closeAction);
+                notifModal.addEventListener('click', (event) => {
+                    if (event.target === notifModal) closeAction();
+                });
+            }
+
+
             // NOUVEAU: Logique pour l'accordéon
             document.querySelectorAll('.accordion-toggle').forEach(button => {
                 button.addEventListener('click', () => {
@@ -358,6 +372,45 @@
                 });
             });
         });
+
+        // NOUVEAU: Charge et affiche les notifications dans une modale
+        async function loadAndShowNotifications() {
+            const modal = document.getElementById('notifications-modal');
+            const contentContainer = document.getElementById('notifications-modal-content');
+            if (!modal || !contentContainer) return;
+
+            modal.classList.remove('hidden');
+            contentContainer.innerHTML = `<div class="space-y-4"><div class="skeleton h-20 w-full"></div><div class="skeleton h-20 w-full"></div></div>`;
+
+            try {
+                const result = await callResponsableApi('getUserNotifications');
+                const notifications = result.data;
+
+                if (!notifications || notifications.length === 0) {
+                    contentContainer.innerHTML = '<p class="text-center text-gray-500">Aucune notification pour le moment.</p>';
+                    return;
+                }
+
+                contentContainer.innerHTML = notifications.map(notif => {
+                    const isGlobal = notif.ID_CLASSE_FK === 'ALL';
+                    const author = notif.AUTEUR_INFO === 'Administration' ? 'Annonce Générale' : 'Message de votre classe';
+                    const colorClass = isGlobal ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200';
+
+                    return `
+                        <div class="p-4 rounded-lg ${colorClass} border mb-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <p class="font-bold text-gray-800">${notif.SUJET}</p>
+                                ${isGlobal ? '<span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">GÉNÉRAL</span>' : ''}
+                            </div>
+                            <p class="text-sm text-gray-600 whitespace-pre-wrap">${notif.CORPS}</p>
+                            <p class="text-xs text-gray-400 text-right mt-3">Envoyé le ${new Date(notif.TIMESTAMP).toLocaleString('fr-FR')}</p>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                contentContainer.innerHTML = `<p class="text-red-500 text-center">Erreur: ${error.message}</p>`;
+            }
+        };
 
         // NOUVEAU: Logique des onglets
         document.querySelectorAll('.resp-tab').forEach(tab => {

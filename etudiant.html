@@ -7,8 +7,8 @@
     <meta name="robots" content="noindex, nofollow">
     <title>Mon Espace - ABM EduPilote</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png">
-    <!-- CORRECTION: Ajout de 'defer' pour garantir que les scripts sont chargés avant exécution -->
-    <script src="html2canvas.min.js" defer></script> 
+    <!-- CORRECTION: Le fichier html2canvas.min.js était manquant. Remplacement par un lien CDN. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" integrity="sha512-BNaRQnYJYiPSqHHDb58B0yaPfCu+Wgds8Gp/gU33kqBtgNS4tSPHuGibyoVBl5gI+YFkyWC4sLJhFdlQ9BlvRw==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" integrity="sha512-qZvrmS2ekKPF2mSznTQsxqPgnpkI4DNTlrdUmTzrDgektczlKNRRhy5X5AAOnx5S09ydFYWWNSfcEqDTTHgtNA==" crossorigin="anonymous" referrerpolicy="no-referrer" defer></script>
     <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
@@ -103,19 +103,14 @@
         <!-- Panneau d'actions -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mt-8">
             <h2 class="text-lg font-bold text-gray-900 mb-4">Mon Espace</h2>
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 gap-4">
                 <button onclick="openModal('schedule')" class="text-left p-4 bg-violet-50 hover:bg-violet-100 rounded-lg transition-all">
                     <i class="fas fa-calendar-alt text-2xl text-violet-500 mb-2"></i>
                     <p class="font-semibold">Emploi du Temps</p>
                 </button>
                 <button onclick="openModal('attendance')" class="text-left p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-all">
-                    <i class="fas fa-history text-2xl text-green-500 mb-2"></i>
+                    <i class="fas fa-check-circle text-2xl text-green-500 mb-2"></i>
                     <p class="font-semibold">Mon Historique</p>
-                </button>
-                <!-- NOUVEAU: Bouton pour les notifications -->
-                <button onclick="openModal('notifications')" class="text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all">
-                    <i class="fas fa-bell text-2xl text-blue-500 mb-2"></i>
-                    <p class="font-semibold">Notifications</p>
                 </button>
             </div>
         </div>
@@ -299,7 +294,8 @@
                 document.getElementById('student-info-telephone').value = student.telephone || ''; // NOUVEAU
                 document.getElementById('studentUpdateForm').onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
             } catch (error) {
-                // CORRECTION: La variable 'form' n'existe pas ici. On affiche une alerte en cas d'échec.
+                // CORRECTION: La variable 'form' n'était pas définie dans ce bloc.
+                // On utilise une alerte pour notifier l'utilisateur d'une erreur critique.
                 alert(`Erreur critique: Impossible de charger vos informations. ${error.message}`);
             }
         }
