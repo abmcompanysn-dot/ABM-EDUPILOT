@@ -76,6 +76,21 @@
 <body class="bg-violet-50">
 
     <!-- NOUVELLE BARRE DE NAVIGATION -->
+    <!-- NOUVEAU: Splash Screen pour le chargement de la PWA -->
+    <div id="splash-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-gradient-to-r from-[#1C2B5A] to-[#432284] transition-opacity duration-500 ease-out">
+        <div class="text-center">
+            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" alt="Logo ABM EduPilote" class="w-24 h-24 mx-auto mb-4 bg-white/10 p-2 rounded-2xl shadow-md">
+            <h1 class="text-3xl font-bold text-white">
+                ABM EduPilote
+            </h1>
+            <p class="text-violet-300 mt-1">Votre Partenaire Éducatif</p>
+            <div class="mt-12">
+                <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white mx-auto"></div>
+                <p class="text-white/70 text-sm mt-4">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
     <header id="main-header" class="sticky top-0 w-full z-40 bg-gradient-to-r from-[#1C2B5A] to-[#432284] shadow-lg transition-all duration-300">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="px-4 sm:px-6 lg:px-8 w-full">
@@ -755,6 +770,11 @@
 
         // --- ROUTEUR SIMPLE (préservé, légèrement encapsulé) ---
         document.addEventListener('DOMContentLoaded', () => {
+            // AMÉLIORATION PWA: Cacher le splash screen une fois que le DOM est prêt
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                setTimeout(() => { splash.style.opacity = '0'; setTimeout(() => splash.style.display = 'none', 500); }, 500); // Garde le splash 500ms puis le fait disparaître
+            }
             // AMÉLIORATION PWA: Vérifier si un étudiant est déjà mémorisé
             const rememberedStudentId = localStorage.getItem(STUDENT_SESSION_KEY);
             if (rememberedStudentId) {
