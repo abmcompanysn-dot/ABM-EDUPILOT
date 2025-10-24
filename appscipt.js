@@ -1548,11 +1548,19 @@ function getResponsableDashboardData(data) {
             const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
             const planningHeaders = planningData[0];
             const planningModuleFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+            
+            // Créer une map pour retrouver facilement le nom et l'enseignant d'un module
+            const moduleInfoMap = new Map(classModules.map(m => [m.ID_MODULE, { name: m.NOM_MODULE, teacher: m.NOM_ENSEIGNANT }]));
             const moduleIdsForClass = new Set(classModules.map(m => m.ID_MODULE));
+
             const courses = planningData.slice(1)
                 .filter(row => moduleIdsForClass.has(row[planningModuleFkIdx]))
-                .map(row => Object.fromEntries(planningHeaders.map((h, i) => [h, row[i]])))
-                .sort((a, b) => new Date(a.DATE_COURS) - new Date(b.DATE_COURS));
+                .map(row => {
+                    const course = Object.fromEntries(planningHeaders.map((h, i) => [h, row[i]]));
+                    const moduleInfo = moduleInfoMap.get(course.ID_MODULE_FK);
+                    course.NOM_MODULE = moduleInfo ? moduleInfo.name : 'Module Inconnu';
+                    return course;
+                }).sort((a, b) => new Date(a.DATE_COURS) - new Date(b.DATE_COURS));
             
             return { profile, className: classInfo.className, courses };
         }, 180); // Cache de 3 minutes pour le dashboard du responsable
