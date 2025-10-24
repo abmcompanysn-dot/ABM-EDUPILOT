@@ -1893,64 +1893,30 @@ function getCurrentCourse(data) {
         return createJsonResponse({ success: false, error: 'Erreur de Configuration: Colonnes manquantes dans Planning.' });
     }
 
-    let potentialCourseForToday = null;
-
     for (let i = 0; i < planningData.length; i++) {
       const row = planningData[i];
-      if (!row[dateIdx] || !(row[dateIdx] instanceof Date) || !row[startIdx] || !(row[startIdx] instanceof Date) || !row[endIdx] || !(row[endIdx] instanceof Date)) {
+      // On vérifie juste la date, plus besoin de l'heure
+      if (!row[dateIdx] || !(row[dateIdx] instanceof Date)) {
         continue;
       }
 
       const courseDateStr = Utilities.formatDate(row[dateIdx], spreadsheetTimeZone, 'yyyy-MM-dd');
-      const sheetClassName = row[classeIdx] ? row[classeIdx].toString().trim() : '';
       const requestClassName = classe ? classe.toString().trim() : '';
       const status = row[statutIdx] ? row[statutIdx].toString().trim() : '';
 
-      // NOUVEAU: Vérifier la classe via le module
       const courseModuleId = row[moduleIdFkIdx];
       const moduleInfo = moduleMap.get(courseModuleId);
       if (!moduleInfo) continue;
 
       const courseClassName = classMap.get(moduleInfo.classId);
       if (!courseClassName) continue;
-
+      
+      // MODIFICATION: On ne vérifie plus l'heure. Si un cours est trouvé pour la classe, pour aujourd'hui et qu'il est confirmé, on le retourne.
       if (courseClassName.toLowerCase() === requestClassName.toLowerCase() && courseDateStr === todayStr && status.toLowerCase() === 'confirmé') {
-        // AMÉLIORATION: Vérification stricte de l'heure avec une marge de tolérance.
-        const startTime = new Date(row[startIdx]);
-        const endTime = new Date(row[endIdx]);
-
-        // Ajouter une marge de tolérance: 5 min avant, 15 min après.
-        const tolerantStartTime = new Date(startTime.getTime() - 15 * 60000); // Pointage commence 15 min avant
-        const tolerantEndTime = new Date(endTime.getTime()); // Pointage se termine à l'heure de fin exacte
-
-        // Comparer uniquement les heures
-        const nowTime = new Date(now.toLocaleString("en-US", { timeZone: spreadsheetTimeZone }));
-        const nowTimeOnly = new Date(0, 0, 0, nowTime.getHours(), nowTime.getMinutes(), nowTime.getSeconds());
-
-        if (nowTimeOnly >= tolerantStartTime && nowTimeOnly <= tolerantEndTime) {
-          // C'est le bon cours, on le renvoie immédiatement.
-          const courseFound = { classe: courseClassName, module: moduleInfo.name };
-          return createJsonResponse({ success: true, data: courseFound });
-        } else {
-          // C'est un cours pour aujourd'hui, mais pas à la bonne heure. On le garde en mémoire.
-          potentialCourseForToday = {
-            startTime: Utilities.formatDate(startTime, spreadsheetTimeZone, 'HH:mm'),
-            endTime: Utilities.formatDate(endTime, spreadsheetTimeZone, 'HH:mm'),
-            isTooEarly: nowTimeOnly < tolerantStartTime
-          };
-        }
+        const courseFound = { classe: courseClassName, module: moduleInfo.name };
+        return createJsonResponse({ success: true, data: courseFound });
       }
     }
-
-    // Si on a trouvé un cours pour aujourd'hui mais qu'on est hors des heures de pointage
-    if (potentialCourseForToday) {
-      if (potentialCourseForToday.isTooEarly) {
-        return createJsonResponse({ success: false, error: `Le pointage pour le prochain cours n'est pas encore ouvert. Il commence à ${potentialCourseForToday.startTime}.` });
-      } else {
-        return createJsonResponse({ success: false, error: `Le pointage pour le cours de ${potentialCourseForToday.startTime} à ${potentialCourseForToday.endTime} est terminé.` });
-      }
-    }
-
     // Si aucun cours n'a été trouvé pour aujourd'hui
     return createJsonResponse({ success: false, error: `Aucun cours confirmé et actif n'a été trouvé pour la classe "${classe}" en ce moment.` });
 
