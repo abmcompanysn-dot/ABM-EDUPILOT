@@ -316,18 +316,9 @@
         async function loadStudentInfo(studentId) {
             try {
                 const result = await callApi('getStudentData', { studentId });
-                const student = result.data;
-                document.getElementById('student-dashboard-name').textContent = student.name || 'Étudiant';
+                document.getElementById('student-dashboard-name').textContent = result.data.name || 'Étudiant';
                 document.getElementById('student-dashboard-id').textContent = studentId;
-                
-                // Pré-remplir le formulaire de mise à jour (qui est dans un template)
-                document.getElementById('student-info-name').value = student.name || '';
-                document.getElementById('student-info-email').value = student.email || '';
-                document.getElementById('student-info-telephone').value = student.telephone || ''; // NOUVEAU
-                document.getElementById('studentUpdateForm').onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
             } catch (error) {
-                // CORRECTION: La variable 'form' n'était pas définie dans ce bloc.
-                // On utilise une alerte pour notifier l'utilisateur d'une erreur critique.
                 alert(`Erreur critique: Impossible de charger vos informations. ${error.message}`);
             }
         }
@@ -435,8 +426,17 @@
             } else if (type === 'attendance') {
                 await loadStudentAttendance(studentId);
             } else if (type === 'profile') {
-                // Les données sont déjà pré-chargées, on attache juste le handler
-                document.getElementById('studentUpdateForm').onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+                // CORRECTION: On charge et pré-remplit le formulaire uniquement à l'ouverture de la modale.
+                try {
+                    const result = await callApi('getStudentData', { studentId });
+                    const student = result.data;
+                    document.getElementById('student-info-name').value = student.name || '';
+                    document.getElementById('student-info-email').value = student.email || '';
+                    document.getElementById('student-info-telephone').value = student.telephone || '';
+                    document.getElementById('studentUpdateForm').onsubmit = (e) => handleUpdateStudentInfo(e, studentId);
+                } catch (error) {
+                    modalBody.innerHTML = `<p class="text-red-500">Erreur de chargement du profil: ${error.message}</p>`;
+                }
             } else if (type === 'notifications') { // NOUVEAU
                 await loadStudentNotifications(studentId);
             }

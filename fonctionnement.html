@@ -261,6 +261,53 @@
 
             </section>
 
+            <!-- NOUVEAU: Section FAQ (Foire Aux Questions) -->
+            <section class="mb-12 sm:mb-20">
+                <h2 class="text-3xl font-bold text-slate-800 mb-10 text-center">Foire Aux Questions (FAQ)</h2>
+                <div class="max-w-3xl mx-auto space-y-4">
+                    <!-- Question 1 -->
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                            <span>Que faire si j'ai oublié mon mot de passe (Admin/Responsable) ?</span>
+                            <svg class="w-5 h-5 text-slate-500 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="faq-content px-5 pb-5 text-slate-600" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p>Sur la page de connexion administrateur, un lien "Mot de passe oublié ?" vous permet d'initier une procédure de réinitialisation. Un administrateur général devra valider votre demande. Pour les responsables, contactez directement l'administrateur de votre établissement.</p>
+                        </div>
+                    </div>
+                    <!-- Question 2 -->
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                            <span>Que faire si le QR code ne se scanne pas ?</span>
+                            <svg class="w-5 h-5 text-slate-500 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="faq-content px-5 pb-5 text-slate-600" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p>Assurez-vous que la luminosité de votre écran est suffisante et que la caméra de votre téléphone est propre. Si le problème persiste, le responsable de classe peut toujours pointer manuellement un étudiant en scannant le QR code personnel de ce dernier.</p>
+                        </div>
+                    </div>
+                    <!-- Question 3 -->
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                            <span>L'application fonctionne-t-elle sans connexion internet ?</span>
+                            <svg class="w-5 h-5 text-slate-500 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="faq-content px-5 pb-5 text-slate-600" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p>Une connexion internet est nécessaire pour toutes les opérations (connexion, pointage, gestion) car ABM EduPilote est une application web qui interagit en temps réel avec nos serveurs pour garantir la synchronisation des données.</p>
+                        </div>
+                    </div>
+                    <!-- Question 4 -->
+                    <div class="bg-white rounded-lg shadow-sm">
+                        <button class="faq-toggle w-full flex justify-between items-center p-5 text-left font-semibold text-slate-800">
+                            <span>Mes données personnelles sont-elles en sécurité ?</span>
+                            <svg class="w-5 h-5 text-slate-500 transform transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="faq-content px-5 pb-5 text-slate-600" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;">
+                            <p>Absolument. La sécurité de vos données est notre priorité. Nous utilisons des connexions sécurisées (HTTPS), le hachage des mots de passe, et une infrastructure robuste fournie par Google pour protéger toutes les informations. Pour plus de détails, consultez nos <a href="mentions-legales.html" class="text-violet-600 hover:underline">mentions légales</a>.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <!-- Vision & Avenir -->
             <section class="mb-12 sm:mb-20 bg-slate-800 text-white p-8 rounded-2xl">
                 <h2 class="text-3xl font-bold mb-6 text-center">Vision & Avenir</h2>
@@ -398,15 +445,15 @@
             if (modal) modal.classList.add('hidden');
         }
 
-        // NOUVEAU: Script pour l'accordéon FAQ
+        // CORRECTION: Le script pour l'accordéon était vide, je l'ai complété.
         document.addEventListener('DOMContentLoaded', function() {
             const faqToggles = document.querySelectorAll('.faq-toggle');
             faqToggles.forEach(toggle => {
                 toggle.addEventListener('click', function() {
                     const content = this.nextElementSibling;
                     const icon = this.querySelector('svg');
-
-                    this.classList.toggle('active');
+                    
+                    // Gérer l'icône et l'affichage du contenu
                     icon.classList.toggle('rotate-180');
                     content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + 'px';
                 });
