@@ -77,6 +77,9 @@
                 <a href="#" onclick="showPage('stats-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Statistiques
                 </a>
+                <a href="#" onclick="showPage('messages-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
+                    Messages
+                </a>
                 <a href="#" onclick="showPage('tools-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Outils (QR/Liens)
                 </a>
@@ -536,6 +539,41 @@
         </div>
     </div>
 
+    <!-- NOUVEAU: Page d'envoi de messages -->
+    <div id="messages-page" class="page-container hidden">
+        <header class="mb-10">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Envoyer une Notification Générale</h1>
+            <p class="text-gray-600 mt-2">Envoyez un message à tous les étudiants de votre établissement.</p>
+        </header>
+        <div class="bg-white p-6 rounded-lg shadow-sm max-w-3xl mx-auto">
+            <form id="send-notification-form">
+                <div class="space-y-6">
+                    <div>
+                        <label for="notification-class-select" class="block text-sm font-medium text-gray-700">Destinataire</label>
+                        <select id="notification-class-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm">
+                            <option value="ALL">Toutes les classes (Annonce générale)</option>
+                            <!-- Les classes seront chargées ici -->
+                        </select>
+                    </div>
+                    <div>
+                        <label for="notification-subject" class="block text-sm font-medium text-gray-700">Sujet du message</label>
+                        <input type="text" id="notification-subject" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="notification-body" class="block text-sm font-medium text-gray-700">Contenu du message</label>
+                        <textarea id="notification-body" required rows="10" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm" placeholder="Écrivez votre message ici..."></textarea>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <button type="submit" class="submitBtn w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center gap-2">
+                        <span class="btnText"><i class="fas fa-paper-plane mr-2"></i>Envoyer la notification à tous</span>
+                        <span class="btnSpinner hidden">Envoi en cours...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
             </main>
         </div>
     </div>
@@ -644,6 +682,7 @@
                 'planning-page': 'Planning',
                 'attendance-page': 'Présences',
                 'stats-page': 'Statistiques', // NOUVEAU
+                'messages-page': 'Messages', // NOUVEAU
                 'tools-page': 'Outils',
                 'students-page': 'Étudiants',
                 'student-profile-page': 'Profil Étudiant' // NOUVEAU
@@ -680,6 +719,8 @@
                 setupStudentsPage();
             } else if (pageId === 'stats-page') { // NOUVEAU
                 setupStatsPage();
+            } else if (pageId === 'messages-page') { // NOUVEAU
+                setupMessagesPage();
             } else if (pageId === 'main-dashboard') {
                 loadInteractiveDashboard(); // NOUVEAU
             }
@@ -1358,7 +1399,9 @@
 
                 try {
                     const modulesResult = await callAdminApi('adminGetModulesForClass', { classId });
-                    moduleSelect.innerHTML = '<option value="">-- Sélectionnez --</option>' + modulesResult.data.map(m => `<option value="${m}">${m}</option>`).join('');
+                    // CORRECTION: La fonction renvoie des objets {ID_MODULE, NOM_MODULE}, il faut donc mapper correctement.
+                    // On utilise NOM_MODULE pour la valeur et l'affichage.
+                    moduleSelect.innerHTML = '<option value="">-- Sélectionnez --</option>' + modulesResult.data.map(m => `<option value="${m.NOM_MODULE}">${m.NOM_MODULE}</option>`).join('');
                     moduleSelect.disabled = false;
                 } catch (error) {
                     moduleSelect.innerHTML = `<option value="">Erreur</option>`;
@@ -2084,6 +2127,46 @@
             }
         }
 
+        // NOUVEAU: Initialise la page des messages
+        function setupMessagesPage() {
+            const form = document.getElementById('send-notification-form');
+            if (form) {
+                form.onsubmit = handleSendNotification;
+                // Charger les classes dans le select
+                const classSelect = document.getElementById('notification-class-select');
+                callAdminApi('adminGetEntities', { entityType: 'classe' })
+                    .then(result => {
+                        const classes = result.data;
+                        classSelect.innerHTML += classes.map(c => `<option value="${c.ID_CLASSE}">${c.NOM_CLASSE}</option>`).join('');
+                    })
+                    .catch(err => classSelect.innerHTML += `<option value="">Erreur de chargement</option>`);
+            }
+        }
+
+        // NOUVEAU: Gère l'envoi de la notification
+        async function handleSendNotification(e) {
+            e.preventDefault();
+            const form = e.target;
+            const subject = document.getElementById('notification-subject').value;
+            const body = document.getElementById('notification-body').value;
+            const classId = document.getElementById('notification-class-select').value;
+            const targetName = document.getElementById('notification-class-select').selectedOptions[0].text;
+
+            if (!confirm(`Êtes-vous sûr de vouloir envoyer ce message à : "${targetName}" ?`)) {
+                return;
+            }
+
+            showSpinner(true);
+            try {
+                const result = await callAdminApi('adminSendMessageToClass', { classId, subject, body });
+                showModal('Succès', result.message);
+                form.reset();
+            } catch (error) {
+                showModal('Erreur', error.message);
+            } finally {
+                showSpinner(false);
+            }
+        }
         // NOUVEAU: Fonction d'appel API spécifique à l'admin
         async function callAdminApi(action, data = {}) {
             const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);

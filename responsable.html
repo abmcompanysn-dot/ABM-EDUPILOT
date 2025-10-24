@@ -54,6 +54,9 @@
                     <button id="profile-button" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition">
                         <i class="fas fa-user"></i>
                     </button>
+                    <button id="notifications-button" class="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center text-white transition relative">
+                        <i class="fas fa-bell"></i>
+                    </button>
                     <button onclick="logout()" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg font-semibold text-sm transition-all">Déconnexion</button>
                 </div>
             </div>
@@ -137,6 +140,21 @@
                                         <button id="qr-share-btn" class="w-full text-sm bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700">Partager</button>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- NOUVEAU: Accordéon 4: Envoyer un message -->
+                    <div class="pb-2">
+                        <button class="accordion-toggle w-full flex justify-between items-center text-left font-semibold text-gray-800 py-2">
+                            <span><i class="fas fa-paper-plane mr-2 text-purple-500"></i>Envoyer un Message</span>
+                            <i class="fas fa-chevron-down transform transition-transform"></i>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="pt-4 space-y-3">
+                                <p class="text-sm text-gray-600">Envoyez une notification à tous les étudiants de votre classe.</p>
+                                <button onclick="openSendMessageModal()" class="w-full bg-purple-600 text-white py-2 px-4 rounded-md hover:bg-purple-700">
+                                    Rédiger le message
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -281,6 +299,19 @@
                 closeProfileModalBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
                 profileModal.addEventListener('click', (event) => {
                     if (event.target === profileModal) profileModal.classList.add('hidden');
+                });
+            }
+
+            // NOUVEAU: Logique pour la modale de notifications
+            const notifButton = document.getElementById('notifications-button');
+            if (notifButton) {
+                notifButton.addEventListener('click', async () => {
+                    showSpinner(true);
+                    try {
+                        await loadAndShowNotifications();
+                    } finally {
+                        showSpinner(false);
+                    }
                 });
             }
 

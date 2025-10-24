@@ -9,13 +9,25 @@
   "icons": [
     {
       "src": "https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
       "src": "https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

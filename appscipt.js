@@ -20,7 +20,8 @@ const SHEET_NAMES = {
   RESPONSABLES: 'Responsables', // NOUVEAU
   ACTION_LOG: 'Historique_Actions', // NOUVEAU
   ERROR_LOG: 'Historique_Erreurs',   // NOUVEAU
-  MODULES: 'Modules' // NOUVEAU
+  MODULES: 'Modules', // NOUVEAU
+  MESSAGES: 'Messages' // NOUVEAU: Pour les notifications
 };
 
 const CONFIG_KEYS = {
@@ -179,6 +180,14 @@ function doPost(e) {
       return recordAttendanceFromScan(data, ctx);
     } else if (action === 'scanStudentForAttendance') { // CORRECTION: Réintroduction de l'action
         return scanStudentForAttendance(data, ctx);
+    } else if (action === 'adminSendNotification') { // NOUVEAU
+        return adminSendNotification(data);
+    } else if (action === 'responsableSendMessageToClass') { // NOUVEAU
+        return responsableSendMessageToClass(data, ctx);
+    } else if (action === 'adminSendMessageToClass') { // NOUVEAU
+        return adminSendMessageToClass(data);
+    } else if (action === 'getUserNotifications') { // NOUVEAU
+        return getUserNotifications(data, ctx);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -273,6 +282,172 @@ function _getRawSheetData(sheetName, ctx) {
 // FONCTIONS DE L'API (appelées par doPost)
 // ============================================================================
 
+/**
+ * NOUVEAU: Envoie un message de la part d'un responsable à sa classe.
+ * @param {object} data - Contient { responsableId, subject, body }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function responsableSendMessageToClass(data, ctx) {
+    try {
+        const { responsableId, subject, body } = data;
+        if (!responsableId || !subject || !body) {
+            throw new Error("Données de message incomplètes.");
+        }
+
+        // 1. Récupérer les infos du responsable (classe, université)
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId, universityId, responsableName } = classInfo;
+
+        // 2. Enregistrer le message dans la base de données
+        const messagesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MESSAGES);
+        const newId = `MSG-${Utilities.getUuid().substring(0, 6).toUpperCase()}`;
+        const timestamp = new Date();
+        messagesSheet.appendRow([newId, timestamp, universityId, classId, subject, body, `Responsable: ${responsableName}`]);
+        SpreadsheetApp.flush();
+
+        // 3. Récupérer les emails des étudiants de la classe
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const headers = studentsData[0];
+        const studentClassFkIdx = headers.indexOf('ID_CLASSE_FK');
+        const emailIdx = headers.indexOf('EMAIL');
+
+        const recipientEmails = studentsData.slice(1)
+            .filter(row => row[studentClassFkIdx] === classId && row[emailIdx] && row[emailIdx].includes('@'))
+            .map(row => row[emailIdx].trim());
+
+        if (recipientEmails.length === 0) {
+            return createJsonResponse({ success: true, message: "Message enregistré. Aucun étudiant avec une adresse e-mail valide trouvé dans cette classe pour l'envoi." });
+        }
+
+        // 4. Envoyer l'e-mail
+        const emailSubject = `[${classInfo.className}] ${subject}`;
+        const emailBody = `Bonjour,\n\nUn message a été envoyé par votre responsable de classe, ${responsableName}:\n\n---\n${body}\n---\n\nCordialement,\nL'équipe ABM EduPilote`;
+        MailApp.sendEmail("", emailSubject, emailBody, { bcc: recipientEmails.join(','), name: `Responsable ${classInfo.className}` });
+
+        // Invalider les caches de notifications
+        cache.removeAll([`notifs_univ_${universityId}_${classId}`]);
+
+        return createJsonResponse({ success: true, message: `Message envoyé avec succès à ${recipientEmails.length} étudiant(s) de votre classe.` });
+    } catch (error) {
+        logError('responsableSendMessageToClass', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+/**
+ * NOUVEAU: Enregistre un message pour une classe spécifique ou pour tous.
+ * @param {object} data - Contient { universityId, classId ('ALL' pour tous), subject, body }.
+ */
+function adminSendMessageToClass(data) {
+    try {
+        const { universityId, classId, subject, body } = data;
+        if (!universityId || !classId || !subject || !body) {
+            throw new Error("Données de message incomplètes.");
+        }
+
+        const messagesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MESSAGES);
+        const newId = `MSG-${Utilities.getUuid().substring(0, 6).toUpperCase()}`;
+        const timestamp = new Date();
+        
+        // Pourrait être enrichi avec le nom de l'admin plus tard
+        const authorInfo = "Administration"; 
+
+        messagesSheet.appendRow([newId, timestamp, universityId, classId, subject, body, authorInfo]);
+        SpreadsheetApp.flush();
+
+        // Invalider les caches de notifications
+        cache.removeAll([`notifs_univ_${universityId}_${classId}`, `notifs_univ_${universityId}_ALL`]);
+
+        const target = classId === 'ALL' ? "tous les étudiants" : "la classe sélectionnée";
+        return createJsonResponse({ success: true, message: `Message envoyé avec succès à ${target}.` });
+
+    } catch (error) {
+        logError('adminSendMessageToClass', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: Récupère les notifications pour un utilisateur (étudiant ou responsable).
+ * @param {object} data - Contient { studentId } ou { responsableId }.
+ */
+function getUserNotifications(data, ctx) {
+    try {
+        const { studentId, responsableId } = data;
+        if (!studentId && !responsableId) throw new Error("ID utilisateur manquant.");
+
+        const userInfo = studentId ? getStudentMap()[studentId.toUpperCase()] : getResponsableClassInfo(responsableId, ctx);
+        if (!userInfo) throw new Error("Utilisateur non trouvé.");
+
+        const { classId, universityId } = userInfo;
+        const cacheKey = `notifs_univ_${universityId}_${classId}`;
+
+        const notifications = getCachedData(cacheKey, () => {
+            const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
+            const headers = messagesData.shift();
+            const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
+
+            return messagesData
+                .filter(row => row[univFkIdx] === universityId && (row[classFkIdx] === classId || row[classFkIdx] === 'ALL'))
+                .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
+                .sort((a, b) => new Date(b.TIMESTAMP) - new Date(a.TIMESTAMP));
+        }, 300); // Cache de 5 minutes
+
+        return createJsonResponse({ success: true, data: notifications });
+    } catch (error) {
+        logError('getUserNotifications', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+/**
+ * NOUVEAU: Envoie une notification par e-mail à tous les étudiants d'une université.
+ * @param {object} data - Contient { universityId, subject, body }.
+ */
+function adminSendNotification(data) {
+    try {
+        const { universityId, subject, body } = data;
+        if (!universityId || !subject || !body) {
+            throw new Error("ID Université, sujet et corps du message sont requis.");
+        }
+
+        // NOUVEAU: Enregistrer également le message dans la base de données
+        adminSendMessageToClass({ universityId, classId: 'ALL', subject, body });
+
+        // 1. Récupérer le nom de l'université pour personnaliser l'e-mail
+        const univInfoResponse = getUniversityInfo({ universityId });
+        const univInfo = JSON.parse(univInfoResponse.getContent()).data;
+        const universityName = univInfo ? univInfo.universityName : "Votre Université";
+
+        // 2. Récupérer tous les étudiants de cette université
+        const studentsResponse = getStudentsForAdmin({ universityId });
+        const studentsResult = JSON.parse(studentsResponse.getContent());
+        if (!studentsResult.success || !studentsResult.data) {
+            throw new Error("Impossible de récupérer la liste des étudiants.");
+        }
+        const students = studentsResult.data;
+
+        // 3. Filtrer pour obtenir une liste d'e-mails uniques et valides
+        const emailSet = new Set();
+        students.forEach(student => {
+            if (student.EMAIL && student.EMAIL.includes('@')) {
+                emailSet.add(student.EMAIL.trim());
+            }
+        });
+        const recipientEmails = Array.from(emailSet);
+
+        if (recipientEmails.length === 0) {
+            return createJsonResponse({ success: true, message: "Aucun étudiant avec une adresse e-mail valide trouvé. Aucune notification n'a été envoyée." });
+        }
+
+        // 4. Envoyer l'e-mail en BCC pour protéger la vie privée et optimiser les quotas
+        MailApp.sendEmail("", subject, body, { bcc: recipientEmails.join(','), name: universityName });
+
+        return createJsonResponse({ success: true, message: `Notification envoyée avec succès à ${recipientEmails.length} étudiant(s).` });
+    } catch (error) {
+        logError('adminSendNotification', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 /**
  * NOUVEAU: Récupère le nom de l'université pour l'affichage dans l'en-tête admin.
  */
@@ -1624,10 +1799,11 @@ function getResponsableClassInfo(responsableId, ctx) {
         const respIdIdx = respHeaders.indexOf('ID_RESPONSABLE');
         const classFkIdx = respHeaders.indexOf('ID_CLASSE_FK');
         const univFkIdx = respHeaders.indexOf('ID_UNIVERSITE_FK');
+        const respNameIdx = respHeaders.indexOf('NOM_RESPONSABLE'); // NOUVEAU
         const responsableRow = respData.slice(1).find(row => row[respIdIdx] === responsableId);
         if (!responsableRow) throw new Error('Responsable non trouvé.');
         const classId = responsableRow[classFkIdx];
-        const universityId = responsableRow[univFkIdx];
+        const universityId = responsableRow[univFkIdx];        const responsableName = responsableRow[respNameIdx]; // NOUVEAU
 
         // 2. Trouver le nom de la classe
         const classesHeaders = classesData[0];
@@ -1636,7 +1812,7 @@ function getResponsableClassInfo(responsableId, ctx) {
         const classRow = classesData.slice(1).find(row => row[classIdIdx] === classId);
         if (!classRow) throw new Error('Classe assignée au responsable introuvable.');
         const className = classRow[classNameIdx];
-        return { classId, className, universityId };
+        return { classId, className, universityId, responsableName }; // NOUVEAU: Renvoyer aussi le nom
     }, 3600); // Cache pour 1 heure
 
     return cachedInfo;
@@ -2011,6 +2187,7 @@ function setup() {
       [SHEET_NAMES.RESPONSABLES]: { headers: ['ID_RESPONSABLE', 'NOM_RESPONSABLE', 'EMAIL_RESPONSABLE', 'PASSWORD_HASH', 'SALT', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK'], color: '#1a237e' },
       [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
       [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
+        [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
       [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },      
       [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
       [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
@@ -2204,6 +2381,7 @@ function getSheetConfigs() {
         [SHEET_NAMES.RESPONSABLES]: { headers: ['ID_RESPONSABLE', 'NOM_RESPONSABLE', 'EMAIL_RESPONSABLE', 'PASSWORD_HASH', 'SALT', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK'], color: '#1a237e' },
         [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
         [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
+        [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
         [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
         [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
         [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
