@@ -322,7 +322,7 @@
                             <i class="fas fa-check"></i>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-800">${item.MATIERE}</p>
+                            <p class="font-medium text-gray-800">${item.MODULE}</p>
                             <p class="text-sm text-gray-500">${new Date(item.TIMESTAMP).toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' })}</p>
                         </div>
                     </div>
@@ -360,6 +360,7 @@
                         <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 mb-4">
                             <div class="flex justify-between items-start">
                                 <div>
+                                    <p class="font-semibold text-gray-800">${course.MODULE}</p>
                                     <p class="text-sm text-gray-500">${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                                     <p class="text-sm text-gray-500">${new Date(course.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${new Date(course.HEURE_FIN).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
                                 </div>
