@@ -93,6 +93,8 @@ function doPost(e) {
       return getClassDetails(data);
     } else if (action === 'adminAddEntity') {
       return addEntityForAdmin(data);
+    } else if (action === 'adminBulkAddEntities') { // NOUVEAU
+      return adminBulkAddEntities(data);
     } else if (action === 'registerStudentInClass') {
       return registerStudentInClass(data);
     } else if (action === 'adminGetQrCodes') {
@@ -607,6 +609,49 @@ function addEntityForAdmin(data) {
   }
 }
 
+/**
+ * NOUVEAU: Ajoute plusieurs entités en une seule fois (création en masse).
+ */
+function adminBulkAddEntities(data) {
+  try {
+    const { entityType, payload, universityId } = data;
+    if (!entityType || !payload || !Array.isArray(payload) || payload.length === 0) {
+      throw new Error("Données pour l'ajout en masse invalides.");
+    }
+
+    const sheetName = getSheetNameForEntity(entityType);
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    if (!sheet) throw new Error(`L'entité '${entityType}' est inconnue.`);
+
+    const rowsToAdd = [];
+    payload.forEach(item => {
+      const newId = `${entityType.substring(0, 3).toUpperCase()}-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+      let newRow;
+      if (entityType === 'classe') {
+        if (!item.parentId) throw new Error("ID de la filière parente manquant pour une classe.");
+        newRow = [newId, item.name, item.parentId];
+      } else if (entityType === 'module') {
+        if (!item.parentId || !item.enseignant) throw new Error("ID de la classe et nom de l'enseignant requis pour un module.");
+        newRow = [newId, item.name, item.parentId, universityId, item.enseignant, 'En cours'];
+      } else {
+        return; // Ne rien faire pour les types non supportés en masse
+      }
+      rowsToAdd.push(newRow);
+    });
+
+    if (rowsToAdd.length > 0) {
+      sheet.getRange(sheet.getLastRow() + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
+      SpreadsheetApp.flush();
+      clearAllCachesForUniversity(universityId, [entityType, 'dashboard']);
+      logAction('adminBulkAddEntities', { entityType, count: rowsToAdd.length, universityId });
+    }
+
+    return createJsonResponse({ success: true, message: `${rowsToAdd.length} ${entityType}(s) ajouté(s) avec succès.` });
+  } catch (error) {
+    logError('adminBulkAddEntities', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
 /**
  * NOUVEAU: Fonction interne pour trouver l'historique de présence d'un étudiant.
  * Cette fonction est réutilisable et peut être appelée par d'autres fonctions du backend.

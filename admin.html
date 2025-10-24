@@ -193,19 +193,26 @@
             <!-- Contenu Classes -->
             <div id="classe-content" class="management-tab-content hidden">
                  <div class="grid lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Ajouter une Classe</h3>
-                        <form id="add-classe-form" class="mt-4 space-y-4">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm space-y-4">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter des Classes en Masse</h3>
+                        <form id="bulk-add-classe-form">
                             <div>
                                 <label for="classe-filiere-select" class="block text-sm font-medium text-gray-700">Filière Parente</label>
                                 <select id="classe-filiere-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
                             </div>
-                            <div>
-                                <label for="classe-name" class="block text-sm font-medium text-gray-700">Nom de la classe (ex: L1-Info)</label>
-                                <input type="text" id="classe-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
+                            <div class="relative">
+                                <label for="bulk-classe-name" class="block text-sm font-medium text-gray-700">Nom de la nouvelle classe</label>
+                                <input type="text" id="bulk-classe-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md pr-20">
+                                <button type="button" id="add-classe-to-list-btn" class="absolute right-1 top-7 bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm font-semibold">Ajouter</button>
                             </div>
-                            <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Ajouter</button>
                         </form>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Classes à créer :</h4>
+                            <ul id="bulk-classe-list" class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 p-2 rounded-md border">
+                                <li class="text-gray-400 text-sm text-center italic">La liste est vide</li>
+                            </ul>
+                        </div>
+                        <button id="save-bulk-classe-btn" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700 disabled:bg-gray-400" disabled>Enregistrer Tout</button>
                     </div>
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <div class="flex justify-between items-center mb-4">
@@ -220,23 +227,32 @@
             <!-- NOUVEAU: Contenu Modules -->
             <div id="module-content" class="management-tab-content hidden">
                  <div class="grid lg:grid-cols-3 gap-8 items-start">
-                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm">
-                        <h3 class="text-lg font-medium text-gray-900">Ajouter un Module</h3>
-                        <form id="add-module-form" class="mt-4 space-y-4">
+                    <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm space-y-4">
+                        <h3 class="text-lg font-medium text-gray-900">Ajouter des Modules en Masse</h3>
+                        <form id="bulk-add-module-form">
                             <div>
                                 <label for="module-classe-select" class="block text-sm font-medium text-gray-700">Classe Concernée</label>
                                 <select id="module-classe-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-violet-500 sm:text-sm"></select>
                             </div>
-                            <div>
-                                <label for="module-name" class="block text-sm font-medium text-gray-700">Nom du module (ex: ALGO-101)</label>
-                                <input type="text" id="module-name" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label for="bulk-module-name" class="block text-sm font-medium text-gray-700">Nom module</label>
+                                    <input type="text" id="bulk-module-name" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label for="bulk-module-enseignant" class="block text-sm font-medium text-gray-700">Enseignant</label>
+                                    <input type="text" id="bulk-module-enseignant" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md">
+                                </div>
                             </div>
-                            <div>
-                                <label for="module-enseignant" class="block text-sm font-medium text-gray-700">Enseignant Principal</label>
-                                <input type="text" id="module-enseignant" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-violet-500 sm:text-sm">
-                            </div>
-                            <button type="submit" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700">Créer le Module</button>
+                            <button type="button" id="add-module-to-list-btn" class="w-full bg-gray-200 text-gray-700 px-3 py-2 rounded text-sm font-semibold">Ajouter à la liste</button>
                         </form>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Modules à créer :</h4>
+                            <ul id="bulk-module-list" class="space-y-2 max-h-48 overflow-y-auto bg-gray-50 p-2 rounded-md border">
+                                <li class="text-gray-400 text-sm text-center italic">La liste est vide</li>
+                            </ul>
+                        </div>
+                        <button id="save-bulk-module-btn" class="w-full bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700 disabled:bg-gray-400" disabled>Enregistrer Tout</button>
                     </div>
                     <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm">
                         <h3 class="text-lg font-medium text-gray-900">Modules Existants</h3>
@@ -636,9 +652,9 @@
                 });
             });
 
-            setupEntityForm('filiere', {});
-            setupEntityForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
-            setupEntityForm('module', { parent: 'classe', parentSelectId: 'module-classe-select', extraFields: ['enseignant'] });
+            setupBulkAddForm('classe', { parent: 'filiere', parentSelectId: 'classe-filiere-select' });
+            setupBulkAddForm('module', { parent: 'classe', parentSelectId: 'module-classe-select', extraFields: ['enseignant'] });
+            setupEntityForm('filiere', {}); // Garder l'ancien système pour les filières (ajout unitaire)
         }
 
         // NOUVEAU: Charge les données pour le tableau de bord interactif
@@ -894,6 +910,72 @@
             } catch (error) {
                 headerContainer.innerHTML = `<p class="text-red-500">Erreur lors du chargement du profil: ${error.message}</p>`;
             }
+        }
+
+        // NOUVEAU: Gère la logique d'ajout en masse pour une entité
+        function setupBulkAddForm(entityType, options) {
+            const addToListBtn = document.getElementById(`add-${entityType}-to-list-btn`);
+            const saveBtn = document.getElementById(`save-bulk-${entityType}-btn`);
+            const listUl = document.getElementById(`bulk-${entityType}-list`);
+            const nameInput = document.getElementById(`bulk-${entityType}-name`);
+            const parentSelect = document.getElementById(options.parentSelectId);
+
+            let itemsToCreate = [];
+
+            const renderList = () => {
+                if (itemsToCreate.length === 0) {
+                    listUl.innerHTML = `<li class="text-gray-400 text-sm text-center italic">La liste est vide</li>`;
+                    saveBtn.disabled = true;
+                    return;
+                }
+                listUl.innerHTML = itemsToCreate.map((item, index) => {
+                    const subtext = item.enseignant ? ` <span class="text-xs text-gray-500">(${item.enseignant})</span>` : '';
+                    return `<li class="p-2 bg-white border rounded-md flex justify-between items-center text-sm">
+                                <span>${item.name}${subtext}</span>
+                                <button type="button" data-index="${index}" class="text-red-500 hover:text-red-700">&times;</button>
+                            </li>`;
+                }).join('');
+                saveBtn.disabled = false;
+            };
+
+            addToListBtn.addEventListener('click', () => {
+                const name = nameInput.value.trim();
+                if (!name || !parentSelect.value) {
+                    showModal('Erreur', `Veuillez sélectionner une ${options.parent} et entrer un nom.`);
+                    return;
+                }
+                const newItem = { name, parentId: parentSelect.value };
+                if (options.extraFields) {
+                    options.extraFields.forEach(field => {
+                        const fieldInput = document.getElementById(`bulk-${entityType}-${field}`);
+                        if (!fieldInput.value) throw new Error(`Le champ ${field} est requis.`);
+                        newItem[field] = fieldInput.value.trim();
+                    });
+                }
+                itemsToCreate.push(newItem);
+                renderList();
+                nameInput.value = '';
+                if (entityType === 'module') document.getElementById('bulk-module-enseignant').value = '';
+                nameInput.focus();
+            });
+
+            listUl.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' && e.target.dataset.index) {
+                    itemsToCreate.splice(parseInt(e.target.dataset.index, 10), 1);
+                    renderList();
+                }
+            });
+
+            saveBtn.addEventListener('click', async () => {
+                showSpinner(true);
+                try {
+                    const result = await callAdminApi('adminBulkAddEntities', { entityType, payload: itemsToCreate });
+                    showModal('Succès', result.message);
+                    itemsToCreate = [];
+                    renderList();
+                    loadAndRenderEntities(entityType);
+                } catch (error) { showModal('Erreur', error.message); } finally { showSpinner(false); }
+            });
         }
 
         // NOUVEAU: Gère la soumission des formulaires d'ajout
