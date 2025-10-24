@@ -718,16 +718,22 @@ function getUserNotificationStatus(data, ctx) {
         const userInfo = studentId ? getStudentMap()[userId] : getResponsableClassInfo(responsableId, ctx);
         if (!userInfo) throw new Error("Utilisateur non trouvé.");
 
-        const allMessages = (() => {
-            const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx).slice(1);
-            const univFkIdx = 0, classFkIdx = 3; // Indices basés sur la structure de la feuille
-            return messagesData
-                .filter(row => row[univFkIdx] === universityId && (row[classFkIdx] === classId || row[classFkIdx] === 'ALL'))
-                .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
-                .sort((a, b) => new Date(b.TIMESTAMP) - new Date(a.TIMESTAMP));
-        }, 300); // Cache de 5 minutes
+        const cacheKey = `notifs_status_${userId}`;
 
-        return createJsonResponse({ success: true, data: notifications });
+        const status = getCachedData(cacheKey, () => {
+            const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
+            const msgHeaders = messagesData[0];
+            const allMessages = messagesData.slice(1).filter(row => row[msgHeaders.indexOf('ID_UNIVERSITE_FK')] === userInfo.universityId && (row[msgHeaders.indexOf('ID_CLASSE_FK')] === userInfo.classId || row[msgHeaders.indexOf('ID_CLASSE_FK')] === 'ALL'));
+
+            const readsData = _getRawSheetData(SHEET_NAMES.MESSAGE_READS, ctx);
+            if (readsData.length < 2) return { unreadCount: allMessages.length };
+
+            const readHeaders = readsData[0];
+            const readMessagesSet = new Set(readsData.slice(1).filter(row => row[readHeaders.indexOf('ID_UTILISATEUR')] === userId).map(row => row[readHeaders.indexOf('ID_MESSAGE_FK')]));
+            const unreadCount = allMessages.filter(row => !readMessagesSet.has(row[msgHeaders.indexOf('ID_MESSAGE')])).length;
+            return { unreadCount };
+        }, 60);
+        return createJsonResponse({ success: true, data: status });
     } catch (error) {
         logError('getUserNotifications', error);
         return createJsonResponse({ success: false, error: error.message });

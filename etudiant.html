@@ -217,7 +217,7 @@
     <div id="student-card-generator" class="w-[320px] h-[500px] fixed -left-[9999px] top-0 bg-white shadow-2xl flex flex-col" style="font-family: 'Inter', sans-serif; box-sizing: border-box;">
         <!-- En-tête coloré -->
         <div class="bg-gradient-to-r from-[#1C2B5A] to-[#432284] p-5 text-white text-center">
-            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mx-auto mb-2" alt="Logo">
+            <img src="https://i.postimg.cc/5HMmW3HK/logo-abm-edu-pilote.png" class="w-12 h-12 mx-auto mb-2" alt="Logo" crossorigin="anonymous">
             <h3 id="card-university-name" class="font-bold text-lg"></h3>
         </div>
         <!-- Corps de la carte -->
@@ -237,6 +237,20 @@
 
     <script>
         // --- CONFIGURATION ---
+        // NOUVEAU: Met à jour le badge de notification
+        function updateNotificationBadge(count) {
+            const badge = document.getElementById('notification-badge');
+            if (!badge) return;
+
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+
         // --- AUTHENTIFICATION ---
         document.addEventListener('DOMContentLoaded', () => {
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
@@ -294,6 +308,8 @@
             renderMainQrCode(studentId);
             // NOUVEAU: Charger la liste des présences récentes
             loadRecentAttendance(studentId);
+            // NOUVEAU: Charger le statut des notifications
+            loadNotificationStatus(studentId);
             // Les autres données (historique, planning) seront chargées à la demande
         }
 
@@ -544,7 +560,7 @@
                     return;
                 }
 
-                const notificationsHtml = notifications.map(notif => {
+                container.innerHTML = notifications.map(notif => {
                     const isGlobal = notif.ID_CLASSE_FK === 'ALL';
                     const author = notif.AUTEUR_INFO === 'Administration' ? 'Annonce Générale' : 'Message de votre classe';
                     const colorClass = isGlobal ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200';
@@ -559,8 +575,6 @@
                         </div>
                     `;
                 }).join('');
-
-                container.innerHTML = `<div class="space-y-4">${notificationsHtml}</div>`;
 
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`;
