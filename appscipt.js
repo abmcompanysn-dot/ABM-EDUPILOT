@@ -184,6 +184,12 @@ function doPost(e) {
         return adminSendNotification(data);
     } else if (action === 'responsableSendMessageToClass') { // NOUVEAU
         return responsableSendMessageToClass(data, ctx);
+    } else if (action === 'responsableExportAbsenceReport') { // NOUVEAU
+        return responsableExportAbsenceReport(data, ctx);
+    } else if (action === 'responsableGetModuleAttendanceDetails') { // NOUVEAU
+        return responsableGetModuleAttendanceDetails(data, ctx);
+    } else if (action === 'responsableExportModuleReport') { // NOUVEAU
+        return responsableExportModuleReport(data, ctx);
     } else if (action === 'adminSendMessageToClass') { // NOUVEAU
         return adminSendMessageToClass(data);
     } else if (action === 'getUserNotifications') { // NOUVEAU
@@ -282,6 +288,179 @@ function _getRawSheetData(sheetName, ctx) {
 // FONCTIONS DE L'API (appelées par doPost)
 // ============================================================================
 
+/**
+ * NOUVEAU: Calcule les détails de présence pour un module spécifique.
+ * @param {object} data - Contient { responsableId, moduleId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function responsableGetModuleAttendanceDetails(data, ctx) {
+    try {
+        const { responsableId, moduleId } = data;
+        if (!responsableId || !moduleId) throw new Error("Données manquantes.");
+
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId } = classInfo;
+
+        // 1. Get module name
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], row[1]]));
+        const moduleName = moduleMap.get(moduleId);
+        if (!moduleName) throw new Error("Module non trouvé.");
+
+        // 2. Get total confirmed sessions for this module
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const planningHeaders = planningData[0];
+        const courseModuleFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+        const courseStatusIdx = planningHeaders.indexOf('STATUT');
+        const totalSessions = planningData.slice(1).filter(row => row[courseModuleFkIdx] === moduleId && row[courseStatusIdx] === 'Confirmé').length;
+
+        // 3. Get all students in the class
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const studentsHeaders = studentsData[0];
+        const studentIdIdx = studentsHeaders.indexOf('ID_ETUDIANT');
+        const studentNameIdx = studentsHeaders.indexOf('NOM_COMPLET');
+        const studentClassFkIdx = studentsHeaders.indexOf('ID_CLASSE_FK');
+        const studentsInClass = studentsData.slice(1)
+            .filter(row => row[studentClassFkIdx] === classId)
+            .map(row => ({ id: row[studentIdIdx], name: row[studentNameIdx] }));
+
+        // 4. Get attendance records for this module
+        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+        const scanHeaders = scanData[0];
+        const scanStudentIdIdx = scanHeaders.indexOf('ID_ETUDIANT');
+        const scanModuleIdx = scanHeaders.indexOf('MODULE');
+        const presencesByStudent = scanData.slice(1)
+            .filter(row => row[scanModuleIdx] === moduleName)
+            .reduce((acc, row) => {
+                const studentId = row[scanStudentIdIdx];
+                if (studentId) acc[studentId] = (acc[studentId] || 0) + 1;
+                return acc;
+            }, {});
+
+        // 5. Calculate stats for each student
+        const studentStats = studentsInClass.map(student => {
+            const presences = presencesByStudent[student.id] || 0;
+            const absences = totalSessions - presences;
+            return {
+                studentId: student.id,
+                studentName: student.name,
+                presences: presences,
+                absences: Math.max(0, absences) // Ensure absences are not negative
+            };
+        }).sort((a, b) => a.studentName.localeCompare(b.studentName));
+
+        return createJsonResponse({ success: true, data: { totalSessions, studentStats } });
+
+    } catch (error) {
+        logError('responsableGetModuleAttendanceDetails', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: Exporte le rapport de présence détaillé pour un module.
+ * @param {object} data - Contient { responsableId, moduleId }.
+ */
+function responsableExportModuleReport(data, ctx) {
+    try {
+        const { responsableId, moduleId } = data;
+        
+        // 1. Récupérer les détails calculés
+        const detailsResponse = responsableGetModuleAttendanceDetails({ responsableId, moduleId }, ctx);
+        const detailsResult = JSON.parse(detailsResponse.getContent());
+        if (!detailsResult.success) throw new Error(detailsResult.error);
+        const { totalSessions, studentStats } = detailsResult.data;
+
+        // 2. Générer le CSV
+        const headers = ['ID_ETUDIANT', 'NOM_ETUDIANT', 'SEANCES_PRESENT', 'SEANCES_ABSENT', 'TOTAL_SEANCES'];
+        const rows = studentStats.map(stat => [stat.studentId, stat.studentName, stat.presences, stat.absences, totalSessions]);
+        const csvContent = [headers.join(','), ...rows.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
+
+        const moduleName = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], row[1]])).get(moduleId);
+        const fileName = `Rapport_Module_${moduleName.replace(/\s/g, '_')}.csv`;
+
+        return createJsonResponse({ success: true, data: { csvContent, fileName } });
+    } catch (error) {
+        logError('responsableExportModuleReport', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+/**
+ * NOUVEAU: Génère un rapport d'absences pour la classe d'un responsable sur une période donnée.
+ * @param {object} data - Contient { responsableId, startDate, endDate }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function responsableExportAbsenceReport(data, ctx) {
+    try {
+        const { responsableId, startDate, endDate } = data;
+        if (!responsableId || !startDate || !endDate) {
+            throw new Error("Données de rapport incomplètes.");
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // Inclure toute la journée de fin
+
+        // 1. Infos du responsable et de sa classe
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId, className } = classInfo;
+
+        // 2. Récupérer tous les étudiants de la classe
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const studentsHeaders = studentsData[0];
+        const studentIdIdx = studentsHeaders.indexOf('ID_ETUDIANT');
+        const studentNameIdx = studentsHeaders.indexOf('NOM_COMPLET');
+        const studentClassFkIdx = studentsHeaders.indexOf('ID_CLASSE_FK');
+        const studentsInClass = studentsData.slice(1)
+            .filter(row => row[studentClassFkIdx] === classId)
+            .map(row => ({ id: row[studentIdIdx], name: row[studentNameIdx] }));
+
+        // 3. Récupérer tous les cours confirmés pour la classe dans la période donnée
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const planningHeaders = planningData[0];
+        const courseModuleFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+        const courseDateIdx = planningHeaders.indexOf('DATE_COURS');
+        const courseStatusIdx = planningHeaders.indexOf('STATUT');
+
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+        const scheduledCourses = planningData.slice(1).filter(row => {
+            const courseDate = new Date(row[courseDateIdx]);
+            const module = moduleMap.get(row[courseModuleFkIdx]);
+            return module && module.classId === classId && row[courseStatusIdx] === 'Confirmé' && courseDate >= start && courseDate <= end;
+        }).map(row => ({
+            date: Utilities.formatDate(new Date(row[courseDateIdx]), Session.getScriptTimeZone(), 'yyyy-MM-dd'),
+            module: moduleMap.get(row[courseModuleFkIdx]).name
+        }));
+
+        // 4. Récupérer toutes les présences pour la classe dans la période
+        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+        const scanHeaders = scanData[0];
+        const scanStudentIdIdx = scanHeaders.indexOf('ID_ETUDIANT');
+        const scanDateIdx = scanHeaders.indexOf('DATE_SCAN');
+        const scanModuleIdx = scanHeaders.indexOf('MODULE');
+        const presentScans = new Set(scanData.slice(1).map(row => `${row[scanStudentIdIdx]}_${row[scanDateIdx]}_${row[scanModuleIdx]}`));
+
+        // 5. Comparer et trouver les absences
+        const absenceRecords = [];
+        studentsInClass.forEach(student => {
+            scheduledCourses.forEach(course => {
+                const attendanceKey = `${student.id}_${course.date}_${course.module}`;
+                if (!presentScans.has(attendanceKey)) {
+                    absenceRecords.push([student.name, student.id, course.date, course.module]);
+                }
+            });
+        });
+
+        // 6. Générer le CSV
+        const headers = ['NOM_ETUDIANT', 'ID_ETUDIANT', 'DATE_ABSENCE', 'MODULE_ABSENCE'];
+        const csvContent = [headers.join(','), ...absenceRecords.map(row => row.map(cell => `"${cell}"`).join(','))].join('\n');
+        const fileName = `Rapport_Absences_${className.replace(/\s/g, '_')}_${startDate}_au_${endDate}.csv`;
+
+        return createJsonResponse({ success: true, data: { csvContent, fileName } });
+    } catch (error) {
+        logError('responsableExportAbsenceReport', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 /**
  * NOUVEAU: Envoie un message de la part d'un responsable à sa classe.
  * @param {object} data - Contient { responsableId, subject, body }.
