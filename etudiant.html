@@ -103,14 +103,19 @@
         <!-- Panneau d'actions -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mt-8">
             <h2 class="text-lg font-bold text-gray-900 mb-4">Mon Espace</h2>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-3 gap-4">
                 <button onclick="openModal('schedule')" class="text-left p-4 bg-violet-50 hover:bg-violet-100 rounded-lg transition-all">
                     <i class="fas fa-calendar-alt text-2xl text-violet-500 mb-2"></i>
                     <p class="font-semibold">Emploi du Temps</p>
                 </button>
                 <button onclick="openModal('attendance')" class="text-left p-4 bg-green-50 hover:bg-green-100 rounded-lg transition-all">
-                    <i class="fas fa-check-circle text-2xl text-green-500 mb-2"></i>
+                    <i class="fas fa-history text-2xl text-green-500 mb-2"></i>
                     <p class="font-semibold">Mon Historique</p>
+                </button>
+                <!-- NOUVEAU: Bouton pour les notifications -->
+                <button onclick="openModal('notifications')" class="text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all">
+                    <i class="fas fa-bell text-2xl text-blue-500 mb-2"></i>
+                    <p class="font-semibold">Notifications</p>
                 </button>
             </div>
         </div>
@@ -378,6 +383,10 @@
                 case 'profile':
                     templateId = 'profile-template';
                     title = 'Modifier mes Informations';
+                    break;
+                case 'message': // NOUVEAU: Pour les messages de confirmation
+                    templateId = 'message-template';
+                    title = 'Message';
                     break;
                 case 'notifications': // NOUVEAU
                     templateId = 'notifications-template';
