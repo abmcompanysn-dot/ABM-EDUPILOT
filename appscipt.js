@@ -677,6 +677,11 @@ function getUserNotifications(data, ctx) {
     const readsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MESSAGE_READS);
     const messageIdsToMark = notifications.map(n => n.ID_MESSAGE);
     const existingReadsData = readsSheet.getDataRange().getValues();
+
+    // CORRECTION: Si la feuille est vide ou ne contient que l'en-tête, on ne fait rien.
+    if (existingReadsData.length < 2) {
+        existingReadsData.push(...newReads.map(read => [read[0], read[1]])); // Simuler l'ajout pour la logique suivante
+    }
     const existingReadsSet = new Set(existingReadsData.map(row => `${row[0]}_${row[1]}`));
 
     const newReads = [];
