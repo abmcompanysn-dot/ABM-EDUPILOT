@@ -192,6 +192,38 @@ function doPost(e) {
 }
 
 /**
+ * NOUVEAU: Enregistre la présence d'un étudiant qui a scanné un QR code de cours.
+ * @param {object} data - Contient { studentId, classe }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function recordAttendanceFromScan(data, ctx) {
+  try {
+    const { studentId, classe } = data;
+    if (!studentId || !classe) {
+      throw new Error("ID étudiant ou nom de classe manquant.");
+    }
+
+    // 1. Vérifier que l'étudiant existe et appartient bien à la classe scannée.
+    const studentMap = getStudentMap();
+    const studentInfo = studentMap[studentId.trim().toUpperCase()];
+    if (!studentInfo) throw new Error(`Étudiant avec l'ID ${studentId} non trouvé.`);
+
+    const classInfo = getCachedData(`class_info_by_name_${classe}`, () => {
+        const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
+        const classRow = classesData.slice(1).find(row => row[1].toLowerCase() === classe.toLowerCase());
+        return classRow ? { id: classRow[0], name: classRow[1] } : null;
+    }, 3600);
+    if (!classInfo || studentInfo.classId !== classInfo.id) throw new Error("Vous n'êtes pas inscrit dans la classe pour laquelle vous essayez de pointer.");
+
+    // 2. Trouver le cours actuel et enregistrer la présence.
+    return scanStudentForAttendance({ studentId }, ctx);
+
+  } catch (error) {
+    logError('recordAttendanceFromScan', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+/**
  * NOUVEAU: Crée un contexte contenant les données des feuilles fréquemment utilisées.
  * Cela évite de lire les mêmes feuilles plusieurs fois dans une seule requête.
  * @returns {object} Un objet contenant les données des feuilles.

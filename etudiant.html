@@ -558,10 +558,28 @@
 
         // NOUVEAU: Fonction pour enregistrer la présence sans formulaire
         async function markAttendanceAutomatically(studentId, classe) {
-            alert(`Tentative de pointage pour la classe ${classe}...`);
-            const result = await callApi('recordAttendanceFromScan', { studentId, classe });
-            alert(result.message); // Affiche le message de succès ou d'erreur
-            loadRecentAttendance(studentId); // Rafraîchir la liste des présences
+            // AMÉLIORATION: Utiliser une modale au lieu des alertes
+            openModal('message'); // Ouvre une modale avec un spinner
+            modalTitle.textContent = 'Pointage en cours...';
+            modalBody.innerHTML = `<div class="text-center py-8"><div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-violet-500 mx-auto"></div><p class="mt-4 text-gray-600">Tentative de pointage pour la classe ${classe}...</p></div>`;
+
+            try {
+                const result = await callApi('recordAttendanceFromScan', { studentId, classe });
+                // Afficher le message de succès dans la modale
+                modalTitle.textContent = 'Succès !';
+                modalBody.innerHTML = `<div class="text-center py-4">
+                    <div class="text-5xl text-green-500 mb-4"><i class="fas fa-check-circle"></i></div>
+                    <p class="text-lg text-gray-700">${result.message}</p>
+                </div>`;
+                loadRecentAttendance(studentId); // Rafraîchir la liste des présences
+            } catch (error) {
+                // Afficher le message d'erreur dans la modale
+                modalTitle.textContent = 'Erreur';
+                modalBody.innerHTML = `<div class="text-center py-4">
+                    <div class="text-5xl text-red-500 mb-4"><i class="fas fa-times-circle"></i></div>
+                    <p class="text-lg text-gray-700">${error.message}</p>
+                </div>`;
+            }
         }
 
         // --- FONCTIONS UTILITAIRES ---
