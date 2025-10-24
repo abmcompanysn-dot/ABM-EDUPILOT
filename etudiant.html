@@ -266,7 +266,9 @@
         // --- Fonctions pour l'Espace Étudiant ---
         function studentLogout() 
         {
+            // AMÉLIORATION PWA: Effacer la session ET l'identifiant mémorisé
             sessionStorage.removeItem(STUDENT_SESSION_KEY);
+            localStorage.removeItem(STUDENT_SESSION_KEY); // Oublier l'utilisateur pour la prochaine visite
             window.location.href = 'index.html';
         }
 

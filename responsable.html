@@ -830,7 +830,9 @@
     <script>
         // --- LOGIQUE DE LA PAGE (réorganisée) ---
         function logout() {
+            // AMÉLIORATION PWA: Effacer la session ET l'identifiant mémorisé
             sessionStorage.removeItem(RESPONSABLE_SESSION_KEY);
+            localStorage.removeItem(RESPONSABLE_SESSION_KEY); // Oublier l'utilisateur pour la prochaine visite
             window.location.href = 'index.html';
         }
 

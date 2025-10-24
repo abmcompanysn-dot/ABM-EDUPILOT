@@ -383,6 +383,34 @@
             </div>
             </section>
 
+            <!-- NOUVEAU: Écran de connexion rapide pour étudiant mémorisé -->
+            <section id="page-quick-login" class="page hidden">
+                <div class="w-full max-w-md mx-auto panel overflow-hidden">
+                    <div class="p-8">
+                        <div class="text-center mb-4">
+                            <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Bon retour !</h1>
+                            <p class="text-gray-500 mt-2">Confirmez votre ID pour vous connecter.</p>
+                        </div>
+                        <form id="quickStudentLoginForm" class="space-y-5">
+                            <div>
+                                <label for="quickLoginStudentId" class="block text-sm font-medium text-gray-700 mb-1">Votre ID Étudiant</label>
+                                <input aria-label="ID étudiant" type="text" id="quickLoginStudentId" name="quickLoginStudentId" required class="w-full px-4 py-3 border border-gray-200 rounded-md" placeholder="Ex: ETU-ABC123">
+                            </div>
+                            <div>
+                                <button type="submit" class="submitBtn w-full bg-violet-600 hover:bg-violet-700 text-white font-semibold py-3 rounded-md flex items-center justify-center gap-3">
+                                    <span class="btnText">Entrer</span>
+                                    <span class="btnSpinner hidden">Vérification...</span>
+                                </button>
+                            </div>
+                        </form>
+                        <div class="messageArea mt-4 text-center" aria-live="polite"></div>
+                        <div class="mt-4 text-center text-sm">
+                            <a href="#" onclick="switchUser()" class="font-medium text-gray-500 hover:text-gray-700">Changer d'utilisateur</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section id="page-confirmation" class="page hidden">
                 <div class="w-full max-w-md mx-auto panel p-8 text-center">
                 <div id="confirmation-icon" class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center bg-green-100">
@@ -727,11 +755,24 @@
 
         // --- ROUTEUR SIMPLE (préservé, légèrement encapsulé) ---
         document.addEventListener('DOMContentLoaded', () => {
+            // AMÉLIORATION PWA: Vérifier si un étudiant est déjà mémorisé
+            const rememberedStudentId = localStorage.getItem(STUDENT_SESSION_KEY);
+            if (rememberedStudentId) {
+                // Si oui, afficher l'écran de connexion rapide
+                showAuthPage('page-quick-login');
+                document.getElementById('quickLoginStudentId').value = rememberedStudentId;
+                // On ne continue pas le reste de la logique pour ne pas afficher les autres modales
+                setupQuickLoginForm();
+                return;
+            }
+
+            // Logique existante si aucun étudiant n'est mémorisé
             const studentSessionId = sessionStorage.getItem(STUDENT_SESSION_KEY);
             if (studentSessionId) {
                 window.location.href = PAGE_URLS.STUDENT;
                 return;
             } else {
+                // Logique de routage via URL (pour les liens d'inscription/présence)
                 const params = new URLSearchParams(window.location.search);
                 const page = params.get('page');
 
@@ -767,6 +808,7 @@
             if (safe$('registerForm')) safe$('registerForm').onsubmit = handleRegister;
             if (safe$('studentLoginForm')) safe$('studentLoginForm').onsubmit = handleStudentLogin;
             if (safe$('responsableLoginForm')) safe$('responsableLoginForm').onsubmit = handleResponsableLogin;
+            setupQuickLoginForm(); // Initialiser aussi le formulaire de connexion rapide
         });
 
         // NOUVEAU: Fonctions pour gérer l'overlay des formulaires
@@ -801,6 +843,18 @@
             authOverlay.classList.add('hidden');
             authOverlay.classList.remove('flex');
             window.history.replaceState({}, document.title, window.location.pathname); // Nettoyer l'URL
+        }
+
+        // NOUVEAU: Fonction pour changer d'utilisateur (oublier l'étudiant mémorisé)
+        function switchUser() {
+            localStorage.removeItem(STUDENT_SESSION_KEY);
+            hideAuthOverlay(); // Retourne à la page d'accueil principale
+        }
+
+        // NOUVEAU: Initialise le formulaire de connexion rapide
+        function setupQuickLoginForm() {
+            const form = document.getElementById('quickStudentLoginForm');
+            if (form) form.onsubmit = handleStudentLogin; // Réutilise la même logique de connexion
         }
 
         // NOUVEAU: Fonctions modal (préservées)
@@ -950,6 +1004,8 @@
            try {
                 const result = await callApi('studentLogin', { studentId });
                 sessionStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
+                // AMÉLIORATION PWA: Mémoriser l'étudiant dans le localStorage pour les prochaines visites
+                localStorage.setItem(STUDENT_SESSION_KEY, result.data.studentId);
                 window.location.href = PAGE_URLS.STUDENT;
             } catch (error) {
                 displayMessageInForm(form, error.message, 'error');
