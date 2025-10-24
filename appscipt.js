@@ -1875,8 +1875,8 @@ function getCurrentCourse(data) {
         const endTime = new Date(row[endIdx]);
 
         // Ajouter une marge de tolérance: 5 min avant, 15 min après.
-        const tolerantStartTime = new Date(startTime.getTime() - 5 * 60000);
-        const tolerantEndTime = new Date(endTime.getTime() + 15 * 60000);
+        const tolerantStartTime = new Date(startTime.getTime() - 15 * 60000); // Pointage commence 15 min avant
+        const tolerantEndTime = new Date(endTime.getTime()); // Pointage se termine à l'heure de fin exacte
 
         // Comparer uniquement les heures
         const nowTime = new Date(now.toLocaleString("en-US", { timeZone: spreadsheetTimeZone }));
