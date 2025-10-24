@@ -679,10 +679,7 @@ function getUserNotifications(data, ctx) {
     const existingReadsData = readsSheet.getDataRange().getValues();
 
     // CORRECTION: Si la feuille est vide ou ne contient que l'en-tête, on ne fait rien.
-    if (existingReadsData.length < 2) {
-        existingReadsData.push(...newReads.map(read => [read[0], read[1]])); // Simuler l'ajout pour la logique suivante
-    }
-    const existingReadsSet = new Set(existingReadsData.map(row => `${row[0]}_${row[1]}`));
+    const existingReadsSet = new Set(existingReadsData.slice(1).map(row => `${row[0]}_${row[1]}`));
 
     const newReads = [];
     messageIdsToMark.forEach(msgId => {
@@ -703,6 +700,43 @@ function getUserNotifications(data, ctx) {
     logError('getUserNotifications', error);
     return createJsonResponse({ success: false, error: error.message });
   }
+}
+
+/**
+ * NOUVEAU: Récupère les modules pour une classe spécifique (pour l'admin).
+ * @param {object} data - Contient { classId, universityId }.
+ */
+function adminGetModulesForClass(data) {
+    try {
+        const { classId, universityId } = data;
+        if (!classId || !universityId) {
+            throw new Error("ID de classe ou d'université manquant.");
+        }
+
+        const cacheKey = `modules_for_class_${classId}`;
+        const modules = getCachedData(cacheKey, () => {
+            const ctx = createRequestContext();
+            
+            // Security check: ensure the class belongs to the university
+            const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
+            const classRow = classesData.slice(1).find(row => row[0] === classId);
+            if (!classRow) throw new Error("Classe non trouvée.");
+            
+            const allowedFiliereIds = new Set(getFiliereIdsForUniversity(universityId));
+            if (!allowedFiliereIds.has(classRow[2])) { // classRow[2] is ID_FILIERE_FK
+                throw new Error("Accès non autorisé à cette classe.");
+            }
+
+            const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+            const headers = modulesData[0];
+            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
+            return modulesData.slice(1).filter(row => row[classFkIdx] === classId).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+        }, 300); // Cache for 5 minutes
+        return createJsonResponse({ success: true, data: modules });
+    } catch (error) {
+        logError('adminGetModulesForClass', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
 }
 
 /**

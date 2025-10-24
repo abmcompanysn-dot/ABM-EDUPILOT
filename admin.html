@@ -1322,8 +1322,7 @@
                         courseModuleSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>';
                         return;
                     }
-                    const modulesResult = await callAdminApi('adminGetEntities', { entityType: 'module', parentId: classId });
-                    courseModuleSelect.innerHTML = '<option value="">-- Sélectionnez un module --</option>' 
+                    const modulesResult = await callAdminApi('adminGetModulesForClass', { classId: classId });                    courseModuleSelect.innerHTML = '<option value="">-- Sélectionnez un module --</option>' 
                         + modulesResult.data.map(m => `<option value="${m.ID_MODULE}">${m.NOM_MODULE} (${m.NOM_ENSEIGNANT})</option>`).join('');
                     courseModuleSelect.disabled = false;
                 });

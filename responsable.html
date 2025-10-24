@@ -386,39 +386,42 @@
 
         // NOUVEAU: Charge et affiche les notifications dans une modale
         async function loadAndShowNotifications() {
-            const modal = document.getElementById('notifications-modal');
-            const contentContainer = document.getElementById('notifications-modal-content');
-            if (!modal || !contentContainer) return;
+            // On utilise la modale générique
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            if (!modal || !modalContent) return;
 
             modal.classList.remove('hidden');
-            // NOUVEAU: Cacher le badge et le remettre à zéro
+            modalTitle.textContent = "Mes Notifications";
+            
+            // Cacher le badge et le remettre à zéro
             updateNotificationBadge(0);
-            contentContainer.innerHTML = `<div class="space-y-4"><div class="skeleton h-20 w-full"></div><div class="skeleton h-20 w-full"></div></div>`;
+            modalContent.innerHTML = `<div class="space-y-4"><div class="skeleton h-20 w-full"></div><div class="skeleton h-20 w-full"></div></div>`;
 
             try {
+                // CORRECTION: Appeler l'API pour récupérer les notifications
+                const result = await callResponsableApi('getUserNotifications');
+                const notifications = result.data;
+
                 if (!notifications || notifications.length === 0) {
-                    contentContainer.innerHTML = '<p class="text-center text-gray-500">Aucune notification pour le moment.</p>';
+                    modalContent.innerHTML = '<p class="text-center text-gray-500">Aucune notification pour le moment.</p>';
                     return;
                 }
 
-                contentContainer.innerHTML = notifications.map(notif => {
+                modalContent.innerHTML = notifications.map(notif => {
                     const isGlobal = notif.ID_CLASSE_FK === 'ALL';
-                    const author = notif.AUTEUR_INFO === 'Administration' ? 'Annonce Générale' : 'Message de votre classe';
                     const colorClass = isGlobal ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200';
 
                     return `
                         <div class="p-4 rounded-lg ${colorClass} border mb-4">
-                            <div class="flex justify-between items-center mb-2">
-                                <p class="font-bold text-gray-800">${notif.SUJET}</p>
-                                ${isGlobal ? '<span class="text-xs font-semibold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">GÉNÉRAL</span>' : ''}
-                            </div>
-                            <p class="text-sm text-gray-600 whitespace-pre-wrap">${notif.CORPS}</p>
+                            <p class="font-bold text-gray-800">${notif.SUJET}</p>
+                            <p class="text-sm text-gray-600 whitespace-pre-wrap mt-2">${notif.CORPS}</p>
                             <p class="text-xs text-gray-400 text-right mt-3">Envoyé le ${new Date(notif.TIMESTAMP).toLocaleString('fr-FR')}</p>
-                        </div>
-                    `;
+                        </div>`;
                 }).join('');
             } catch (error) {
-                contentContainer.innerHTML = `<p class="text-red-500 text-center">Erreur: ${error.message}</p>`;
+                modalContent.innerHTML = `<p class="text-red-500 text-center">Erreur: ${error.message}</p>`;
             }
         }
 
@@ -1064,7 +1067,7 @@
             
             const response = await fetch(WEB_APP_URL, {
                 method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ action, data: { ...data, responsableId } })
+                body: JSON.stringify({ action, data: { ...data, responsableId, studentId: data.studentId } }) // Assurer que studentId est passé
             });
             const result = await response.json();
             if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
