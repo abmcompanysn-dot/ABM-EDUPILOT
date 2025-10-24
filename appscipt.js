@@ -190,6 +190,10 @@ function doPost(e) {
         return responsableGetModuleAttendanceDetails(data, ctx);
     } else if (action === 'responsableExportModuleReport') { // NOUVEAU
         return responsableExportModuleReport(data, ctx);
+    } else if (action === 'responsableGetSentMessages') { // NOUVEAU
+        return responsableGetSentMessages(data, ctx);
+    } else if (action === 'responsableDeleteMessage') { // NOUVEAU
+        return responsableDeleteMessage(data, ctx);
     } else if (action === 'adminSendMessageToClass') { // NOUVEAU
         return adminSendMessageToClass(data);
     } else if (action === 'getUserNotifications') { // NOUVEAU
@@ -288,6 +292,68 @@ function _getRawSheetData(sheetName, ctx) {
 // FONCTIONS DE L'API (appelées par doPost)
 // ============================================================================
 
+/**
+ * NOUVEAU: Récupère les messages envoyés par un responsable.
+ * @param {object} data - Contient { responsableId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function responsableGetSentMessages(data, ctx) {
+    try {
+        const { responsableId } = data;
+        if (!responsableId) throw new Error("ID du responsable manquant.");
+
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const authorSignature = `Responsable: ${classInfo.responsableName}`;
+
+        const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
+        const headers = messagesData[0];
+        const authorIdx = headers.indexOf('AUTEUR_INFO');
+
+        const sentMessages = messagesData.slice(1)
+            .filter(row => row[authorIdx] === authorSignature)
+            .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
+            .sort((a, b) => new Date(b.TIMESTAMP) - new Date(a.TIMESTAMP));
+
+        return createJsonResponse({ success: true, data: sentMessages });
+    } catch (error) {
+        logError('responsableGetSentMessages', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: Supprime un message envoyé par un responsable.
+ * @param {object} data - Contient { responsableId, messageId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function responsableDeleteMessage(data, ctx) {
+    try {
+        const { responsableId, messageId } = data;
+        if (!responsableId || !messageId) throw new Error("Données de suppression incomplètes.");
+
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const authorSignature = `Responsable: ${classInfo.responsableName}`;
+
+        const messagesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MESSAGES);
+        const messagesData = messagesSheet.getDataRange().getValues();
+        const headers = messagesData[0];
+        const msgIdIdx = headers.indexOf('ID_MESSAGE');
+        const authorIdx = headers.indexOf('AUTEUR_INFO');
+
+        const rowIndexToDelete = messagesData.findIndex((row, index) => index > 0 && row[msgIdIdx] === messageId);
+
+        if (rowIndexToDelete === -1) throw new Error("Message non trouvé.");
+        if (messagesData[rowIndexToDelete][authorIdx] !== authorSignature) {
+            throw new Error("Action non autorisée. Vous ne pouvez supprimer que vos propres messages.");
+        }
+
+        messagesSheet.deleteRow(rowIndexToDelete + 1);
+        return createJsonResponse({ success: true, message: "Le message a été supprimé avec succès." });
+    } catch (error) {
+        logError('responsableDeleteMessage', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 /**
  * NOUVEAU: Calcule les détails de présence pour un module spécifique.
  * @param {object} data - Contient { responsableId, moduleId }.

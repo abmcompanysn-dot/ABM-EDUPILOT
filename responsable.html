@@ -80,6 +80,9 @@
                 <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="attendance-content">
                     Historique des Présences
                 </button>
+                <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="messages-history-content">
+                    Historique Messages
+                </button>
             </nav>
         </div>
 
@@ -235,6 +238,14 @@
             </div>
         </div>
 
+        <!-- NOUVEAU: Contenu pour l'historique des messages -->
+        <div id="messages-history-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Historique de vos Messages Envoyés</h3>
+            <div id="messages-history-list-container" class="max-h-[80vh] overflow-y-auto pr-2 space-y-4">
+                <div class="skeleton h-20 w-full"></div>
+            </div>
+        </div>
+
         <!-- NOUVEAU: Contenu pour l'historique des présences -->
         <div id="attendance-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-4">Historique des Présences</h3>
@@ -373,6 +384,10 @@
                     }
                     if (tab.dataset.target === 'attendance-content' && !targetContent.dataset.loaded) {
                         loadClassAttendance();
+                        targetContent.dataset.loaded = 'true';
+                    }
+                    if (tab.dataset.target === 'messages-history-content' && !targetContent.dataset.loaded) {
+                        loadMessageHistory();
                         targetContent.dataset.loaded = 'true';
                     }
                 }
