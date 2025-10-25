@@ -2080,12 +2080,14 @@ function responsableLogin(data) {
     const hashIdx = headers.indexOf('PASSWORD_HASH');
     const saltIdx = headers.indexOf('SALT');
     const idIdx = headers.indexOf('ID_RESPONSABLE');
+    const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK'); // NOUVEAU
 
     for (const row of respData) {
       if (row[emailIdx] === email && verifyPassword(password, row[hashIdx], row[saltIdx])) {
-        // Le token est l'ID du responsable
+        // CORRECTION: Le token est maintenant un composite de l'ID du responsable et de l'ID de l'université.
+        const token = `${row[idIdx]}:${row[univFkIdx]}`;
         logAction('responsableLogin', { email, success: true });
-        return createJsonResponse({ success: true, token: row[idIdx] });
+        return createJsonResponse({ success: true, token: token });
       }
     }
     return createJsonResponse({ success: false, error: 'Email ou mot de passe de responsable incorrect.' });
@@ -3874,15 +3876,14 @@ function responsableExportModulesSummary(data) {
  * @param {object} data - Contient { responsableId, module }.
  */
 function responsableExportAttendanceByModule(data) {
+    // CORRECTION: La fonction a besoin de `universityId` pour fonctionner correctement dans le contexte admin.
+    // On s'assure que les deux IDs sont présents.
     try {
-        const { responsableId, module } = data;
-        if (!responsableId || !module) {
+        const { responsableId, module, universityId } = data;
+        if (!responsableId || !module || !universityId) {
             throw new Error("ID du responsable et module sont requis.");
         }
-
-        const ctx = createRequestContext();
-        const classInfo = getResponsableClassInfo(responsableId, ctx);
-        const { classId, className } = classInfo;
+        const { classId, className } = getResponsableClassInfo(responsableId, createRequestContext());
 
         // 1. Get all students in the class
         const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
