@@ -198,7 +198,7 @@ function doPost(e) {
         return responsableDeleteMessage(data, ctx);
     } else if (action === 'adminGetSentMessages') { // NOUVEAU
         return adminGetSentMessages(data, ctx);
-    } else if (action === 'adminDeleteMessage') { // NOUVEAU
+    } else if (action === 'adminDeleteMessage') { // NOUVEAU 
         return adminDeleteMessage(data, ctx);
     } else if (action === 'adminSendMessageToClass') { // NOUVEAU
         return adminSendMessageToClass(data);
@@ -206,6 +206,10 @@ function doPost(e) {
         return getUserNotifications(data, ctx);
     } else if (action === 'getUserNotificationStatus') { // NOUVEAU
         return getUserNotificationStatus(data, ctx);
+    } else if (action === 'adminForceRefresh') { // NOUVEAU
+        return adminForceRefresh(data);
+    } else if (action === 'responsableForceRefresh') { // NOUVEAU
+        return responsableForceRefresh(data);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -700,43 +704,6 @@ function getUserNotifications(data, ctx) {
     logError('getUserNotifications', error);
     return createJsonResponse({ success: false, error: error.message });
   }
-}
-
-/**
- * NOUVEAU: Récupère les modules pour une classe spécifique (pour l'admin).
- * @param {object} data - Contient { classId, universityId }.
- */
-function adminGetModulesForClass(data) {
-    try {
-        const { classId, universityId } = data;
-        if (!classId || !universityId) {
-            throw new Error("ID de classe ou d'université manquant.");
-        }
-
-        const cacheKey = `modules_for_class_${classId}`;
-        const modules = getCachedData(cacheKey, () => {
-            const ctx = createRequestContext();
-            
-            // Security check: ensure the class belongs to the university
-            const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
-            const classRow = classesData.slice(1).find(row => row[0] === classId);
-            if (!classRow) throw new Error("Classe non trouvée.");
-            
-            const allowedFiliereIds = new Set(getFiliereIdsForUniversity(universityId));
-            if (!allowedFiliereIds.has(classRow[2])) { // classRow[2] is ID_FILIERE_FK
-                throw new Error("Accès non autorisé à cette classe.");
-            }
-
-            const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
-            const headers = modulesData[0];
-            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
-            return modulesData.slice(1).filter(row => row[classFkIdx] === classId).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
-        }, 300); // Cache for 5 minutes
-        return createJsonResponse({ success: true, data: modules });
-    } catch (error) {
-        logError('adminGetModulesForClass', error);
-        return createJsonResponse({ success: false, error: error.message });
-    }
 }
 
 /**
@@ -2210,7 +2177,7 @@ function responsableForceRefresh(data) {
         ];
         cache.removeAll(keysToClear);
         logAction('responsableForceRefresh', { responsableId });
-        return createJsonResponse({ success: true, message: "Le cache a été vidé. Les données sont en cours de rechargement." });
+        return createJsonResponse({ success: true, message: "Les données sont en cours de mise à jour. Cela peut prendre un instant." });
     } catch (error) {
         logError('responsableForceRefresh', error);
         return createJsonResponse({ success: false, error: error.message });
@@ -3148,6 +3115,26 @@ function adminForceRefresh(data) {
 }
 
 /**
+ * NOUVEAU: Force la suppression de tous les caches pour une université.
+ */
+function adminForceRefresh(data) {
+    try {
+        const { universityId } = data;
+        if (!universityId) throw new Error("ID Université manquant.");
+
+        // Liste exhaustive de tous les types de caches à vider pour un admin
+        const allCacheTypes = ['filiere', 'classe', 'responsable', 'student', 'planning', 'dashboard', 'module', 'stats', 'attendance'];
+        clearAllCachesForUniversity(universityId, allCacheTypes);
+        
+        logAction('adminForceRefresh', { universityId });
+        return createJsonResponse({ success: true, message: "Les données sont en cours de mise à jour. Cela peut prendre un instant." });
+    } catch (error) {
+        logError('adminForceRefresh', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
  * AMÉLIORÉ: Invalide les caches spécifiés pour une université.
  * Centralise la logique d'invalidation pour éviter les erreurs.
  * @param {string} universityId - L'ID de l'université concernée.
@@ -3956,14 +3943,28 @@ function responsableExportModulesSummary(data) {
  * @param {object} data - Contient { responsableId, module }.
  */
 function responsableExportAttendanceByModule(data) {
-    // CORRECTION: La fonction a besoin de `universityId` pour fonctionner correctement dans le contexte admin.
-    // On s'assure que les deux IDs sont présents.
     try {
-        const { responsableId, module, universityId } = data;
-        if (!responsableId || !module || !universityId) {
-            throw new Error("ID du responsable et module sont requis.");
+        const { responsableId, module, universityId, classId: adminClassId } = data;
+        if (!module || !universityId) {
+            throw new Error("Module et ID Université sont requis.");
         }
-        const { classId, className } = getResponsableClassInfo(responsableId, createRequestContext());
+
+        const ctx = createRequestContext();
+        let classId, className;
+
+        // CORRECTION: Logique pour gérer l'appel depuis l'admin ou le responsable
+        if (responsableId === 'admin_export_request') {
+            // Appel vient de l'admin
+            if (!adminClassId) throw new Error("ID de la classe manquant pour l'export admin.");
+            classId = adminClassId;
+            const classMap = new Map(_getRawSheetData(SHEET_NAMES.CLASSES, ctx).slice(1).map(row => [row[0], row[1]]));
+            className = classMap.get(classId);
+            if (!className) throw new Error("Classe non trouvée pour l'export.");
+        } else {
+            // Appel vient d'un responsable
+            const classInfo = getResponsableClassInfo(responsableId, ctx);
+            ({ classId, className } = classInfo);
+        }
 
         // 1. Get all students in the class
         const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
