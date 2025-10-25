@@ -2159,6 +2159,27 @@ function getResponsableDashboardData(data) {
 }
 
 /**
+ * NOUVEAU: Force la suppression de tous les caches pour un responsable.
+ */
+function responsableForceRefresh(data) {
+    try {
+        const { responsableId } = data;
+        if (!responsableId) throw new Error("ID Responsable manquant.");
+
+        const keysToClear = [
+            `dashboard_resp_${responsableId}`, `resp_class_info_${responsableId}`,
+            `students_resp_${responsableId}`, `attendance_resp_${responsableId}`,
+            `modules_resp_${responsableId}`, `notifs_status_${responsableId}`
+        ];
+        cache.removeAll(keysToClear);
+        logAction('responsableForceRefresh', { responsableId });
+        return createJsonResponse({ success: true, message: "Le cache a été vidé. Les données sont en cours de rechargement." });
+    } catch (error) {
+        logError('responsableForceRefresh', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+/**
  * NOUVEAU: Helper pour récupérer les informations de la classe d'un responsable.
  * @param {string} responsableId - L'ID du responsable.
  * @returns {{classId: string, className: string, universityId: string}}
@@ -3070,6 +3091,26 @@ function getStudentMap() {
 }
 
 /**
+ * NOUVEAU: Force la suppression de tous les caches pour une université.
+ */
+function adminForceRefresh(data) {
+    try {
+        const { universityId } = data;
+        if (!universityId) throw new Error("ID Université manquant.");
+
+        // Liste exhaustive de tous les types de caches à vider pour un admin
+        const allCacheTypes = ['filiere', 'classe', 'responsable', 'student', 'planning', 'dashboard', 'module', 'stats', 'attendance'];
+        clearAllCachesForUniversity(universityId, allCacheTypes);
+        
+        logAction('adminForceRefresh', { universityId });
+        return createJsonResponse({ success: true, message: "Le cache a été vidé. Les données sont en cours de rechargement." });
+    } catch (error) {
+        logError('adminForceRefresh', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
  * AMÉLIORÉ: Invalide les caches spécifiés pour une université.
  * Centralise la logique d'invalidation pour éviter les erreurs.
  * @param {string} universityId - L'ID de l'université concernée.
@@ -3093,6 +3134,8 @@ function clearAllCachesForUniversity(universityId, types = []) {
             case 'student': keysToRemove.add(`students_${universityId}`); break;
             case 'planning': keysToRemove.add(`planning_${universityId}`); break;
             case 'dashboard': keysToRemove.add(`dashboard_stats_${universityId}`); break;
+            case 'stats': keysToRemove.add(`attendance_stats_${universityId}`); break; // NOUVEAU
+            case 'attendance': keysToRemove.add(`attendance_${universityId}`); break; // NOUVEAU
         }
         // NOUVEAU: Invalidation des caches liés aux modules
         keysToRemove.add(`modules_resp_${universityId}`); // Cache spécifique au responsable

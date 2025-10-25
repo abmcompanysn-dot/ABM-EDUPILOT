@@ -96,8 +96,13 @@
                 <button id="menu-button" class="lg:hidden text-gray-500 hover:text-violet-600 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
-                <h2 id="page-title" class="text-2xl font-semibold text-gray-700">Tableau de Bord</h2>
-                <!-- NOUVEAU: Affichage du nom de l'école -->
+                <div class="flex items-center gap-4">
+                    <h2 id="page-title" class="text-2xl font-semibold text-gray-700">Tableau de Bord</h2>
+                    <!-- NOUVEAU: Bouton de rafraîchissement -->
+                    <button onclick="forceRefresh()" title="Forcer la mise à jour des données" class="text-sm bg-violet-100 text-violet-700 hover:bg-violet-200 font-semibold py-2 px-3 rounded-lg transition-all">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>                <!-- NOUVEAU: Affichage du nom de l'école -->
                 <div class="hidden sm:block text-right">
                     <p id="university-name-header" class="font-semibold text-gray-800 truncate"></p>
                 </div>
@@ -746,6 +751,24 @@
                 setupMessagesPage();
             } else if (pageId === 'main-dashboard') {
                 loadInteractiveDashboard(); // NOUVEAU
+            }
+        }
+
+        // NOUVEAU: Force la mise à jour des données en vidant le cache serveur
+        async function forceRefresh() {
+            if (!confirm("Voulez-vous forcer la mise à jour des données ? Cela peut ralentir temporairement l'application le temps que le cache se reconstruise.")) {
+                return;
+            }
+            showSpinner(true);
+            try {
+                const result = await callAdminApi('adminForceRefresh');
+                showModal('Succès', result.message);
+                // Recharger les données de la page actuelle pour voir les changements
+                reloadCurrentPageData();
+            } catch (error) {
+                showModal('Erreur', error.message);
+            } finally {
+                showSpinner(false);
             }
         }
 
