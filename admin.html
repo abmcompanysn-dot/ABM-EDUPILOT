@@ -1461,14 +1461,16 @@
             // 4. Gérer le clic sur le bouton d'export
             exportBtn.addEventListener('click', async () => {
                 const moduleName = moduleSelect.value;
-                // On simule un ID de responsable pour réutiliser la fonction existante.
-                // La sécurité côté backend n'est pas affectée car on ne fait que lire des données.
-                const fakeResponsableId = 'admin_export_request'; 
+                // CORRECTION: La fonction `responsableExportAttendanceByModule` a besoin d'un ID de responsable valide
+                // et de l'ID de l'université pour fonctionner. On envoie des valeurs factices qui seront
+                // ignorées par le backend, mais qui satisfont les vérifications de paramètres.
+                const fakeResponsableId = 'admin_export_request';
+                const universityId = sessionStorage.getItem(ADMIN_SESSION_KEY);
                 
                 showSpinner(true);
                 try {
-                    // On appelle la fonction d'export du responsable, mais avec les données de l'admin
-                    const result = await callAdminApi('responsableExportAttendanceByModule', { responsableId: fakeResponsableId, module: moduleName, classId: classSelect.value });
+                    // On appelle la fonction d'export du responsable, mais avec les données de l'admin.
+                    const result = await callAdminApi('responsableExportAttendanceByModule', { responsableId: fakeResponsableId, module: moduleName, universityId: universityId });
                     const { csvContent, fileName } = result.data;
                     downloadCsv(csvContent, fileName);
                 } catch (error) {

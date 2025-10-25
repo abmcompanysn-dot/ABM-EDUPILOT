@@ -740,6 +740,43 @@ function adminGetModulesForClass(data) {
 }
 
 /**
+ * NOUVEAU: Récupère les modules pour une classe spécifique (pour l'admin).
+ * @param {object} data - Contient { classId, universityId }.
+ */
+function adminGetModulesForClass(data) {
+    try {
+        const { classId, universityId } = data;
+        if (!classId || !universityId) {
+            throw new Error("ID de classe ou d'université manquant.");
+        }
+
+        const cacheKey = `modules_for_class_${classId}`;
+        const modules = getCachedData(cacheKey, () => {
+            const ctx = createRequestContext();
+            
+            // Security check: ensure the class belongs to the university
+            const classesData = _getRawSheetData(SHEET_NAMES.CLASSES, ctx);
+            const classRow = classesData.slice(1).find(row => row[0] === classId);
+            if (!classRow) throw new Error("Classe non trouvée.");
+            
+            const allowedFiliereIds = new Set(getFiliereIdsForUniversity(universityId));
+            if (!allowedFiliereIds.has(classRow[2])) { // classRow[2] is ID_FILIERE_FK
+                throw new Error("Accès non autorisé à cette classe.");
+            }
+
+            const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+            const headers = modulesData[0];
+            const classFkIdx = headers.indexOf('ID_CLASSE_FK');
+            return modulesData.slice(1).filter(row => row[classFkIdx] === classId).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])));
+        }, 300); // Cache for 5 minutes
+        return createJsonResponse({ success: true, data: modules });
+    } catch (error) {
+        logError('adminGetModulesForClass', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
  * NOUVEAU: Récupère le statut des notifications (nombre de non-lus) pour un utilisateur.
  * @param {object} data - Contient { studentId } ou { responsableId }.
  */
