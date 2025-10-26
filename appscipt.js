@@ -2311,29 +2311,32 @@ function updateCourseStatusForResponsable(data) {
       return createJsonResponse({ success: false, error: 'Statut invalide.' });
     }
     
-    // Security check: find responsable's class
-    const classInfo = getResponsableClassInfo(responsableId, createRequestContext());
-    const className = classInfo.className;
+    // CORRECTION: Logique de vérification de sécurité entièrement revue.
+    const ctx = createRequestContext();
+    const classInfo = getResponsableClassInfo(responsableId, ctx);
     const classId = classInfo.classId;
     const universityId = classInfo.universityId;
 
     // Find and update course
     const planningSheet = ss.getSheetByName(SHEET_NAMES.PLANNING);
     const planningData = planningSheet.getDataRange().getValues();
-    const planningHeaders = planningData[0];
-    const courseIdIdx = planningHeaders.indexOf('ID_COURS');
-    const planningClassIdx = planningHeaders.indexOf('CLASSE');
-    const statusIdx = planningHeaders.indexOf('STATUT');
+    const headers = planningData[0];
+    const courseIdIdx = headers.indexOf('ID_COURS');
+    const moduleIdFkIdx = headers.indexOf('ID_MODULE_FK');
+    const statusIdx = headers.indexOf('STATUT');
 
-    const rowIndex = planningData.slice(1).findIndex(row => row[courseIdIdx] === courseId);
-    if (rowIndex === -1) throw new Error('Cours non trouvé.');
+    const courseRowIndex = planningData.findIndex((row, index) => index > 0 && row[courseIdIdx] === courseId);
+    if (courseRowIndex === -1) throw new Error('Cours non trouvé.');
 
-    // Final security check
-    if (planningData[rowIndex + 1][planningClassIdx] !== className) {
-      throw new Error("Action non autorisée. Ce cours n'appartient pas à votre classe.");
+    // Vérification de sécurité : le module du cours appartient-il bien à la classe du responsable ?
+    const courseModuleId = planningData[courseRowIndex][moduleIdFkIdx];
+    const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+    const moduleRow = modulesData.slice(1).find(row => row[0] === courseModuleId); // row[0] is ID_MODULE
+    if (!moduleRow || moduleRow[2] !== classId) { // moduleRow[2] is ID_CLASSE_FK
+        throw new Error("Action non autorisée. Ce cours n'appartient pas à votre classe.");
     }
 
-    planningSheet.getRange(rowIndex + 2, statusIdx + 1).setValue(status); // +2 car slice(1) et 1-based index
+    planningSheet.getRange(courseRowIndex + 1, statusIdx + 1).setValue(status);
 
     // NOUVEAU: Invalider le cache de l'emploi du temps pour tous les étudiants de la classe.
     const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
