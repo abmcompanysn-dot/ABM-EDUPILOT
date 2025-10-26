@@ -1515,11 +1515,14 @@ function adminGetAttendanceStats(data) {
             const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
             const scanHeaders = scanData[0];
             const scanStudentIdIdx = scanHeaders.indexOf('ID_ETUDIANT');
+            // CORRECTION: La colonne MODULE n'était pas récupérée ici
+            const scanModuleIdx = scanHeaders.indexOf('MODULE');
             const scanClassIdx = scanHeaders.indexOf('CLASSE');
             const scanDateIdx = scanHeaders.indexOf('DATE_SCAN');
 
             const attendanceByClass = {};
             const attendanceOverTime = {};
+            const attendanceByModule = {}; // NOUVEAU
 
             scanData.slice(1).forEach(row => {
                 const studentId = row[scanStudentIdIdx];
@@ -1527,6 +1530,7 @@ function adminGetAttendanceStats(data) {
                     const className = row[scanClassIdx];
                     const scanDate = row[scanDateIdx] instanceof Date ? Utilities.formatDate(row[scanDateIdx], Session.getScriptTimeZone(), 'yyyy-MM-dd') : row[scanDateIdx];
 
+                    const moduleName = row[scanModuleIdx]; // NOUVEAU
                     // Aggregate by class
                     if (className) {
                         if (!attendanceByClass[className]) attendanceByClass[className] = { totalScans: 0, presentStudents: new Set() };
@@ -1537,6 +1541,12 @@ function adminGetAttendanceStats(data) {
                     // Aggregate by date
                     if (scanDate) {
                         attendanceOverTime[scanDate] = (attendanceOverTime[scanDate] || 0) + 1;
+                    }
+
+                    // NOUVEAU: Aggregate by module
+                    if (moduleName) {
+                        if (!attendanceByModule[moduleName]) attendanceByModule[moduleName] = new Set();
+                        attendanceByModule[moduleName].add(studentId);
                     }
                 }
             });
@@ -1549,7 +1559,40 @@ function adminGetAttendanceStats(data) {
                 uniquePresentStudents: (attendanceByClass[c.name] && attendanceByClass[c.name].presentStudents.size) || 0
             }));
 
-            return { byClass, attendanceOverTime };
+            // NOUVEAU: Formater les données pour le graphique des modules
+            const byModule = Object.entries(attendanceByModule)
+                .map(([moduleName, studentSet]) => ({
+                    moduleName,
+                    uniqueAttendees: studentSet.size
+                }))
+                .sort((a, b) => b.uniqueAttendees - a.uniqueAttendees) // Trier par les plus fréquentés
+                .slice(0, 5); // Ne garder que le top 5
+
+            // NOUVEAU: Calculer le statut des modules
+            const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+            const modUnivFkIdx = modulesData[0].indexOf('ID_UNIVERSITE_FK');
+            const modStatusIdx = modulesData[0].indexOf('STATUT');
+            const moduleStatus = modulesData.slice(1)
+                .filter(row => row[modUnivFkIdx] === universityId)
+                .reduce((acc, row) => {
+                    const status = row[modStatusIdx] || 'Indéfini';
+                    acc[status] = (acc[status] || 0) + 1;
+                    return acc;
+                }, {});
+
+            // NOUVEAU: Calculer l'évolution des inscriptions
+            const studentInscriptionDateIdx = studentsData[0].indexOf('DATE_INSCRIPTION');
+            const inscriptionTrend = studentsData.slice(1)
+                .filter(row => row[studentUnivFkIdx] === universityId && row[studentInscriptionDateIdx])
+                .reduce((acc, row) => {
+                    const inscriptionDate = new Date(row[studentInscriptionDateIdx]);
+                    // Formater en 'YYYY-MM' pour regrouper par mois
+                    const monthKey = Utilities.formatDate(inscriptionDate, Session.getScriptTimeZone(), 'yyyy-MM');
+                    acc[monthKey] = (acc[monthKey] || 0) + 1;
+                    return acc;
+                }, {});
+
+            return { byClass, attendanceOverTime, byModule, moduleStatus, inscriptionTrend };
         }, 300); // Cache de 5 minutes
 
         return createJsonResponse({ success: true, data: stats });
@@ -3102,29 +3145,19 @@ function adminForceRefresh(data) {
         const { universityId } = data;
         if (!universityId) throw new Error("ID Université manquant.");
 
-        // Liste exhaustive de tous les types de caches à vider pour un admin
-        const allCacheTypes = ['filiere', 'classe', 'responsable', 'student', 'planning', 'dashboard', 'module', 'stats', 'attendance'];
-        clearAllCachesForUniversity(universityId, allCacheTypes);
-        
-        logAction('adminForceRefresh', { universityId });
-        return createJsonResponse({ success: true, message: "Le cache a été vidé. Les données sont en cours de rechargement." });
-    } catch (error) {
-        logError('adminForceRefresh', error);
-        return createJsonResponse({ success: false, error: error.message });
-    }
-}
-
-/**
- * NOUVEAU: Force la suppression de tous les caches pour une université.
- */
-function adminForceRefresh(data) {
-    try {
-        const { universityId } = data;
-        if (!universityId) throw new Error("ID Université manquant.");
-
-        // Liste exhaustive de tous les types de caches à vider pour un admin
-        const allCacheTypes = ['filiere', 'classe', 'responsable', 'student', 'planning', 'dashboard', 'module', 'stats', 'attendance'];
-        clearAllCachesForUniversity(universityId, allCacheTypes);
+        // CORRECTION: Remplacer l'appel à la fonction inexistante par la logique directe.
+        const keysToRemove = [
+            `entities_filiere_${universityId}`, `filiere_ids_${universityId}`,
+            `entities_classe_${universityId}`,
+            `responsables_${universityId}`,
+            `students_${universityId}`,
+            `planning_${universityId}`,
+            `dashboard_stats_${universityId}`,
+            `attendance_stats_${universityId}`,
+            `attendance_${universityId}`
+        ];
+        Logger.log(`Invalidating admin caches for ${universityId}: ${keysToRemove.join(', ')}`);
+        cache.removeAll(keysToClear);
         
         logAction('adminForceRefresh', { universityId });
         return createJsonResponse({ success: true, message: "Les données sont en cours de mise à jour. Cela peut prendre un instant." });

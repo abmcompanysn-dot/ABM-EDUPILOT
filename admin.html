@@ -432,29 +432,38 @@
             <p class="text-gray-600 mt-2">Visualisez les données et exportez des rapports de présence détaillés.</p>
         </header>
 
-        <!-- NOUVEAU: Section d'export par module -->
-        <div class="bg-white p-6 rounded-lg shadow-sm mb-12">
-            <h3 class="text-lg font-medium text-gray-900 mb-4">Exporter les Présences par Module</h3>
-            <div class="grid sm:grid-cols-3 gap-4 items-end">
-                <div>
-                    <label for="export-class-select" class="block text-sm font-medium text-gray-700">1. Choisir une classe</label>
-                    <select id="export-class-select" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md"></select>
-                </div>
-                <div>
-                    <label for="export-module-select" class="block text-sm font-medium text-gray-700">2. Choisir un module</label>
-                    <select id="export-module-select" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" disabled></select>
-                </div>
-                <button id="export-attendance-btn" class="w-full sm:w-auto bg-violet-600 text-white py-2 px-4 rounded-md hover:bg-violet-700 disabled:bg-gray-400" disabled>Exporter</button>
-            </div>
-        </div>
-
         <div class="space-y-12">
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Taux de Participation par Classe</h3>
                 <canvas id="attendanceByClassChart"></canvas>
             </div>
+            <!-- NOUVEAU: Graphique pour les modules les plus fréquentés -->
             <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Évolution des Pointages Journaliers</h3>
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Top 5 des Modules les plus Fréquentés (par étudiants uniques)</h3>
+                <canvas id="attendanceByModuleChart"></canvas>
+            </div>
+            <!-- NOUVEAU: Graphiques d'avancement et d'inscriptions -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Statut d'Avancement des Modules</h3>
+                    <canvas id="moduleStatusChart"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Évolution des Inscriptions d'Étudiants</h3>
+                    <canvas id="inscriptionTrendChart"></canvas>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-sm">
+                <!-- AMÉLIORATION: Ajout des filtres par date -->
+                <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+                    <h3 class="text-lg font-medium text-gray-900">Évolution des Pointages Journaliers</h3>
+                    <div class="flex items-center gap-2 text-sm">
+                        <input type="date" id="filter-start-date" class="border-gray-300 rounded-md shadow-sm">
+                        <span class="text-gray-500">à</span>
+                        <input type="date" id="filter-end-date" class="border-gray-300 rounded-md shadow-sm">
+                        <button id="apply-date-filter-btn" class="bg-violet-600 text-white py-2 px-3 rounded-md hover:bg-violet-700 font-semibold">Filtrer</button>
+                    </div>
+                </div>
                 <canvas id="attendanceOverTimeChart"></canvas>
             </div>
         </div>
@@ -1416,7 +1425,13 @@
         // NOUVEAU: Initialise la page de statistiques
         function setupStatsPage() {
             loadAndRenderStats();
-            setupAttendanceExport();
+
+            // NOUVEAU: Attacher l'événement pour le filtre de date une seule fois
+            const filterBtn = document.getElementById('apply-date-filter-btn');
+            if (filterBtn && !filterBtn.dataset.listenerAttached) {
+                filterBtn.addEventListener('click', () => renderAttendanceOverTimeChart(window.fullAttendanceOverTime));
+                filterBtn.dataset.listenerAttached = 'true';
+            }
         }
 
         // NOUVEAU: Gère la logique du formulaire d'export de présence
@@ -1488,14 +1503,20 @@
         async function loadAndRenderStats() {
             const byClassCanvas = document.getElementById('attendanceByClassChart');
             const overTimeCanvas = document.getElementById('attendanceOverTimeChart');
+            const byModuleCanvas = document.getElementById('attendanceByModuleChart');
+            const moduleStatusCanvas = document.getElementById('moduleStatusChart'); // NOUVEAU
+            const inscriptionTrendCanvas = document.getElementById('inscriptionTrendChart'); // NOUVEAU
             
             // Détruire les anciens graphiques s'ils existent pour éviter les bugs d'affichage
             if (window.attendanceByClassChartInstance) window.attendanceByClassChartInstance.destroy();
             if (window.attendanceOverTimeChartInstance) window.attendanceOverTimeChartInstance.destroy();
+            if (window.attendanceByModuleChartInstance) window.attendanceByModuleChartInstance.destroy();
+            if (window.moduleStatusChartInstance) window.moduleStatusChartInstance.destroy(); // NOUVEAU
+            if (window.inscriptionTrendChartInstance) window.inscriptionTrendChartInstance.destroy(); // NOUVEAU
 
             try {
                 const result = await callAdminApi('adminGetAttendanceStats');
-                const { byClass, attendanceOverTime } = result.data;
+                const { byClass, attendanceOverTime, byModule, moduleStatus, inscriptionTrend } = result.data;
 
                 // Graphique 1: Participation par classe
                 const classLabels = byClass.map(c => c.className);
@@ -1525,6 +1546,78 @@
                     },
                     options: { scales: { y: { beginAtZero: true } } }
                 });
+
+                // NOUVEAU: Graphique 3: Participation par module
+                const moduleLabels = byModule.map(m => m.moduleName);
+                const moduleData = byModule.map(m => m.uniqueAttendees);
+
+                window.attendanceByModuleChartInstance = new Chart(byModuleCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: moduleLabels,
+                        datasets: [{
+                            label: 'Nombre d\'étudiants uniques ayant pointé',
+                            data: moduleData,
+                            backgroundColor: 'rgba(236, 72, 153, 0.6)', // Rose
+                            borderColor: 'rgba(236, 72, 153, 1)',
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y', // Rendre le graphique horizontal pour une meilleure lisibilité
+                        scales: { x: { beginAtZero: true } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // NOUVEAU: Graphique 4: Statut des modules
+                const statusLabels = Object.keys(moduleStatus);
+                const statusData = Object.values(moduleStatus);
+                window.moduleStatusChartInstance = new Chart(moduleStatusCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            label: 'Nombre de modules',
+                            data: statusData,
+                            backgroundColor: [
+                                'rgba(5, 150, 105, 0.7)', // En cours (Vert)
+                                'rgba(220, 38, 38, 0.7)', // Terminé (Rouge)
+                                'rgba(245, 158, 11, 0.7)'  // Autre (Jaune)
+                            ],
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'top' } } }
+                });
+
+                // NOUVEAU: Graphique 5: Évolution des inscriptions
+                const sortedMonths = Object.keys(inscriptionTrend).sort();
+                const inscriptionLabels = sortedMonths.map(month => new Date(month + '-02').toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' }));
+                const inscriptionData = sortedMonths.map(month => inscriptionTrend[month]);
+                window.inscriptionTrendChartInstance = new Chart(inscriptionTrendCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: inscriptionLabels,
+                        datasets: [{
+                            label: 'Nouveaux Étudiants Inscrits',
+                            data: inscriptionData,
+                            backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                // NOUVEAU: Stocker les données complètes pour le filtrage
+                window.fullAttendanceOverTime = attendanceOverTime;
+                renderAttendanceOverTimeChart(window.fullAttendanceOverTime);
 
                 // Graphique 2: Évolution des pointages
                 const sortedDates = Object.keys(attendanceOverTime).sort();
@@ -1562,6 +1655,47 @@
             } catch (error) {
                 byClassCanvas.getContext('2d').fillText(`Erreur: ${error.message}`, 10, 50);
             }
+        }
+
+        // NOUVEAU: Fonction dédiée pour rendre le graphique d'évolution des pointages
+        function renderAttendanceOverTimeChart(data) {
+            const overTimeCanvas = document.getElementById('attendanceOverTimeChart');
+            if (window.attendanceOverTimeChartInstance) {
+                window.attendanceOverTimeChartInstance.destroy();
+            }
+
+            const startDate = document.getElementById('filter-start-date').value;
+            const endDate = document.getElementById('filter-end-date').value;
+
+            const sortedDates = Object.keys(data)
+                .filter(date => {
+                    if (startDate && date < startDate) return false;
+                    if (endDate && date > endDate) return false;
+                    return true;
+                })
+                .sort((a, b) => new Date(a) - new Date(b));
+
+            const timeLabels = sortedDates.map(date => new Date(date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }));
+            const timeData = sortedDates.map(date => data[date]);
+
+            window.attendanceOverTimeChartInstance = new Chart(overTimeCanvas, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Nombre Total de Pointages par Jour',
+                        data: timeData,
+                        fill: true,
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: { y: { beginAtZero: true } },
+                    plugins: { tooltip: { callbacks: { title: (ctx) => new Date(sortedDates[ctx[0].dataIndex]).toLocaleDateString('fr-FR', { dateStyle: 'long' }) } } }
+                }
+            });
         }
 
         // NOUVEAU: Fonction utilitaire pour télécharger un CSV
