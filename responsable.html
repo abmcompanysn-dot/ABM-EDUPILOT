@@ -1102,10 +1102,21 @@
             if (showSpinnerOnLoad) showSpinner(true);
             try {
                 const result = await callResponsableApi('responsableGetDashboardData');
-                const { profile, className, courses } = result.data;
+                const { profile, className, courses, modules } = result.data; // NOUVEAU: Récupérer les modules
                 document.getElementById('class-name-header').textContent = `Gestion de la classe : ${className}`;
                 renderPlanning(courses);
 
+                // NOUVEAU: Remplir le select des modules pour la planification
+                const moduleSelect = document.getElementById('course-module-select');
+                if (moduleSelect) {
+                    if (modules && modules.length > 0) {
+                        moduleSelect.innerHTML = '<option value="">-- Choisissez un module --</option>' + modules
+                            .filter(m => m.STATUT !== 'Terminé') // Ne pas afficher les modules terminés
+                            .map(mod => `<option value="${mod.ID_MODULE}">${mod.NOM_MODULE}</option>`).join('');
+                    } else {
+                        moduleSelect.innerHTML = '<option value="">Aucun module disponible</option>';
+                    }
+                }
                 // NOUVEAU: Remplir les informations du profil
                 if (profile) {
                     document.getElementById('profile-modal-name').textContent = profile.name || 'Nom non disponible';

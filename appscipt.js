@@ -2193,8 +2193,8 @@ function getResponsableDashboardData(data) {
                     course.NOM_MODULE = moduleInfo ? moduleInfo.name : 'Module Inconnu';
                     return course;
                 }).sort((a, b) => new Date(a.DATE_COURS) - new Date(b.DATE_COURS));
-            
-            return { profile, className: classInfo.className, courses };
+            // CORRECTION: Renvoyer également les modules pour peupler le formulaire.
+            return { profile, className: classInfo.className, courses, modules: classModules };
         }, 180); // Cache de 3 minutes pour le dashboard du responsable
 
         return createJsonResponse({ success: true, data: dashboardData });
