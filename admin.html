@@ -74,9 +74,6 @@
                 <a href="#" onclick="showPage('attendance-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Présences
                 </a>
-                <a href="#" onclick="showPage('stats-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
-                    Statistiques
-                </a>
                 <a href="#" onclick="showPage('messages-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Messages
                 </a>
@@ -425,49 +422,6 @@
         </div>
     </div>
 
-    <!-- NOUVEAU: Page de statistiques -->
-    <div id="stats-page" class="page-container hidden">
-        <header class="mb-10">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Statistiques & Exports</h1>
-            <p class="text-gray-600 mt-2">Visualisez les données et exportez des rapports de présence détaillés.</p>
-        </header>
-
-        <div class="space-y-12">
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Taux de Participation par Classe</h3>
-                <canvas id="attendanceByClassChart"></canvas>
-            </div>
-            <!-- NOUVEAU: Graphique pour les modules les plus fréquentés -->
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Top 5 des Modules les plus Fréquentés (par étudiants uniques)</h3>
-                <canvas id="attendanceByModuleChart"></canvas>
-            </div>
-            <!-- NOUVEAU: Graphiques d'avancement et d'inscriptions -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Statut d'Avancement des Modules</h3>
-                    <canvas id="moduleStatusChart"></canvas>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-sm">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Évolution des Inscriptions d'Étudiants</h3>
-                    <canvas id="inscriptionTrendChart"></canvas>
-                </div>
-            </div>
-            <div class="bg-white p-6 rounded-lg shadow-sm">
-                <!-- AMÉLIORATION: Ajout des filtres par date -->
-                <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-                    <h3 class="text-lg font-medium text-gray-900">Évolution des Pointages Journaliers</h3>
-                    <div class="flex items-center gap-2 text-sm">
-                        <input type="date" id="filter-start-date" class="border-gray-300 rounded-md shadow-sm">
-                        <span class="text-gray-500">à</span>
-                        <input type="date" id="filter-end-date" class="border-gray-300 rounded-md shadow-sm">
-                        <button id="apply-date-filter-btn" class="bg-violet-600 text-white py-2 px-3 rounded-md hover:bg-violet-700 font-semibold">Filtrer</button>
-                    </div>
-                </div>
-                <canvas id="attendanceOverTimeChart"></canvas>
-            </div>
-        </div>
-    </div>
     <!-- NOUVEAU: Page de gestion des étudiants -->
     <div id="students-page" class="page-container hidden">
         <header class="mb-10">
@@ -700,7 +654,6 @@
                 'responsables-page': 'Responsables',
                 'planning-page': 'Planning',
                 'attendance-page': 'Présences',
-                'stats-page': 'Statistiques', // NOUVEAU
                 'messages-page': 'Messages', // NOUVEAU
                 'tools-page': 'Outils',
                 'students-page': 'Étudiants',
@@ -736,8 +689,6 @@
                 setupResponsablesPage();
             } else if (pageId === 'students-page') {
                 setupStudentsPage();
-            } else if (pageId === 'stats-page') { // NOUVEAU
-                setupStatsPage();
             } else if (pageId === 'messages-page') { // NOUVEAU
                 setupMessagesPage();
             } else if (pageId === 'main-dashboard') {
