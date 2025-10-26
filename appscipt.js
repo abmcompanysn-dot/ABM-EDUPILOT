@@ -3157,7 +3157,7 @@ function adminForceRefresh(data) {
             `attendance_${universityId}`
         ];
         Logger.log(`Invalidating admin caches for ${universityId}: ${keysToRemove.join(', ')}`);
-        cache.removeAll(keysToClear);
+        cache.removeAll(keysToRemove);
         
         logAction('adminForceRefresh', { universityId });
         return createJsonResponse({ success: true, message: "Les données sont en cours de mise à jour. Cela peut prendre un instant." });
