@@ -1,4 +1,4 @@
-const CACHE_NAME = 'abm-edupilote-cache-v2'; // IMPORTANT: Changez ce numéro de version à chaque mise à jour (v3, v4, etc.)
+const CACHE_NAME = 'abm-edupilote-cache-v3'; // IMPORTANT: Changez ce numéro de version à chaque mise à jour (v3, v4, etc.)
 const urlsToCache = [
   '/',
   '/index.html',
