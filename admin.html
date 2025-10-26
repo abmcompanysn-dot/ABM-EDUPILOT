@@ -1618,40 +1618,6 @@
                 // NOUVEAU: Stocker les données complètes pour le filtrage
                 window.fullAttendanceOverTime = attendanceOverTime;
                 renderAttendanceOverTimeChart(window.fullAttendanceOverTime);
-
-                // Graphique 2: Évolution des pointages
-                const sortedDates = Object.keys(attendanceOverTime).sort();
-                const timeLabels = sortedDates.map(date => new Date(date).toLocaleDateString('fr-FR', {day: '2-digit', month: 'short'}));
-                const timeData = sortedDates.map(date => attendanceOverTime[date]);
-
-                window.attendanceOverTimeChartInstance = new Chart(overTimeCanvas, {
-                    type: 'line',
-                    data: {
-                        labels: timeLabels,
-                        datasets: [{
-                            label: 'Nombre Total de Pointages par Jour',
-                            data: timeData,
-                            fill: true,
-                            backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                            borderColor: 'rgba(99, 102, 241, 1)',
-                            tension: 0.1
-                        }]
-                    },
-                    options: {
-                        scales: { y: { beginAtZero: true } },
-                        plugins: {
-                            tooltip: {
-                                callbacks: {
-                                    title: function(context) {
-                                        // Affiche la date complète dans l'infobulle
-                                        const originalDate = sortedDates[context[0].dataIndex];
-                                        return new Date(originalDate).toLocaleDateString('fr-FR', {dateStyle: 'long'});
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
             } catch (error) {
                 byClassCanvas.getContext('2d').fillText(`Erreur: ${error.message}`, 10, 50);
             }
