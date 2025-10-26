@@ -3091,7 +3091,8 @@ function getSheetNameForEntity(entityType) {
     filiere: SHEET_NAMES.FILIERES,
     classe: SHEET_NAMES.CLASSES,
     responsable: SHEET_NAMES.RESPONSABLES,
-    student: SHEET_NAMES.STUDENTS
+    student: SHEET_NAMES.STUDENTS,
+    module: SHEET_NAMES.MODULES // CORRECTION: Ajouter le type 'module'
   };
 
   const sheetName = map[entityType];
@@ -3178,10 +3179,9 @@ function getStudentMap() {
 function adminForceRefresh(data) {
     try {
         const { universityId } = data;
-        if (!universityId) throw new Error("ID Université manquant.");
+        if (!universityId) throw new Error("ID Université manquant."); // CORRECTION: Remplacer l'appel à la fonction inexistante par la logique directe.
 
-        // CORRECTION: Remplacer l'appel à la fonction inexistante par la logique directe.
-        const keysToRemove = [
+        const keysToClear = [
             `entities_filiere_${universityId}`, `filiere_ids_${universityId}`,
             `entities_classe_${universityId}`,
             `responsables_${universityId}`,
@@ -3191,8 +3191,8 @@ function adminForceRefresh(data) {
             `attendance_stats_${universityId}`,
             `attendance_${universityId}`
         ];
-        Logger.log(`Invalidating admin caches for ${universityId}: ${keysToRemove.join(', ')}`);
-        cache.removeAll(keysToRemove);
+        Logger.log(`Invalidating admin caches for ${universityId}: ${keysToClear.join(', ')}`);
+        cache.removeAll(keysToClear);
         
         logAction('adminForceRefresh', { universityId });
         return createJsonResponse({ success: true, message: "Les données sont en cours de mise à jour. Cela peut prendre un instant." });
