@@ -3179,9 +3179,10 @@ function getStudentMap() {
 function adminForceRefresh(data) {
     try {
         const { universityId } = data;
-        if (!universityId) throw new Error("ID Université manquant."); // CORRECTION: Remplacer l'appel à la fonction inexistante par la logique directe.
+        if (!universityId) throw new Error("ID Université manquant.");
 
-        const keysToClear = [
+        // CORRECTION: Remplacer l'appel à la fonction inexistante par la logique directe.
+        const keysToRemove = [
             `entities_filiere_${universityId}`, `filiere_ids_${universityId}`,
             `entities_classe_${universityId}`,
             `responsables_${universityId}`,
@@ -3191,8 +3192,8 @@ function adminForceRefresh(data) {
             `attendance_stats_${universityId}`,
             `attendance_${universityId}`
         ];
-        Logger.log(`Invalidating admin caches for ${universityId}: ${keysToClear.join(', ')}`);
-        cache.removeAll(keysToClear);
+        Logger.log(`Invalidating admin caches for ${universityId}: ${keysToRemove.join(', ')}`);
+        cache.removeAll(keysToRemove);
         
         logAction('adminForceRefresh', { universityId });
         return createJsonResponse({ success: true, message: "Les données sont en cours de mise à jour. Cela peut prendre un instant." });

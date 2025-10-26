@@ -509,6 +509,32 @@
             });
         });
 
+        // NOUVEAU: Gère la soumission du formulaire d'ajout de module
+        function setupAddModuleForm() {
+            const form = document.getElementById('add-module-form');
+            if (form && !form.dataset.listenerAttached) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const payload = {
+                        name: document.getElementById('module-name').value,
+                        enseignant: document.getElementById('module-enseignant').value,
+                    };
+                    showSpinner(true);
+                    try {
+                        const result = await callResponsableApi('responsableAddModule', { payload });
+                        showModal('Succès', result.message);
+                        form.reset();
+                        await loadClassModules(); // Recharger la liste des modules
+                        await loadDashboard(false); // Recharger le dashboard (pour le select des cours) sans spinner
+                    } catch (error) {
+                        showModal('Erreur', error.message);
+                    } finally {
+                        showSpinner(false);
+                    }
+                });
+                form.dataset.listenerAttached = 'true';
+            }
+        }
         // ... (le reste du code est déplacé pour une meilleure organisation)
 
         function renderPlanning(courses) {
