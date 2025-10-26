@@ -1531,20 +1531,28 @@
                             {
                                 label: 'Étudiants Inscrits',
                                 data: totalStudentsData,
-                                backgroundColor: 'rgba(139, 92, 246, 0.5)', // Violet clair
+                                backgroundColor: 'rgba(167, 139, 250, 0.6)', // Violet plus doux
                                 borderColor: 'rgba(139, 92, 246, 1)',
                                 borderWidth: 1
                             },
                             {
                                 label: 'Étudiants Ayant Pointé (uniques)',
                                 data: presentStudentsData,
-                                backgroundColor: 'rgba(5, 150, 105, 0.7)', // Vert
-                                borderColor: 'rgba(5, 150, 105, 1)',
+                                backgroundColor: 'rgba(52, 211, 153, 0.7)', // Vert émeraude
+                                borderColor: 'rgba(16, 185, 129, 1)',
                                 borderWidth: 1
                             }
                         ]
                     },
-                    options: { scales: { y: { beginAtZero: true } } }
+                    options: { 
+                        scales: { 
+                            y: { 
+                                beginAtZero: true,
+                                title: { display: true, text: 'Nombre d\'étudiants' }
+                            } 
+                        },
+                        plugins: { legend: { position: 'top' } }
+                    }
                 });
 
                 // NOUVEAU: Graphique 3: Participation par module
@@ -1558,15 +1566,21 @@
                         datasets: [{
                             label: 'Nombre d\'étudiants uniques ayant pointé',
                             data: moduleData,
-                            backgroundColor: 'rgba(236, 72, 153, 0.6)', // Rose
-                            borderColor: 'rgba(236, 72, 153, 1)',
+                            backgroundColor: [ // Palette de couleurs variée
+                                'rgba(59, 130, 246, 0.7)',
+                                'rgba(16, 185, 129, 0.7)',
+                                'rgba(249, 115, 22, 0.7)',
+                                'rgba(236, 72, 153, 0.7)',
+                                'rgba(139, 92, 246, 0.7)'
+                            ],
                             borderWidth: 1
                         }]
                     },
                     options: {
                         indexAxis: 'y', // Rendre le graphique horizontal pour une meilleure lisibilité
-                        scales: { x: { beginAtZero: true } },
-                        plugins: { legend: { display: false } }
+                        scales: { x: { beginAtZero: true, title: { display: true, text: 'Nombre d\'étudiants uniques' } } },
+                        plugins: { legend: { display: false } },
+                        responsive: true
                     }
                 });
 
@@ -1580,13 +1594,13 @@
                         datasets: [{
                             label: 'Nombre de modules',
                             data: statusData,
-                            backgroundColor: [
-                                'rgba(5, 150, 105, 0.7)', // En cours (Vert)
-                                'rgba(220, 38, 38, 0.7)', // Terminé (Rouge)
-                                'rgba(245, 158, 11, 0.7)'  // Autre (Jaune)
+                            backgroundColor: [ // Couleurs sémantiques
+                                'rgba(52, 211, 153, 0.8)', // En cours (Vert)
+                                'rgba(139, 92, 246, 0.8)', // Terminé (Violet)
+                                'rgba(245, 158, 11, 0.8)'  // Autre (Orange)
                             ],
                             borderColor: '#fff',
-                            borderWidth: 2
+                            borderWidth: 3
                         }]
                     },
                     options: { responsive: true, plugins: { legend: { position: 'top' } } }
@@ -1603,14 +1617,16 @@
                         datasets: [{
                             label: 'Nouveaux Étudiants Inscrits',
                             data: inscriptionData,
-                            backgroundColor: 'rgba(79, 70, 229, 0.2)',
-                            borderColor: 'rgba(79, 70, 229, 1)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)', // Bleu
+                            borderColor: 'rgba(59, 130, 246, 1)',
                             tension: 0.3,
                             fill: true
                         }]
                     },
                     options: {
-                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                        scales: { 
+                            y: { beginAtZero: true, ticks: { stepSize: 1 }, title: { display: true, text: 'Nombre d\'inscriptions' } }
+                        },
                         plugins: { legend: { display: false } }
                     }
                 });
@@ -1651,14 +1667,17 @@
                     datasets: [{
                         label: 'Nombre Total de Pointages par Jour',
                         data: timeData,
-                        fill: true,
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                        borderColor: 'rgba(99, 102, 241, 1)',
-                        tension: 0.1
+                        fill: 'start',
+                        backgroundColor: 'rgba(236, 72, 153, 0.1)', // Rose très clair
+                        borderColor: 'rgba(236, 72, 153, 1)', // Rose
+                        tension: 0.3,
+                        pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+                        pointRadius: 4,
+                        pointHoverRadius: 6
                     }]
                 },
                 options: {
-                    scales: { y: { beginAtZero: true } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Nombre de pointages' } } },
                     plugins: { tooltip: { callbacks: { title: (ctx) => new Date(sortedDates[ctx[0].dataIndex]).toLocaleDateString('fr-FR', { dateStyle: 'long' }) } } }
                 }
             });
