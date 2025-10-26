@@ -39,23 +39,39 @@ self.addEventListener('activate', event => {
   );
 });
  
-// Étape 3: Fetch - Servir les ressources depuis le cache (stratégie "Cache First")
+// Étape 3: Fetch - Servir les ressources avec la stratégie "Stale-While-Revalidate"
 self.addEventListener('fetch', event => {
+  // On ignore les requêtes qui ne sont pas des GET (ex: POST vers l'API)
+  // et les requêtes vers des extensions Chrome, qui peuvent causer des erreurs.
+  if (event.request.method !== 'GET' || event.request.url.startsWith('chrome-extension://')) {
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Si la ressource est dans le cache, on la retourne.
-        if (response) {
-          return response;
+    caches.open(CACHE_NAME).then(cache => {
+      return cache.match(event.request).then(cachedResponse => {
+        // 1. On lance la requête réseau en parallèle
+        const fetchPromise = fetch(event.request).then(networkResponse => {
+          // Si la requête réussit, on met à jour le cache
+          // On clone la réponse car elle ne peut être consommée qu'une seule fois
+          cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        }).catch(error => {
+          // Gérer les erreurs réseau (ex: mode hors ligne)
+          console.warn('Service Worker: La requête réseau a échoué.', error);
+          // Si une réponse en cache existe, on l'a déjà renvoyée.
+          // Sinon, on pourrait renvoyer une page hors ligne personnalisée ici.
+        });
+
+        // 2. On renvoie la réponse du cache si elle existe (instantané)
+        if (cachedResponse) {
+          console.log('Service Worker: Ressource servie depuis le cache:', event.request.url);
+          return cachedResponse;
         }
-        // Sinon, on effectue la requête réseau.
-        // Important: Ne pas mettre en cache les requêtes API (POST) ou autres domaines.
-        if (event.request.method === 'POST' || !event.request.url.startsWith(self.location.origin)) {
-            return fetch(event.request);
-        }
-        // Pour les autres requêtes GET, on les récupère et on les sert.
-        return fetch(event.request); 
-      }
-    )
+
+        // 3. Si la ressource n'est pas dans le cache, on attend la réponse réseau
+        return fetchPromise;
+      });
+    })
   );
 });
