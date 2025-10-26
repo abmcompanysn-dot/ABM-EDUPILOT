@@ -95,10 +95,6 @@
                 </button>
                 <div class="flex items-center gap-4">
                     <h2 id="page-title" class="text-2xl font-semibold text-gray-700">Tableau de Bord</h2>
-                    <!-- NOUVEAU: Bouton de rafraîchissement -->
-                    <button onclick="forceRefresh()" title="Forcer la mise à jour des données" class="text-sm bg-violet-100 text-violet-700 hover:bg-violet-200 font-semibold py-2 px-3 rounded-lg transition-all">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
                 </div>                <!-- NOUVEAU: Affichage du nom de l'école -->
                 <div class="hidden sm:block text-right">
                     <p id="university-name-header" class="font-semibold text-gray-800 truncate"></p>
@@ -1090,7 +1086,8 @@
                 }
                 itemsToCreate.push(newItem);
                 renderList();
-                nameInput.value = '';
+                // CORRECTION: Ne réinitialiser que le champ de nom, pas tout le formulaire.
+                nameInput.value = ''; 
                 if (entityType === 'module') document.getElementById('bulk-module-enseignant').value = '';
                 nameInput.focus();
             });

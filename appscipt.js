@@ -2206,6 +2206,41 @@ function getResponsableDashboardData(data) {
 }
 
 /**
+ * NOUVEAU: Ajoute un module pour la classe d'un responsable.
+ * @param {object} data - Contient { responsableId, payload: { name, enseignant } }.
+ */
+function responsableAddModule(data) {
+    try {
+        const { responsableId, payload } = data;
+        const { name, enseignant } = payload;
+        if (!responsableId || !name || !enseignant) {
+            throw new Error("Nom du module et nom de l'enseignant sont requis.");
+        }
+
+        const ctx = createRequestContext();
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId, universityId } = classInfo;
+
+        const modulesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.MODULES);
+        const newId = `MOD-${Utilities.getUuid().substring(0, 4).toUpperCase()}`;
+        
+        // ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT']
+        const newModuleRow = [newId, name, classId, universityId, enseignant, 'En cours'];
+        modulesSheet.appendRow(newModuleRow);
+        SpreadsheetApp.flush();
+
+        // Invalider les caches pertinents
+        cache.removeAll([`modules_resp_${responsableId}`, `dashboard_resp_${responsableId}`]);
+        logAction('responsableAddModule', { responsableId, name });
+
+        return createJsonResponse({ success: true, message: `Le module "${name}" a été créé avec succès.` });
+    } catch (error) {
+        logError('responsableAddModule', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
  * NOUVEAU: Force la suppression de tous les caches pour un responsable.
  */
 function responsableForceRefresh(data) {
