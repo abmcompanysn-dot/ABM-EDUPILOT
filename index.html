@@ -69,6 +69,17 @@
         .hamburger-button.open .hamburger-line:nth-child(1) { transform: rotate(45deg); }
         .hamburger-button.open .hamburger-line:nth-child(2) { opacity: 0; transform: translateX(20px); }
         .hamburger-button.open .hamburger-line:nth-child(3) { transform: rotate(-45deg); }
+
+        /* NOUVEAU: Style pour la notification de mise à jour */
+        #update-notification {
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            transform: translateY(100%);
+            opacity: 0;
+        }
+        #update-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
@@ -1393,6 +1404,31 @@
                     });
             });
         }
+
+        // --- NOUVEAU: GESTION DES MISES À JOUR DU SERVICE WORKER ---
+        let newWorker;
+
+        function showUpdateNotification() {
+            const notification = document.getElementById('update-notification');
+            const updateButton = document.getElementById('update-now-btn');
+            if (notification && updateButton) {
+                notification.classList.add('show');
+                updateButton.addEventListener('click', () => {
+                    // Envoie un message au nouveau SW pour qu'il s'active
+                    // (même si on a skipWaiting, c'est une bonne pratique)
+                    newWorker.postMessage({ action: 'skipWaiting' });
+                    // Recharger la page
+                    window.location.reload();
+                });
+            }
+        }
+
+        // Écouter les messages venant du Service Worker
+        navigator.serviceWorker.addEventListener('message', event => {
+            if (event.data && event.data.type === 'NEW_VERSION_AVAILABLE') {
+                showUpdateNotification();
+            }
+        });
         // fin du script
     </script>
 
