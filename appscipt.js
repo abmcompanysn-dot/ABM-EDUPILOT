@@ -1,6 +1,6 @@
 // ============================================================================
 // SYSTÈME DE GESTION UNIVERSITAIRE - ABM
-// Développé par Gemini Code Assist pour Africa Business Manager
+// Développé par Africa Business Manager
 // Version 2.0 - 2024 (avec API pour formulaire externe)
 // ============================================================================
 

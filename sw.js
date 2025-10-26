@@ -14,6 +14,9 @@ const urlsToCache = [
  
 // Étape 1: Installation - Mise en cache des ressources statiques
 self.addEventListener('install', event => {
+  // NOUVEAU: Force le service worker à s'activer immédiatement après l'installation.
+  self.skipWaiting();
+
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -22,9 +25,11 @@ self.addEventListener('install', event => {
       })
   );
 });
- 
+
 // Étape 2: Activation - Nettoyage des anciens caches
 self.addEventListener('activate', event => {
+  // NOUVEAU: Prend le contrôle de toutes les pages ouvertes immédiatement.
+  self.clients.claim();
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
