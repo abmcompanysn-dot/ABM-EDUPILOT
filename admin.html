@@ -1253,19 +1253,20 @@
                 const result = await callAdminApi('adminGetEntities', { entityType });
                 const entities = result.data;
                 
-                if (entityType === 'filiere' || entityType === 'classe') {
+                // CORRECTION: Mettre à jour le select des filières UNIQUEMENT quand on charge les filières.
+                if (entityType === 'filiere') {
                     const parentSelect = document.getElementById('classe-filiere-select');
                     if (parentSelect) { // On met à jour la liste déroulante des filières dans l'onglet "Classes"
                         parentSelect.innerHTML = '<option value="">-- Sélectionnez une filière --</option>' 
                             + entities.map(e => `<option value="${e.ID_FILIERE}">${e.NOM_FILIERE}</option>`).join('');
                     }
-                    // NOUVEAU: Mettre à jour les listes de classes pour les modules
-                    if (entityType === 'classe') {
-                        const moduleClassSelect = document.getElementById('module-classe-select');
-                        if (moduleClassSelect) {
-                            moduleClassSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
-                                + entities.map(e => `<option value="${e.ID_CLASSE}">${e.NOM_CLASSE}</option>`).join('');
-                        }
+                }
+                // CORRECTION: Mettre à jour le select des classes (pour les modules) UNIQUEMENT quand on charge les classes.
+                if (entityType === 'classe') {
+                    const moduleClassSelect = document.getElementById('module-classe-select');
+                    if (moduleClassSelect) {
+                        moduleClassSelect.innerHTML = '<option value="">-- Sélectionnez une classe --</option>' 
+                            + entities.map(e => `<option value="${e.ID_CLASSE}">${e.NOM_CLASSE}</option>`).join('');
                     }
                 }
                 
