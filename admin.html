@@ -1687,6 +1687,7 @@
                 e.preventDefault();
                 const payload = {
                     moduleId: document.getElementById('course-module-select').value,
+                    classId: document.getElementById('course-classe-select').value, // CORRECTION: Envoyer l'ID de la classe
                     date: document.getElementById('course-date').value,
                     startTime: document.getElementById('course-start-time').value,
                     endTime: document.getElementById('course-end-time').value,

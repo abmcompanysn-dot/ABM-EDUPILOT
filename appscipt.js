@@ -210,6 +210,8 @@ function doPost(e) {
         return adminForceRefresh(data);
     } else if (action === 'responsableForceRefresh') { // NOUVEAU
         return responsableForceRefresh(data);
+    } else if (action === 'responsableAddModule') { // NOUVEAU: Ajout de l'action manquante
+        return responsableAddModule(data);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
