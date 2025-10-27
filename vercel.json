@@ -2,14 +2,9 @@
   "version": 2,
 
 
-  "rewrites": [
-    {
-      "source": "/:path((?!.*\\..*))",
-      "destination": "/:path.html"
-    }
-  ],
+  "cleanUrls": true,
 
- 
+  
   "redirects": [
     {
       "source": "/:path.html",
