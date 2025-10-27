@@ -1,31 +1,18 @@
 {
   "version": 2,
+
+ 
   "rewrites": [
-    
     {
       "source": "/:path((?!.*\\..*))",
       "destination": "/:path.html"
-    },
-
-   
-    {
-      "source": "/(index)",
-      "destination": "/"
-    },
-
-   
-    {
-      "source": "/(.*).html",
-      "destination": "/$1"
-    },
-    {
-      "source": "/(.*).html",
-      "destination": "/$1"
     }
+    
   ],
 
+  
   "redirects": [
-   
+    { "source": "/index.html", "destination": "/", "permanent": true },
     { "source": "/admin.html", "destination": "/admin", "permanent": true },
     { "source": "/etudiant.html", "destination": "/etudiant", "permanent": true },
     { "source": "/responsable.html", "destination": "/responsable", "permanent": true },
