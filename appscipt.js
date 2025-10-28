@@ -2715,7 +2715,7 @@ function setup() {
     const configSheet = ss.getSheetByName(SHEET_NAMES.CONFIG);
     const configData = [
       [CONFIG_KEYS.ADMIN_EMAIL, 'METTRE_VOTRE_EMAIL_ICI'],
-      [CONFIG_KEYS.FRONTEND_URL, 'https://abm-edupilote.netlify.app/'],
+      [CONFIG_KEYS.FRONTEND_URL, 'https://abmedupilote.abmcy.com/'],
       [CONFIG_KEYS.ADMIN_KEY, `admin-${Utilities.getUuid().substring(0, 8)}`] // Génère une clé admin par défaut
     ];
     configSheet.getRange(2, 1, configData.length, 2).setValues(configData);

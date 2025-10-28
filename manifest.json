@@ -2,7 +2,7 @@
   "name": "ABM EduPilote",
   "short_name": "EduPilote",
   "description": "Plateforme de gestion universitaire pour le suivi des présences et des plannings.",
-  "start_url": "/index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#1C2B5A",
   "theme_color": "#1C2B5A",

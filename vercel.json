@@ -1,23 +1,11 @@
 {
   "version": 2,
-
-  "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/:path((?!.*\\..*))",
-      "destination": "/:path.html"
-    }
-  ],
-
+  "cleanUrls": true,
   "redirects": [
-    { "source": "/index.html", "destination": "/", "permanent": true },
-    { "source": "/admin.html", "destination": "/admin", "permanent": true },
-    { "source": "/etudiant.html", "destination": "/etudiant", "permanent": true },
-    { "source": "/responsable.html", "destination": "/responsable", "permanent": true },
-    { "source": "/fonctionnement.html", "destination": "/fonctionnement", "permanent": true },
-    { "source": "/mentions-legales.html", "destination": "/mentions-legales", "permanent": true }
+    {
+      "source": "/:path*.html",
+      "destination": "/:path*",
+      "permanent": true
+    }
   ]
 }
