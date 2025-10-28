@@ -1,13 +1,11 @@
 {
   "version": 2,
 
- 
   "rewrites": [
     {
       "source": "/:path((?!.*\\..*))",
       "destination": "/:path.html"
     }
-    
   ],
 
   
