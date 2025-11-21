@@ -103,7 +103,7 @@
         <!-- Panneau d'actions -->
         <div class="bg-white rounded-2xl shadow-lg p-6 mt-8">
             <h2 class="text-lg font-bold text-gray-900 mb-4">Mon Espace</h2>
-            <div class="grid grid-cols-2 gap-4">
+            <div id="student-actions-grid" class="grid grid-cols-2 gap-4">
                 <button onclick="openModal('schedule')" class="text-left p-4 bg-violet-50 hover:bg-violet-100 rounded-lg transition-all">
                     <i class="fas fa-calendar-alt text-2xl text-violet-500 mb-2"></i>
                     <p class="font-semibold">Emploi du Temps</p>
@@ -120,6 +120,11 @@
                     <span id="notification-badge" class="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center border-2 border-white hidden">
                         0
                     </span>
+                </button>
+                <!-- NOUVEAU: Bouton pour la carte RFID, caché par défaut -->
+                <button id="rfid-card-btn" onclick="openModal('rfid-card')" class="hidden text-left p-4 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-all">
+                    <i class="fas fa-id-card text-2xl text-cyan-500 mb-2"></i>
+                    <p class="font-semibold">Ma Carte RFID</p>
                 </button>
             </div>
         </div>
@@ -211,6 +216,22 @@
             </button>
         </form>
         <div class="messageArea mt-3 text-center" aria-live="polite"></div>
+    </template>
+
+    <!-- NOUVEAU: Template pour la carte RFID -->
+    <template id="rfid-card-template">
+        <div class="bg-gray-100 p-6 rounded-lg border">
+            <div class="text-center mb-4">
+                <i class="fas fa-wifi text-blue-500 text-2xl transform -rotate-45"></i>
+                <h4 class="font-bold text-lg mt-1">Carte d'Accès RFID</h4>
+            </div>
+            <div class="bg-white p-4 rounded-md space-y-3">
+                <p><strong class="font-medium text-gray-500 w-24 inline-block">Nom:</strong> <span id="rfid-card-name" class="font-semibold text-gray-800"></span></p>
+                <p><strong class="font-medium text-gray-500 w-24 inline-block">ID Étudiant:</strong> <span id="rfid-card-student-id" class="font-mono text-gray-800"></span></p>
+                <hr class="my-2">
+                <p><strong class="font-medium text-gray-500 w-24 inline-block">N° RFID:</strong> <span id="rfid-card-number" class="font-mono text-blue-600 font-bold text-lg"></span></p>
+            </div>
+        </div>
     </template>
 
     <!-- NOUVEAU: Conteneur invisible pour générer la carte étudiant -->
@@ -316,8 +337,20 @@
         async function loadStudentInfo(studentId) {
             try {
                 const result = await callApi('getStudentData', { studentId });
-                document.getElementById('student-dashboard-name').textContent = result.data.name || 'Étudiant';
+                const studentData = result.data;
+                document.getElementById('student-dashboard-name').textContent = studentData.name || 'Étudiant';
                 document.getElementById('student-dashboard-id').textContent = studentId;
+
+                // NOUVEAU: Logique pour afficher le bouton RFID
+                const rfidBtn = document.getElementById('rfid-card-btn');
+                if (studentData.rfidId) {
+                    rfidBtn.classList.remove('hidden');
+                    // Ajuster la grille si le nombre d'éléments est impair
+                    const grid = document.getElementById('student-actions-grid');
+                    if (grid.children.length % 2 !== 0) {
+                        rfidBtn.classList.add('col-span-2');
+                    }
+                }
             } catch (error) {
                 alert(`Erreur critique: Impossible de charger vos informations. ${error.message}`);
             }
@@ -411,6 +444,10 @@
                     templateId = 'notifications-template';
                     title = 'Mes Notifications';
                     break;
+                case 'rfid-card': // NOUVEAU
+                    templateId = 'rfid-card-template';
+                    title = 'Ma Carte d\'Accès RFID';
+                    break;
                 default:
                     return;
             }
@@ -439,6 +476,16 @@
                 }
             } else if (type === 'notifications') { // NOUVEAU
                 await loadStudentNotifications(studentId);
+            } else if (type === 'rfid-card') { // NOUVEAU
+                try {
+                    const result = await callApi('getStudentData', { studentId });
+                    const student = result.data;
+                    document.getElementById('rfid-card-name').textContent = student.name || '';
+                    document.getElementById('rfid-card-student-id').textContent = studentId;
+                    document.getElementById('rfid-card-number').textContent = student.rfidId || 'ERREUR';
+                } catch (error) {
+                    modalBody.innerHTML = `<p class="text-red-500">Erreur de chargement des informations: ${error.message}</p>`;
+                }
             }
         }
 

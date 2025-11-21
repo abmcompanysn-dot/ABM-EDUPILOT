@@ -212,6 +212,10 @@ function doPost(e) {
         return responsableForceRefresh(data);
     } else if (action === 'responsableAddModule') { // NOUVEAU: Ajout de l'action manquante
         return responsableAddModule(data);
+    } else if (action === 'responsableAssignRfid') { // NOUVEAU: Pour RFID
+        return responsableAssignRfid(data, ctx);
+    } else if (action === 'recordAttendanceByRfid') { // NOUVEAU: Pour RFID
+        return recordAttendanceByRfid(data, ctx);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -222,6 +226,89 @@ function doPost(e) {
     logError(e.postData.contents, error); // Enregistre l'erreur dans la feuille
     return createJsonResponse({ success: false, error: `Erreur serveur: ${error.message}. L'incident a été enregistré.` });
   }
+}
+
+/**
+ * NOUVEAU: Assigne un ID RFID à un étudiant.
+ * @param {object} data - Contient { responsableId, studentId, rfidId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function responsableAssignRfid(data, ctx) {
+    try {
+        const { responsableId, studentId, rfidId } = data;
+        if (!responsableId || !studentId || !rfidId) {
+            throw new Error("Données d'assignation RFID incomplètes.");
+        }
+
+        // 1. Vérification de sécurité
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const studentMap = getStudentMap();
+        const studentInfo = studentMap[studentId.trim().toUpperCase()];
+
+        if (!studentInfo || studentInfo.classId !== classInfo.classId) {
+            throw new Error("Cet étudiant n'appartient pas à votre classe.");
+        }
+
+        // 2. Vérifier que l'ID RFID n'est pas déjà utilisé
+        const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+        const studentsData = studentsSheet.getDataRange().getValues();
+        const headers = studentsData[0];
+        const rfidIdx = headers.indexOf('ID_RFID');
+        const studentIdIdx = headers.indexOf('ID_ETUDIANT');
+
+        if (rfidIdx === -1) throw new Error("La colonne ID_RFID est introuvable dans la feuille Étudiants.");
+
+        const existingRfid = studentsData.slice(1).find(row => row[rfidIdx] === rfidId);
+        if (existingRfid) {
+            throw new Error(`Cette carte RFID est déjà assignée à l'étudiant avec l'ID ${existingRfid[studentIdIdx]}.`);
+        }
+
+        // 3. Trouver et mettre à jour l'étudiant
+        const studentRowIndex = studentsData.findIndex(row => row[studentIdIdx] === studentId);
+        if (studentRowIndex === -1) throw new Error("Étudiant non trouvé pour la mise à jour.");
+
+        studentsSheet.getRange(studentRowIndex + 1, rfidIdx + 1).setValue(rfidId);
+        SpreadsheetApp.flush();
+
+        // Invalider les caches
+        clearStudentCache();
+        cache.remove(`students_resp_${responsableId}`);
+
+        logAction('responsableAssignRfid', { responsableId, studentId, rfidId });
+        return createJsonResponse({ success: true, message: `La carte RFID a été assignée avec succès à ${studentInfo.name}.` });
+
+    } catch (error) {
+        logError('responsableAssignRfid', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: Enregistre la présence via un ID RFID.
+ * @param {object} data - Contient { rfidId }.
+ * @param {object} ctx - Le contexte de la requête.
+ */
+function recordAttendanceByRfid(data, ctx) {
+    try {
+        const { rfidId } = data;
+        if (!rfidId) throw new Error("ID RFID manquant.");
+
+        // 1. Trouver l'étudiant correspondant à l'ID RFID
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const headers = studentsData[0];
+        const studentIdIdx = headers.indexOf('ID_ETUDIANT');
+        const rfidIdx = headers.indexOf('ID_RFID');
+        const studentRow = studentsData.slice(1).find(row => row[rfidIdx] === rfidId);
+
+        if (!studentRow) throw new Error("Aucun étudiant n'est associé à cette carte RFID.");
+
+        // 2. Utiliser la fonction de scan existante avec l'ID étudiant trouvé
+        return scanStudentForAttendance({ studentId: studentRow[studentIdIdx] }, ctx);
+
+    } catch (error) {
+        logError('recordAttendanceByRfid', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
 }
 
 /**
@@ -1732,7 +1819,11 @@ function responsableGetStudents(data) {
 
             return studentsData.slice(1)
                 .filter(row => row[studentClassFkIdx] === classInfo.classId)
-                .map(row => Object.fromEntries(headers.map((header, i) => [header, row[i]])));
+                .map(row => {
+                    const student = Object.fromEntries(headers.map((header, i) => [header, row[i]]));
+                    student.ID_RFID = student.ID_RFID || null; // S'assurer que la propriété existe
+                    return student;
+                });
         }, 180); // Cache de 3 minutes
 
         return createJsonResponse({ success: true, data: students });
@@ -1974,6 +2065,7 @@ function getStudentData(data) {
             const nameIdx = headers.indexOf('NOM_COMPLET');
             const emailIdx = headers.indexOf('EMAIL');
             const telIdx = headers.indexOf('NUMERO_TELEPHONE'); // NOUVEAU
+            const rfidIdx = headers.indexOf('ID_RFID'); // NOUVEAU: RFID
 
             const studentRow = studentsData.find(row => row[idIdx] && row[idIdx].toString().trim().toUpperCase() === studentId.trim().toUpperCase());
 
@@ -1981,7 +2073,8 @@ function getStudentData(data) {
                 return {
                     name: studentRow[nameIdx],
                     email: studentRow[emailIdx],
-                    telephone: studentRow[telIdx] || '' // NOUVEAU
+                    telephone: studentRow[telIdx] || '', // NOUVEAU
+                    rfidId: studentRow[rfidIdx] || null // NOUVEAU: RFID
                 };
             } else {
                 throw new Error('Étudiant non trouvé.');

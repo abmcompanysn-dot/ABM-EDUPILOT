@@ -87,6 +87,9 @@
                 <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="messages-history-content">
                     Historique Messages
                 </button>
+                <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="rfid-content">
+                    Gestion RFID
+                </button>
             </nav>
         </div>
 
@@ -224,6 +227,48 @@
             </div>
         </div>
     </main>
+
+    <!-- NOUVEAU: Contenu pour la gestion RFID -->
+    <div id="rfid-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Gestion des Cartes RFID</h3>
+        <div class="grid lg:grid-cols-2 gap-8 items-start">
+            <!-- Panneau d'assignation -->
+            <div class="bg-gray-50 p-6 rounded-lg border">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">1. Assigner une carte</h4>
+                <p class="text-sm text-gray-600 mb-4">Sélectionnez un étudiant, placez le curseur dans le champ "ID de la carte", puis scannez la carte RFID.</p>
+                <form id="assign-rfid-form" class="space-y-4">
+                    <div>
+                        <label for="rfid-student-select" class="block text-sm font-medium text-gray-700">Étudiant</label>
+                        <select id="rfid-student-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-white"></select>
+                    </div>
+                    <div>
+                        <label for="rfid-card-id" class="block text-sm font-medium text-gray-700">ID de la carte (scannez ici)</label>
+                        <input type="text" id="rfid-card-id" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="En attente du scan...">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Assigner la carte</button>
+                </form>
+            </div>
+
+            <!-- Panneau de pointage -->
+            <div class="bg-gray-50 p-6 rounded-lg border">
+                <h4 class="text-lg font-medium text-gray-900 mb-4">2. Pointer par RFID</h4>
+                <p class="text-sm text-gray-600 mb-4">Placez le curseur dans le champ ci-dessous, puis demandez aux étudiants de scanner leur carte. Le pointage est automatique.</p>
+                <div>
+                    <label for="rfid-attendance-input" class="block text-sm font-medium text-gray-700">Scanner les cartes ici</label>
+                    <input type="text" id="rfid-attendance-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="En attente des scans...">
+                </div>
+                <div id="rfid-attendance-log" class="mt-4 bg-white p-3 rounded-md border h-48 overflow-y-auto text-sm space-y-2">
+                    <p class="text-gray-400 italic text-center">Le journal des pointages apparaîtra ici...</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-8">
+            <h4 class="text-lg font-medium text-gray-900 mb-4">Statut des cartes RFID de la classe</h4>
+            <div id="rfid-status-list" class="max-h-[50vh] overflow-y-auto table-responsive-wrapper">
+                <div class="skeleton h-12 w-full"></div>
+            </div>
+        </div>
+    </div>
 
     <!-- NOUVEAU: Bouton flottant pour le scanner -->
     <button id="scan-qr-btn" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-violet-600 hover:bg-violet-700 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code Étudiant">
@@ -503,6 +548,10 @@
                     }
                     if (tab.dataset.target === 'messages-history-content' && !targetContent.dataset.loaded) {
                         loadMessageHistory();
+                        targetContent.dataset.loaded = 'true';
+                    }
+                    if (tab.dataset.target === 'rfid-content' && !targetContent.dataset.loaded) {
+                        setupRfidPage();
                         targetContent.dataset.loaded = 'true';
                     }
                 }
