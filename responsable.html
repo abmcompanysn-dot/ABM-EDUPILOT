@@ -1151,7 +1151,7 @@
             const [actualResponsableId, universityId] = responsableId.split(':');
             
             const response = await fetch(WEB_APP_URL, {
-                method: 'POST', mode: 'cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 // CORRECTION: Envoyer l'ID du responsable et l'ID de l'université séparément.
                 // Le backend utilise `responsableId` pour l'identification et `universityId` pour le contexte.
                 body: JSON.stringify({ action, data: { ...data, responsableId: actualResponsableId, universityId: universityId, studentId: data.studentId } })
