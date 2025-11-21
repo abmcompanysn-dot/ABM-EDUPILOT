@@ -550,8 +550,8 @@
                         loadMessageHistory();
                         targetContent.dataset.loaded = 'true';
                     }
-                    if (tab.dataset.target === 'rfid-content' && !targetContent.dataset.loaded) {
-                        setupRfidPage();
+                    if (tab.dataset.target === 'rfid-content' && !targetContent.dataset.loaded) { // CORRECTION: Appel de la fonction
+                        setupRfidPage(); // Cette fonction est maintenant définie globalement
                         targetContent.dataset.loaded = 'true';
                     }
                 }
@@ -1151,10 +1151,10 @@
             const [actualResponsableId, universityId] = responsableId.split(':');
             
             const response = await fetch(WEB_APP_URL, {
-                method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORRECTION: Ajout de redirect: 'follow'
                 // CORRECTION: Envoyer l'ID du responsable et l'ID de l'université séparément.
-                // Le backend utilise `responsableId` pour l'identification et `universityId` pour le contexte.
-                body: JSON.stringify({ action, data: { ...data, responsableId: actualResponsableId, universityId: universityId, studentId: data.studentId } })
+                // CORRECTION: Simplification du corps de la requête pour éviter d'envoyer un `studentId` non défini.
+                body: JSON.stringify({ action, data: { ...data, responsableId: actualResponsableId, universityId: universityId } })
             });
             const result = await response.json();
             if (!result.success) throw new Error(result.error || 'Erreur API inconnue.');
