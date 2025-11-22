@@ -207,6 +207,18 @@
             </div>
         </div>
 
+        <!-- NOUVEAU: Contenu pour la gestion RFID -->
+        <div id="rfid-content" class="tab-content hidden p-4 sm:p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Gestion des Cartes RFID</h3>
+            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                <!-- Panneau d'assignation et de pointage -->
+                <div id="rfid-assignment-panel" class="bg-white p-6 rounded-xl shadow-sm border space-y-6"></div>
+                <!-- Panneau de statut -->
+                <div id="rfid-status-panel" class="bg-white p-6 rounded-xl shadow-sm border space-y-4"></div>
+            </div>
+        </div>
+
+
         <!-- NOUVEAU: Contenu pour l'historique des messages -->
         <div id="messages-history-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-4">Historique de vos Messages Envoyés</h3>
@@ -227,48 +239,6 @@
             </div>
         </div>
     </main>
-
-    <!-- NOUVEAU: Contenu pour la gestion RFID -->
-    <div id="rfid-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Gestion des Cartes RFID</h3>
-        <div class="grid lg:grid-cols-2 gap-8 items-start">
-            <!-- Panneau d'assignation -->
-            <div class="bg-gray-50 p-6 rounded-lg border">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">1. Assigner une carte</h4>
-                <p class="text-sm text-gray-600 mb-4">Sélectionnez un étudiant, placez le curseur dans le champ "ID de la carte", puis scannez la carte RFID.</p>
-                <form id="assign-rfid-form" class="space-y-4">
-                    <div>
-                        <label for="rfid-student-select" class="block text-sm font-medium text-gray-700">Étudiant</label>
-                        <select id="rfid-student-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-white"></select>
-                    </div>
-                    <div>
-                        <label for="rfid-card-id" class="block text-sm font-medium text-gray-700">ID de la carte (scannez ici)</label>
-                        <input type="text" id="rfid-card-id" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="En attente du scan...">
-                    </div>
-                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Assigner la carte</button>
-                </form>
-            </div>
-
-            <!-- Panneau de pointage -->
-            <div class="bg-gray-50 p-6 rounded-lg border">
-                <h4 class="text-lg font-medium text-gray-900 mb-4">2. Pointer par RFID</h4>
-                <p class="text-sm text-gray-600 mb-4">Placez le curseur dans le champ ci-dessous, puis demandez aux étudiants de scanner leur carte. Le pointage est automatique.</p>
-                <div>
-                    <label for="rfid-attendance-input" class="block text-sm font-medium text-gray-700">Scanner les cartes ici</label>
-                    <input type="text" id="rfid-attendance-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="En attente des scans...">
-                </div>
-                <div id="rfid-attendance-log" class="mt-4 bg-white p-3 rounded-md border h-48 overflow-y-auto text-sm space-y-2">
-                    <p class="text-gray-400 italic text-center">Le journal des pointages apparaîtra ici...</p>
-                </div>
-            </div>
-        </div>
-        <div class="mt-8">
-            <h4 class="text-lg font-medium text-gray-900 mb-4">Statut des cartes RFID de la classe</h4>
-            <div id="rfid-status-list" class="max-h-[50vh] overflow-y-auto table-responsive-wrapper">
-                <div class="skeleton h-12 w-full"></div>
-            </div>
-        </div>
-    </div>
 
     <!-- NOUVEAU: Bouton flottant pour le scanner -->
     <button id="scan-qr-btn" class="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 bg-violet-600 hover:bg-violet-700 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-lg flex items-center justify-center z-40 transition-transform hover:scale-110" aria-label="Scanner un QR Code Étudiant">
@@ -551,7 +521,7 @@
                         targetContent.dataset.loaded = 'true';
                     }
                     if (tab.dataset.target === 'rfid-content' && !targetContent.dataset.loaded) { // CORRECTION: Appel de la fonction
-                        setupRfidPage(); // Cette fonction est maintenant définie globalement
+                        loadRfidPage(); // Cette fonction est maintenant définie globalement
                         targetContent.dataset.loaded = 'true';
                     }
                 }
@@ -1086,76 +1056,138 @@
 
 
         // NOUVEAU: Initialise la page de gestion RFID
-        async function setupRfidPage() {
-            const studentSelect = document.getElementById('rfid-student-select');
-            const assignForm = document.getElementById('assign-rfid-form');
-            const attendanceInput = document.getElementById('rfid-attendance-input');
+        async function loadRfidPage() {
+            const assignmentPanel = document.getElementById('rfid-assignment-panel');
+            const statusPanel = document.getElementById('rfid-status-panel');
+            assignmentPanel.innerHTML = `<div class="skeleton h-64 w-full"></div>`;
+            statusPanel.innerHTML = `<div class="skeleton h-64 w-full"></div>`;
 
-            // 1. Charger les étudiants dans le select
             try {
                 const result = await callResponsableApi('responsableGetStudentsForRfid');
-                const students = result.data || [];
-                studentSelect.innerHTML = '<option value="">-- Sélectionnez un étudiant --</option>' + students.map(s => `<option value="${s.ID_ETUDIANT}">${s.NOM_COMPLET} (${s.ID_ETUDIANT})</option>`).join('');
+                const { studentsWithCard, studentsWithoutCard } = result.data;
+
+                renderRfidAssignment(assignmentPanel, studentsWithoutCard);
+                renderRfidStatus(statusPanel, studentsWithCard);
+
             } catch (error) {
-                studentSelect.innerHTML = '<option value="">Erreur de chargement</option>';
-                console.error("Erreur chargement étudiants pour RFID:", error);
+                assignmentPanel.innerHTML = `<p class="text-red-500">Erreur de chargement: ${error.message}</p>`;
+                statusPanel.innerHTML = '';
             }
+        }
 
-            // 2. Charger le statut des cartes
-            loadRfidStatus();
+        function renderRfidAssignment(panel, students) {
+            panel.innerHTML = `
+                <div class="bg-gray-50 p-6 rounded-lg border">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">1. Assigner une carte</h4>
+                    <p class="text-sm text-gray-600 mb-4">Sélectionnez un étudiant, placez le curseur dans le champ "ID de la carte", puis scannez la carte RFID.</p>
+                    <form id="assign-rfid-form" class="space-y-4">
+                        <div>
+                            <label for="rfid-student-select" class="block text-sm font-medium text-gray-700">Étudiant sans carte</label>
+                            <select id="rfid-student-select" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md bg-white">
+                                <option value="">-- Sélectionnez un étudiant --</option>
+                                ${students.map(s => `<option value="${s.ID_ETUDIANT}">${s.NOM_COMPLET} (${s.ID_ETUDIANT})</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label for="rfid-card-id" class="block text-sm font-medium text-gray-700">ID de la carte (scannez ici)</label>
+                            <input type="text" id="rfid-card-id" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="En attente du scan...">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Assigner la carte</button>
+                    </form>
+                </div>
+                <div class="bg-gray-50 p-6 rounded-lg border">
+                    <h4 class="text-lg font-medium text-gray-900 mb-4">2. Pointer par RFID</h4>
+                    <p class="text-sm text-gray-600 mb-4">Placez le curseur dans le champ ci-dessous, puis demandez aux étudiants de scanner leur carte. Le pointage est automatique.</p>
+                    <div>
+                        <label for="rfid-attendance-input" class="block text-sm font-medium text-gray-700">Scanner les cartes ici</label>
+                        <input type="text" id="rfid-attendance-input" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="En attente des scans...">
+                    </div>
+                    <div id="rfid-attendance-log" class="mt-4 bg-white p-3 rounded-md border h-48 overflow-y-auto text-sm space-y-2">
+                        <p class="text-gray-400 italic text-center">Le journal des pointages apparaîtra ici...</p>
+                    </div>
+                </div>
+            `;
 
-            // 3. Gérer la soumission du formulaire d'assignation
-            if (assignForm && !assignForm.dataset.listenerAttached) {
-                assignForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    const studentId = studentSelect.value;
-                    const rfidId = document.getElementById('rfid-card-id').value;
-                    if (!studentId || !rfidId) {
-                        showModal('Erreur', 'Veuillez sélectionner un étudiant et scanner une carte.');
-                        return;
-                    }
-                    showSpinner(true);
-                    try {
-                        const result = await callResponsableApi('responsableAssignRfid', { studentId, rfidId });
-                        showModal('Succès', result.message);
-                        assignForm.reset();
-                        loadRfidStatus(); // Recharger la liste
-                    } catch (error) {
-                        showModal('Erreur', error.message);
-                    } finally {
-                        showSpinner(false);
-                    }
-                });
-                assignForm.dataset.listenerAttached = 'true';
+            // Attacher les listeners
+            const assignForm = document.getElementById('assign-rfid-form');
+            assignForm.addEventListener('submit', handleRfidAssign);
+
+            const attendanceInput = document.getElementById('rfid-attendance-input');
+            attendanceInput.addEventListener('change', handleRfidAttendance);
+        }
+
+        function renderRfidStatus(panel, students) {
+             panel.innerHTML = `
+                <h4 class="text-lg font-medium text-gray-900">Statut des cartes RFID</h4>
+                <div class="max-h-[70vh] overflow-y-auto table-responsive-wrapper pr-2">
+                    ${students.length === 0 ? '<p class="text-gray-500 text-center py-4">Aucun étudiant n\'a de carte assignée.</p>' : `
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étudiant</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Carte RFID</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${students.map(s => `
+                                <tr>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">${s.NOM_COMPLET}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_CARTE_RFID}</td>
+                                </tr>`).join('')}
+                        </tbody>
+                    </table>
+                    `}
+                </div>
+             `;
+        }
+
+        async function handleRfidAssign(event) {
+            event.preventDefault();
+            const form = event.target;
+            const studentId = document.getElementById('rfid-student-select').value;
+            const rfidId = document.getElementById('rfid-card-id').value;
+
+            if (!studentId || !rfidId) {
+                showModal('Erreur', 'Veuillez sélectionner un étudiant et scanner une carte.');
+                return;
             }
+            showSpinner(true);
+            try {
+                const result = await callResponsableApi('responsableAssignRfid', { studentId, rfidId });
+                showModal('Succès', result.message);
+                form.reset();
+                loadRfidPage(); // Recharger toute la page RFID pour mettre à jour les listes
+            } catch (error) {
+                showModal('Erreur', error.message);
+            } finally {
+                showSpinner(false);
+            }
+        }
 
-            // 4. Gérer le pointage par RFID
-            if (attendanceInput && !attendanceInput.dataset.listenerAttached) {
-                const logContainer = document.getElementById('rfid-attendance-log');
-                attendanceInput.addEventListener('change', async (e) => {
-                    const rfidId = e.target.value;
-                    if (!rfidId) return;
+        async function handleRfidAttendance(event) {
+            const input = event.target;
+            const rfidId = input.value;
+            if (!rfidId) return;
 
-                    const logEntry = document.createElement('p');
-                    logEntry.className = 'p-2 rounded-md text-gray-700';
-                    logEntry.textContent = `Scan détecté: ${rfidId}. Tentative de pointage...`;
-                    logContainer.prepend(logEntry);
+            const logContainer = document.getElementById('rfid-attendance-log');
+            const logEntry = document.createElement('p');
+            logEntry.className = 'p-2 rounded-md text-gray-700 animate-pulse';
+            logEntry.textContent = `Scan: ${rfidId}. Pointage...`;
+            if(logContainer.querySelector('.italic')) logContainer.innerHTML = ''; // Clear initial message
+            logContainer.prepend(logEntry);
 
-                    try {
-                        const result = await callResponsableApi('responsableRecordRfidAttendance', { rfidId });
-                        logEntry.textContent = `✅ ${new Date().toLocaleTimeString()}: ${result.message}`;
-                        logEntry.classList.add('bg-green-100');
-                    } catch (error) {
-                        logEntry.textContent = `❌ ${new Date().toLocaleTimeString()}: ${error.message}`;
-                        logEntry.classList.add('bg-red-100');
-                    } finally {
-                        // Vider le champ pour le prochain scan
-                        e.target.value = '';
-                        // Remettre le focus pour le prochain scan
-                        e.target.focus();
-                    }
-                });
-                attendanceInput.dataset.listenerAttached = 'true';
+            try {
+                const result = await callResponsableApi('responsableRecordRfidAttendance', { rfidId });
+                logEntry.textContent = `✅ ${new Date().toLocaleTimeString()}: ${result.message}`;
+                logEntry.classList.remove('animate-pulse');
+                logEntry.classList.add('bg-green-100');
+            } catch (error) {
+                logEntry.textContent = `❌ ${new Date().toLocaleTimeString()}: ${error.message}`;
+                logEntry.classList.remove('animate-pulse');
+                logEntry.classList.add('bg-red-100');
+            } finally {
+                input.value = ''; // Vider pour le prochain scan
+                input.focus();    // Garder le focus pour le scan suivant
             }
         }
         // --- FONCTIONS UTILITAIRES ---
@@ -1285,4 +1317,5 @@
     </script>
 
 </body>
+
 </html>
