@@ -222,6 +222,8 @@ function doPost(e) {
         return responsableGetAbsenceStats(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
         return getStudentAbsenceReport(data, ctx);
+    } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
+        return getStudentAbsenceReport(data, ctx);
     } else if (action === 'adminGetAssiduiteStats') { // NOUVEAU: Pour le graphe admin
         return adminGetAssiduiteStats(data, ctx);
     } else if (action === 'adminGetStudentByRfid') { // NOUVEAU: Pour la recherche RFID par l'admin
@@ -354,6 +356,55 @@ function getStudentAbsenceReport(data, ctx) {
     }
 }
 
+/**
+ * NOUVEAU: ACTION: getStudentAbsenceReport
+ * Récupère la liste des cours où un étudiant a été absent.
+ * @param {object} data - Contient { studentId }.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object} JSON response avec la liste des cours manqués.
+ */
+function getStudentAbsenceReport(data, ctx) {
+    try {
+        const { studentId } = data;
+        if (!studentId) throw new Error("ID de l'étudiant manquant.");
+
+        const studentMap = getStudentMap();
+        const studentInfo = studentMap[studentId.toUpperCase()];
+        if (!studentInfo) throw new Error("Étudiant non trouvé.");
+
+        // 1. Récupérer tous les cours confirmés pour la classe de l'étudiant
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+        
+        const scheduledCourses = planningData.slice(1).filter(row => {
+            const module = moduleMap.get(row[1]); // ID_MODULE_FK
+            return module && module.classId === studentInfo.classId && row[5] === 'Confirmé'; // STATUT
+        }).map(row => ({
+            date: Utilities.formatDate(new Date(row[2]), Session.getScriptTimeZone(), 'yyyy-MM-dd'), // DATE_COURS
+            module: moduleMap.get(row[1]).name
+        }));
+
+        // 2. Récupérer toutes les présences de l'étudiant
+        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+        const studentPresences = new Set(
+            scanData.slice(1)
+            .filter(row => row[1] === studentId) // ID_ETUDIANT
+            .map(row => `${Utilities.formatDate(new Date(row[5]), Session.getScriptTimeZone(), 'yyyy-MM-dd')}_${row[4]}`) // DATE_SCAN + MODULE
+        );
+
+        // 3. Comparer pour trouver les absences
+        const absenceReport = scheduledCourses.map(course => {
+            const presenceKey = `${course.date}_${course.module}`;
+            return { ...course, status: studentPresences.has(presenceKey) ? 'Présent' : 'Absent' };
+        }).sort((a, b) => new Date(b.date) - new Date(a.date)); // Trier par date la plus récente
+
+        return createJsonResponse({ success: true, data: absenceReport });
+
+    } catch (error) {
+        logError('getStudentAbsenceReport', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 /** NOUVEAU: Logique pour le graphe d'assiduité admin (similaire à l'existant mais séparé pour clarté) */
 function adminGetAssiduiteStats(data, ctx) {
     return adminGetAttendanceStats(data); // Réutilise la fonction existante qui contient déjà les données nécessaires
@@ -1894,6 +1945,18 @@ function adminGetAttendanceStats(data) {
                     return acc;
                 }, {});
 
+            // NOUVEAU: Compter les cours confirmés par classe
+            const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+            const moduleMapForPlanning = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], row[2]])); // Map ID_MODULE -> ID_CLASSE_FK
+            const confirmedCoursesByClass = planningData.slice(1).reduce((acc, row) => {
+                const status = row[5]; // STATUT
+                const classId = moduleMapForPlanning.get(row[1]); // ID_MODULE_FK
+                if (status === 'Confirmé' && classId) {
+                    acc[classId] = (acc[classId] || 0) + 1;
+                }
+                return acc;
+            }, {});
+
             // 3. Get all attendance records for the university's students
             const studentIdsForUniv = new Set(studentsData.slice(1).filter(r => r[studentUnivFkIdx] === universityId).map(r => r[studentsData[0].indexOf('ID_ETUDIANT')]));
             const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
@@ -1936,12 +1999,25 @@ function adminGetAttendanceStats(data) {
             });
 
             // 4. Format the final data structure
-            const byClass = universityClasses.map(c => ({
-                className: c.name,
-                totalStudents: studentsByClass[c.id] || 0,
-                totalScans: (attendanceByClass[c.name] && attendanceByClass[c.name].totalScans) || 0,
-                uniquePresentStudents: (attendanceByClass[c.name] && attendanceByClass[c.name].presentStudents.size) || 0
-            }));
+            const byClass = universityClasses.map(c => {
+                const totalStudents = studentsByClass[c.id] || 0;
+                const totalConfirmedCourses = confirmedCoursesByClass[c.id] || 0;
+                const totalPossiblePresences = totalStudents * totalConfirmedCourses;
+                const totalActualPresences = (attendanceByClass[c.name] && attendanceByClass[c.name].totalScans) || 0;
+                
+                let absenceRate = 0;
+                if (totalPossiblePresences > 0) {
+                    const totalAbsences = totalPossiblePresences - totalActualPresences;
+                    absenceRate = Math.max(0, (totalAbsences / totalPossiblePresences) * 100);
+                }
+
+                return {
+                    className: c.name,
+                    totalStudents: totalStudents,
+                    uniquePresentStudents: (attendanceByClass[c.name] && attendanceByClass[c.name].presentStudents.size) || 0,
+                    absenceRate: parseFloat(absenceRate.toFixed(1)) // NOUVEAU: Taux d'absence
+                };
+            });
 
             // NOUVEAU: Formater les données pour le graphique des modules
             const byModule = Object.entries(attendanceByModule)
@@ -1976,7 +2052,7 @@ function adminGetAttendanceStats(data) {
                     return acc;
                 }, {});
 
-            return { byClass, attendanceOverTime, byModule, moduleStatus, inscriptionTrend };
+            return { byClass, attendanceOverTime, byModule, moduleStatus, inscriptionTrend};
         }, 300); // Cache de 5 minutes
 
         return createJsonResponse({ success: true, data: stats });
@@ -2407,7 +2483,23 @@ function getStudentDashboardData(data) {
         throw new Error("Une des sous-requêtes pour le dashboard a échoué.");
       }
 
-      return { profile: profileResult.data, schedule: scheduleResult.data, attendance: attendanceResult.data };
+      // NOUVEAU: Calcul du taux de participation/absence
+      const totalConfirmedCourses = scheduleResult.data.filter(c => c.STATUT === 'Confirmé').length;
+      const totalPresences = attendanceResult.data.length;
+      let participationRate = 0;
+      let absenceRate = 0;
+
+      if (totalConfirmedCourses > 0) {
+        participationRate = (totalPresences / totalConfirmedCourses) * 100;
+        absenceRate = 100 - participationRate;
+      }
+
+      const attendanceStats = {
+          participationRate: parseFloat(participationRate.toFixed(1)),
+          absenceRate: parseFloat(absenceRate.toFixed(1))
+      };
+
+      return { profile: profileResult.data, schedule: scheduleResult.data, attendance: attendanceResult.data, attendanceStats: attendanceStats };
     }, 120); // Cache de 2 minutes
     return createJsonResponse({ success: true, data: dashboardData });
   } catch (error) {
