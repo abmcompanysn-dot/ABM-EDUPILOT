@@ -516,12 +516,23 @@
             <h1 class="text-3xl sm:text-4xl font-bold text-gray-800">Outils et Générateurs</h1>
             <p class="text-gray-600 mt-2">Générez ici vos QR codes de présence et liens d'inscription.</p>
         </header>
-        <div class="grid md:grid-cols-2 gap-8">
+        <div class="grid md:grid-cols-3 gap-8">
             <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
                 <div class="flex-grow">
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Générer les QR Codes de Présence</h3>
                 </div>
                 <button class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700" onclick="callAdminAction('adminGetQrCodes')">Lancer la génération</button>
+            </div>
+            <!-- NOUVEAU: Carte pour la recherche RFID -->
+            <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
+                <div class="flex-grow">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Recherche par Carte RFID</h3>
+                    <p class="text-sm text-gray-500 mb-4">Cliquez dans le champ puis scannez la carte RFID d'un étudiant pour afficher son profil complet.</p>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i class="fas fa-wifi text-gray-400 transform -rotate-45"></i></div>
+                        <input type="text" id="rfid-search-input" onchange="searchStudentByRFID(this.value)" placeholder="En attente du scan..." class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-violet-500 focus:border-violet-500 sm:text-sm">
+                    </div>
+                </div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-sm flex flex-col">
                 <div class="flex-grow">
@@ -2449,6 +2460,36 @@
                 showModal('Erreur de communication', `<p class="text-red-600 font-semibold">${error.message}</p>`);
             } finally {
                 showSpinner(false);
+            }
+        }
+
+        /**
+         * NOUVEAU: Gère la recherche d'un étudiant via un scan de carte RFID.
+         * Cette fonction est déclenchée lorsque l'input de recherche RFID change.
+         * @param {string} rfidId - L'identifiant unique lu depuis la carte RFID.
+         */
+        async function searchStudentByRFID(rfidId) {
+            if (!rfidId) return;
+
+            console.log(`Recherche de l'étudiant avec l'ID RFID : ${rfidId}`);
+            showSpinner(true);
+
+            try {
+                // Étape 1: Appeler une nouvelle fonction API pour trouver l'étudiant par son RFID
+                const result = await callAdminApi('adminGetStudentByRfid', { rfidId });
+                const student = result.data.student;
+
+                // Étape 2: Afficher le profil complet de l'étudiant trouvé
+                // La fonction showStudentProfile gère déjà l'affichage des données personnelles,
+                // de l'emploi du temps et de l'historique des présences (assignments).
+                await showStudentProfile(student.ID_ETUDIANT, student.ID_CLASSE_FK, student.NOM_CLASSE, student.ID_FILIERE_FK, student.NOM_FILIERE);
+
+            } catch (error) {
+                showModal('Erreur de Recherche', `Aucun étudiant trouvé pour cet ID RFID ou une erreur est survenue. Détails : ${error.message}`);
+            } finally {
+                showSpinner(false);
+                // Vider le champ pour le prochain scan
+                document.getElementById('rfid-search-input').value = '';
             }
         }
     </script>

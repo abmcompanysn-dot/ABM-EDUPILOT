@@ -218,6 +218,8 @@ function doPost(e) {
         return responsableAssignRfid(data);
     } else if (action === 'responsableRecordRfidAttendance') { // NOUVEAU: Pour RFID
         return responsableRecordRfidAttendance(data);
+    } else if (action === 'adminGetStudentByRfid') { // NOUVEAU: Pour la recherche RFID par l'admin
+        return adminGetStudentByRfid(data);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -233,6 +235,48 @@ function doPost(e) {
 // ============================================================================
 // NOUVEAU: FONCTIONS POUR LA GESTION RFID
 // ============================================================================
+
+/**
+ * NOUVEAU: ACTION: adminGetStudentByRfid
+ * Recherche un étudiant par son ID de carte RFID pour un administrateur.
+ * @param {object} data - Contient { rfidId, universityId }.
+ * @returns {object} JSON response avec les données complètes du profil de l'étudiant.
+ */
+function adminGetStudentByRfid(data) {
+  try {
+    const { rfidId, universityId } = data;
+    if (!rfidId || !universityId) {
+      throw new Error("L'ID RFID et l'ID de l'université sont requis.");
+    }
+
+    // 1. Trouver l'étudiant correspondant à la carte RFID
+    const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+    const studentsData = studentsSheet.getDataRange().getValues();
+    const headers = studentsData[0];
+    const rfidIdx = headers.indexOf('ID_RFID');
+    const studentIdIdx = headers.indexOf('ID_ETUDIANT');
+
+    if (rfidIdx === -1) {
+      throw new Error("La colonne 'ID_RFID' est introuvable dans la feuille Étudiants. Veuillez mettre à jour le système via le menu.");
+    }
+
+    const studentRow = studentsData.slice(1).find(row => row[rfidIdx] === rfidId);
+
+    if (!studentRow) {
+      throw new Error(`Aucun étudiant trouvé avec l'ID RFID : ${rfidId}`);
+    }
+
+    const studentId = studentRow[studentIdIdx];
+
+    // 2. Réutiliser la fonction existante pour récupérer le profil complet.
+    // Elle contient déjà la logique de jointure (classe, filière) et la vérification de sécurité.
+    return getStudentProfileForAdmin({ studentId, universityId });
+
+  } catch (error) {
+    logError('adminGetStudentByRfid', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
 
 /**
  * ACTION: responsableGetStudentsForRfid

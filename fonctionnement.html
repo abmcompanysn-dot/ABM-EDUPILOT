@@ -205,6 +205,7 @@
                                 <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Délégation</span><span>: Créez des comptes pour les responsables de classe.</span></li>
                                 <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Suivi Global</span><span>: Consultez l'historique complet des présences de toute l'université.</span></li>
                                 <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Scan de Profil</span><span>: Scannez le QR code d'un étudiant pour accéder instantanément à son profil complet.</span></li>
+                                <li class="flex items-start"><span class="text-blue-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Gestion RFID</span><span>: Utilisez un lecteur RFID pour rechercher un étudiant et afficher son profil, son emploi du temps et son historique.</span></li>
                             </ul>
                         </div>
                     </div>
@@ -230,6 +231,8 @@
                             <ul class="space-y-3 text-slate-600">
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Gestion du Planning</span><span>: Proposez, confirmez ou annulez les cours de votre classe.</span></li>
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Suivi de Classe</span><span>: Accédez à la liste de vos étudiants et à leur historique de présence.</span></li>
+                                <!-- NOUVEAU: Ajout de la fonctionnalité RFID -->
+                                <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Gestion RFID</span><span>: Assignez des cartes RFID aux étudiants et effectuez le pointage en temps réel, sans QR code, pour une rapidité maximale.</span></li>
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Outils Dédiés</span><span>: Générez et partagez le lien d'inscription et le QR code de présence en un clic.</span></li>
                                 <li class="flex items-start"><span class="text-green-500 font-bold mr-2 mt-1">✔</span><span class="font-semibold w-32 shrink-0">Pointage Manuel</span><span>: Scannez le QR code d'un étudiant pour valider sa présence s'il n'a pas son téléphone.</span></li>
                             </ul>
@@ -453,6 +456,33 @@
             const modal = document.getElementById('abm-company-modal');
             if (modal) modal.classList.add('hidden');
         }
+
+       /**
+        * Gère la recherche d'un étudiant via un scan de carte RFID.
+        * Lorsqu'un administrateur scanne une carte, cette fonction est appelée.
+        *
+        * Dans une application réelle, cette fonction serait connectée à un lecteur RFID
+        * via l'API Web Serial, WebUSB ou une application de bureau intermédiaire qui enverrait les données ici.
+        *
+        * @param {string} rfidData - L'identifiant unique lu depuis la carte RFID de l'étudiant.
+        */
+       function searchStudentByRFID(rfidData) {
+           // Affiche une alerte pour simuler le début du processus
+           alert(`Recherche du profil pour la carte RFID : ${rfidData}...`);
+
+           // Étape 1 : Envoyer l'ID RFID au serveur (backend) pour trouver l'étudiant.
+           // fetch('/api/student-by-rfid', { method: 'POST', body: JSON.stringify({ rfid: rfidData }) })
+           //   .then(response => response.json())
+           //   .then(data => {
+           //       // Étape 2 : Afficher les informations reçues (données personnelles, emploi du temps, assignments).
+           //       // Par exemple, en remplissant et en affichant une modale.
+           //       console.log("Données de l'étudiant reçues :", data);
+           //       alert(`Étudiant trouvé : ${data.nom}. Affichage des informations...`);
+           //   })
+           //   .catch(error => console.error('Erreur lors de la recherche:', error));
+           
+           console.log("Logique de recherche et d'affichage du profil étudiant à implémenter. L'ID RFID scanné est : " + rfidData);
+       }
 
         // CORRECTION: Le script pour l'accordéon était vide, je l'ai complété.
         document.addEventListener('DOMContentLoaded', function() {
