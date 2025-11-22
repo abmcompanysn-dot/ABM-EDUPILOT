@@ -1083,6 +1083,81 @@
                 showSpinner(false);
             }
         }
+
+
+        // NOUVEAU: Initialise la page de gestion RFID
+        async function setupRfidPage() {
+            const studentSelect = document.getElementById('rfid-student-select');
+            const assignForm = document.getElementById('assign-rfid-form');
+            const attendanceInput = document.getElementById('rfid-attendance-input');
+
+            // 1. Charger les étudiants dans le select
+            try {
+                const result = await callResponsableApi('responsableGetStudentsForRfid');
+                const students = result.data || [];
+                studentSelect.innerHTML = '<option value="">-- Sélectionnez un étudiant --</option>' + students.map(s => `<option value="${s.ID_ETUDIANT}">${s.NOM_COMPLET} (${s.ID_ETUDIANT})</option>`).join('');
+            } catch (error) {
+                studentSelect.innerHTML = '<option value="">Erreur de chargement</option>';
+                console.error("Erreur chargement étudiants pour RFID:", error);
+            }
+
+            // 2. Charger le statut des cartes
+            loadRfidStatus();
+
+            // 3. Gérer la soumission du formulaire d'assignation
+            if (assignForm && !assignForm.dataset.listenerAttached) {
+                assignForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const studentId = studentSelect.value;
+                    const rfidId = document.getElementById('rfid-card-id').value;
+                    if (!studentId || !rfidId) {
+                        showModal('Erreur', 'Veuillez sélectionner un étudiant et scanner une carte.');
+                        return;
+                    }
+                    showSpinner(true);
+                    try {
+                        const result = await callResponsableApi('responsableAssignRfid', { studentId, rfidId });
+                        showModal('Succès', result.message);
+                        assignForm.reset();
+                        loadRfidStatus(); // Recharger la liste
+                    } catch (error) {
+                        showModal('Erreur', error.message);
+                    } finally {
+                        showSpinner(false);
+                    }
+                });
+                assignForm.dataset.listenerAttached = 'true';
+            }
+
+            // 4. Gérer le pointage par RFID
+            if (attendanceInput && !attendanceInput.dataset.listenerAttached) {
+                const logContainer = document.getElementById('rfid-attendance-log');
+                attendanceInput.addEventListener('change', async (e) => {
+                    const rfidId = e.target.value;
+                    if (!rfidId) return;
+
+                    const logEntry = document.createElement('p');
+                    logEntry.className = 'p-2 rounded-md text-gray-700';
+                    logEntry.textContent = `Scan détecté: ${rfidId}. Tentative de pointage...`;
+                    logContainer.prepend(logEntry);
+
+                    try {
+                        const result = await callResponsableApi('responsableRecordRfidAttendance', { rfidId });
+                        logEntry.textContent = `✅ ${new Date().toLocaleTimeString()}: ${result.message}`;
+                        logEntry.classList.add('bg-green-100');
+                    } catch (error) {
+                        logEntry.textContent = `❌ ${new Date().toLocaleTimeString()}: ${error.message}`;
+                        logEntry.classList.add('bg-red-100');
+                    } finally {
+                        // Vider le champ pour le prochain scan
+                        e.target.value = '';
+                        // Remettre le focus pour le prochain scan
+                        e.target.focus();
+                    }
+                });
+                attendanceInput.dataset.listenerAttached = 'true';
+            }
+        }
         // --- FONCTIONS UTILITAIRES ---
         // NOUVEAU: Affiche la liste des modules
         function renderModules(modules) {
