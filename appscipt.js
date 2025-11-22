@@ -436,7 +436,8 @@ function adminGetStudentByRfid(data) {
 
     // CORRECTION: Convertir les deux valeurs en chaîne de caractères avant la comparaison
     // pour éviter les problèmes de type (nombre vs chaîne).
-    const studentRow = studentsData.slice(1).find(row => String(row[rfidIdx]).trim() === String(rfidId).trim());
+    // AMÉLIORATION: Convertir en nombres pour ignorer les zéros non significatifs (ex: 00123 vs 123).
+    const studentRow = studentsData.slice(1).find(row => row[rfidIdx] && Number(row[rfidIdx]) === Number(rfidId));
 
     if (!studentRow) {
       throw new Error(`Aucun étudiant trouvé avec l'ID RFID : ${rfidId}`);
