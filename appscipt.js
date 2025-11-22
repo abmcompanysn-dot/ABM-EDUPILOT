@@ -2764,9 +2764,9 @@ function setup() {
       [SHEET_NAMES.RESPONSABLES]: { headers: ['ID_RESPONSABLE', 'NOM_RESPONSABLE', 'EMAIL_RESPONSABLE', 'PASSWORD_HASH', 'SALT', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK'], color: '#1a237e' },
       [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
       [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
-        [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
-      [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },      
-        [SHEET_NAMES.MESSAGE_READS]: { headers: ['ID_UTILISATEUR', 'ID_MESSAGE_FK', 'TIMESTAMP_LECTURE'], color: '#546e7a' },
+      [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
+      [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION', 'ID_RFID'], color: '#4285f4', validations: {} },
+      [SHEET_NAMES.MESSAGE_READS]: { headers: ['ID_UTILISATEUR', 'ID_MESSAGE_FK', 'TIMESTAMP_LECTURE'], color: '#546e7a' },
       [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
       [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },
       [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
@@ -2960,7 +2960,7 @@ function getSheetConfigs() {
         [SHEET_NAMES.ADMINS]: { headers: ['ID_ADMIN', 'EMAIL_ADMIN', 'PASSWORD_HASH', 'SALT', 'ID_UNIVERSITE_FK'], color: '#a61c00' },
         [SHEET_NAMES.PASSWORD_RESETS]: { headers: ['TIMESTAMP', 'EMAIL_ADMIN', 'STATUT'], color: '#ff6d00', validations: { 'STATUT': ['EN ATTENTE', 'TRAITÉ'] } }, // NOUVEAU: Ajout de NUMERO_TELEPHONE
         [SHEET_NAMES.MESSAGES]: { headers: ['ID_MESSAGE', 'TIMESTAMP', 'ID_UNIVERSITE_FK', 'ID_CLASSE_FK', 'SUJET', 'CORPS', 'AUTEUR_INFO'], color: '#00796b' },
-        [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION'], color: '#4285f4', validations: {} },
+        [SHEET_NAMES.STUDENTS]: { headers: ['ID_ETUDIANT', 'NOM_COMPLET', 'ID_FILIERE_FK', 'ID_CLASSE_FK', 'EMAIL', 'NUMERO_TELEPHONE', 'ID_UNIVERSITE_FK', 'DATE_INSCRIPTION', 'ID_RFID'], color: '#4285f4', validations: {} },
         [SHEET_NAMES.MESSAGE_READS]: { headers: ['ID_UTILISATEUR', 'ID_MESSAGE_FK', 'TIMESTAMP_LECTURE'], color: '#546e7a' },
         [SHEET_NAMES.MODULES]: { headers: ['ID_MODULE', 'NOM_MODULE', 'ID_CLASSE_FK', 'ID_UNIVERSITE_FK', 'NOM_ENSEIGNANT', 'STATUT'], color: '#fbc02d', validations: { 'STATUT': ['En cours', 'Terminé'] } },
         [SHEET_NAMES.PLANNING]: { headers: ['ID_COURS', 'ID_MODULE_FK', 'DATE_COURS', 'HEURE_DEBUT', 'HEURE_FIN', 'STATUT'], color: '#0f9d58', validations: { 'STATUT': ['Confirmé', 'Annulé', 'En attente'] } },

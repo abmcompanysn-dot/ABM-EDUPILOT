@@ -1146,14 +1146,15 @@
             // CORRECTION: Le token du responsable contient l'ID du responsable ET l'ID de l'université.
             // On les sépare pour les envoyer au backend.
             if (!responsableId || !responsableId.includes(':')) {
-                throw new Error('Session responsable invalide. Veuillez vous reconnecter.');
+                // CORRECTION: Rediriger vers la page de connexion si le token est invalide.
+                logout();
+                return Promise.reject(new Error('Session invalide.'));
             }
             const [actualResponsableId, universityId] = responsableId.split(':');
             
             const response = await fetch(WEB_APP_URL, {
                 method: 'POST', mode: 'cors', redirect: 'follow', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // CORRECTION: Ajout de redirect: 'follow'
-                // CORRECTION: Envoyer l'ID du responsable et l'ID de l'université séparément.
-                // CORRECTION: Simplification du corps de la requête pour éviter d'envoyer un `studentId` non défini.
+                // CORRECTION: Assurer que responsableId et universityId sont toujours présents dans les données envoyées.
                 body: JSON.stringify({ action, data: { ...data, responsableId: actualResponsableId, universityId: universityId } })
             });
             const result = await response.json();
