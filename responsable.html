@@ -1169,6 +1169,11 @@
             const rfidId = input.value;
             if (!rfidId) return;
 
+            // CORRECTION: Vider le champ immédiatement pour éviter la concaténation des scans.
+            // On garde le focus pour que le prochain scan soit directement capturé.
+            input.value = '';
+            input.focus();
+
             const logContainer = document.getElementById('rfid-attendance-log');
             const logEntry = document.createElement('p');
             logEntry.className = 'p-2 rounded-md text-gray-700 animate-pulse';
@@ -1186,8 +1191,7 @@
                 logEntry.classList.remove('animate-pulse');
                 logEntry.classList.add('bg-red-100');
             } finally {
-                input.value = ''; // Vider pour le prochain scan
-                input.focus();    // Garder le focus pour le scan suivant
+                // Le vidage et le focus sont maintenant faits au début de la fonction.
             }
         }
         // --- FONCTIONS UTILITAIRES ---
