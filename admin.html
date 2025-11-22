@@ -448,6 +448,11 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Évolution des Inscriptions d'Étudiants</h3>
                     <canvas id="inscriptionTrendChart"></canvas>
                 </div>
+                <!-- NOUVEAU: Graphique d'assiduité par filière -->
+                <div class="bg-white p-6 rounded-lg shadow-sm">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Taux d'Assiduité par Filière</h3>
+                    <canvas id="assiduiteParFiliereChart"></canvas>
+                </div>
             </div>
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <!-- AMÉLIORATION: Ajout des filtres par date -->
@@ -1497,6 +1502,7 @@
             const byModuleCanvas = document.getElementById('attendanceByModuleChart');
             const moduleStatusCanvas = document.getElementById('moduleStatusChart'); // NOUVEAU
             const inscriptionTrendCanvas = document.getElementById('inscriptionTrendChart'); // NOUVEAU
+            const assiduiteFiliereCanvas = document.getElementById('assiduiteParFiliereChart'); // NOUVEAU
             
             // Détruire les anciens graphiques s'ils existent pour éviter les bugs d'affichage
             if (window.attendanceByClassChartInstance) window.attendanceByClassChartInstance.destroy();
@@ -1504,6 +1510,7 @@
             if (window.attendanceByModuleChartInstance) window.attendanceByModuleChartInstance.destroy();
             if (window.moduleStatusChartInstance) window.moduleStatusChartInstance.destroy(); // NOUVEAU
             if (window.inscriptionTrendChartInstance) window.inscriptionTrendChartInstance.destroy(); // NOUVEAU
+            if (window.assiduiteParFiliereChartInstance) window.assiduiteParFiliereChartInstance.destroy(); // NOUVEAU
 
             try {
                 const result = await callAdminApi('adminGetAttendanceStats');
@@ -1621,6 +1628,32 @@
                         plugins: { legend: { display: false } }
                     }
                 });
+
+                // NOUVEAU: Graphique 6: Taux d'assiduité par filière
+                const assiduiteLabels = byClass.map(c => c.className); // On réutilise les classes pour les labels
+                const assiduiteData = byClass.map(c => {
+                    const totalPossible = c.totalStudents * c.totalCourses;
+                    if (totalPossible === 0) return 0;
+                    return (c.totalScans / totalPossible) * 100;
+                });
+                window.assiduiteParFiliereChartInstance = new Chart(assiduiteFiliereCanvas, {
+                    type: 'radar',
+                    data: {
+                        labels: assiduiteLabels,
+                        datasets: [{
+                            label: 'Taux d\'assiduité (%)',
+                            data: assiduiteData,
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            borderColor: 'rgba(139, 92, 246, 1)',
+                            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                        }]
+                    },
+                    options: { scales: { r: { beginAtZero: true, max: 100 } } }
+                });
+
 
                 // NOUVEAU: Stocker les données complètes pour le filtrage
                 window.fullAttendanceOverTime = attendanceOverTime;

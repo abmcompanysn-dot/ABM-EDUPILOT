@@ -218,6 +218,12 @@ function doPost(e) {
         return responsableAssignRfid(data);
     } else if (action === 'responsableRecordRfidAttendance') { // NOUVEAU: Pour RFID
         return responsableRecordRfidAttendance(data);
+    } else if (action === 'responsableGetAbsenceStats') { // NOUVEAU: Pour le graphe du responsable
+        return responsableGetAbsenceStats(data, ctx);
+    } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
+        return getStudentAbsenceReport(data, ctx);
+    } else if (action === 'adminGetAssiduiteStats') { // NOUVEAU: Pour le graphe admin
+        return adminGetAssiduiteStats(data, ctx);
     } else if (action === 'adminGetStudentByRfid') { // NOUVEAU: Pour la recherche RFID par l'admin
         return adminGetStudentByRfid(data);
     } else {
@@ -235,6 +241,123 @@ function doPost(e) {
 // ============================================================================
 // NOUVEAU: FONCTIONS POUR LA GESTION RFID
 // ============================================================================
+
+/**
+ * NOUVEAU: ACTION: responsableGetAbsenceStats
+ * Calcule le nombre total d'absences par module pour la classe d'un responsable.
+ * @param {object} data - Contient { responsableId }.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object} JSON response avec les données pour le graphique.
+ */
+function responsableGetAbsenceStats(data, ctx) {
+    try {
+        const { responsableId } = data;
+        if (!responsableId) throw new Error("ID du responsable manquant.");
+
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId } = classInfo;
+
+        // 1. Récupérer les modules de la classe
+        const modulesData = _getRawSheetData(SHEET_NAMES.MODULES, ctx);
+        const classModules = modulesData.slice(1)
+            .filter(row => row[2] === classId) // ID_CLASSE_FK est à l'index 2
+            .map(row => ({ id: row[0], name: row[1] }));
+
+        // 2. Compter le nombre total de sessions confirmées pour chaque module
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const sessionsParModule = planningData.slice(1).reduce((acc, row) => {
+            const moduleId = row[1]; // ID_MODULE_FK
+            const status = row[5]; // STATUT
+            if (status === 'Confirmé') {
+                acc[moduleId] = (acc[moduleId] || 0) + 1;
+            }
+            return acc;
+        }, {});
+
+        // 3. Compter le nombre d'étudiants dans la classe
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const studentCount = studentsData.slice(1).filter(row => row[3] === classId).length; // ID_CLASSE_FK
+
+        // 4. Compter les présences effectives par module
+        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+        const presencesParModule = scanData.slice(1).reduce((acc, row) => {
+            const moduleName = row[4]; // MODULE
+            acc[moduleName] = (acc[moduleName] || 0) + 1;
+            return acc;
+        }, {});
+
+        // 5. Calculer les absences
+        const absenceStats = classModules.map(module => {
+            const totalSessions = sessionsParModule[module.id] || 0;
+            const totalPresencesPossibles = totalSessions * studentCount;
+            const presencesReelles = presencesParModule[module.name] || 0;
+            const totalAbsences = Math.max(0, totalPresencesPossibles - presencesReelles);
+            return { moduleName: module.name, totalAbsences };
+        }).filter(stat => stat.totalAbsences > 0) // Ne garder que les modules avec des absences
+          .sort((a, b) => b.totalAbsences - a.totalAbsences); // Trier par le plus grand nombre d'absences
+
+        return createJsonResponse({ success: true, data: absenceStats });
+
+    } catch (error) {
+        logError('responsableGetAbsenceStats', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: ACTION: getStudentAbsenceReport
+ * Récupère la liste des cours où un étudiant a été absent.
+ * @param {object} data - Contient { studentId }.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object} JSON response avec la liste des cours manqués.
+ */
+function getStudentAbsenceReport(data, ctx) {
+    try {
+        const { studentId } = data;
+        if (!studentId) throw new Error("ID de l'étudiant manquant.");
+
+        const studentMap = getStudentMap();
+        const studentInfo = studentMap[studentId.toUpperCase()];
+        if (!studentInfo) throw new Error("Étudiant non trouvé.");
+
+        // 1. Récupérer tous les cours confirmés pour la classe de l'étudiant
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+        
+        const scheduledCourses = planningData.slice(1).filter(row => {
+            const module = moduleMap.get(row[1]); // ID_MODULE_FK
+            return module && module.classId === studentInfo.classId && row[5] === 'Confirmé'; // STATUT
+        }).map(row => ({
+            date: Utilities.formatDate(new Date(row[2]), Session.getScriptTimeZone(), 'yyyy-MM-dd'), // DATE_COURS
+            module: moduleMap.get(row[1]).name
+        }));
+
+        // 2. Récupérer toutes les présences de l'étudiant
+        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+        const studentPresences = new Set(
+            scanData.slice(1)
+            .filter(row => row[1] === studentId) // ID_ETUDIANT
+            .map(row => `${Utilities.formatDate(new Date(row[5]), Session.getScriptTimeZone(), 'yyyy-MM-dd')}_${row[4]}`) // DATE_SCAN + MODULE
+        );
+
+        // 3. Comparer pour trouver les absences
+        const absenceReport = scheduledCourses.filter(course => {
+            const presenceKey = `${course.date}_${course.module}`;
+            return !studentPresences.has(presenceKey);
+        });
+
+        return createJsonResponse({ success: true, data: absenceReport });
+
+    } catch (error) {
+        logError('getStudentAbsenceReport', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/** NOUVEAU: Logique pour le graphe d'assiduité admin (similaire à l'existant mais séparé pour clarté) */
+function adminGetAssiduiteStats(data, ctx) {
+    return adminGetAttendanceStats(data); // Réutilise la fonction existante qui contient déjà les données nécessaires
+}
 
 /**
  * NOUVEAU: ACTION: adminGetStudentByRfid
@@ -260,7 +383,9 @@ function adminGetStudentByRfid(data) {
       throw new Error("La colonne 'ID_RFID' est introuvable dans la feuille Étudiants. Veuillez mettre à jour le système via le menu.");
     }
 
-    const studentRow = studentsData.slice(1).find(row => row[rfidIdx] === rfidId);
+    // CORRECTION: Convertir les deux valeurs en chaîne de caractères avant la comparaison
+    // pour éviter les problèmes de type (nombre vs chaîne).
+    const studentRow = studentsData.slice(1).find(row => String(row[rfidIdx]).trim() === String(rfidId).trim());
 
     if (!studentRow) {
       throw new Error(`Aucun étudiant trouvé avec l'ID RFID : ${rfidId}`);
