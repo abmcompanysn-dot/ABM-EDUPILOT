@@ -212,10 +212,12 @@ function doPost(e) {
         return responsableForceRefresh(data);
     } else if (action === 'responsableAddModule') { // NOUVEAU: Ajout de l'action manquante
         return responsableAddModule(data);
+    } else if (action === 'responsableGetStudentsForRfid') { // NOUVEAU: Pour RFID
+        return responsableGetStudentsForRfid(data);
     } else if (action === 'responsableAssignRfid') { // NOUVEAU: Pour RFID
-        return responsableAssignRfid(data, ctx);
-    } else if (action === 'recordAttendanceByRfid') { // NOUVEAU: Pour RFID
-        return recordAttendanceByRfid(data, ctx);
+        return responsableAssignRfid(data);
+    } else if (action === 'responsableRecordRfidAttendance') { // NOUVEAU: Pour RFID
+        return responsableRecordRfidAttendance(data);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -228,87 +230,211 @@ function doPost(e) {
   }
 }
 
+// ============================================================================
+// NOUVEAU: FONCTIONS POUR LA GESTION RFID
+// ============================================================================
+
 /**
- * NOUVEAU: Assigne un ID RFID à un étudiant.
- * @param {object} data - Contient { responsableId, studentId, rfidId }.
- * @param {object} ctx - Le contexte de la requête.
+ * ACTION: responsableGetStudentsForRfid
+ * Récupère les listes d'étudiants d'une classe, séparés entre ceux qui ont une carte RFID et ceux qui n'en ont pas.
+ * @param {object} data - { responsableId, universityId }
+ * @returns {object} { success: true, data: { studentsWithCard: [], studentsWithoutCard: [] } }
  */
-function responsableAssignRfid(data, ctx) {
-    try {
-        const { responsableId, studentId, rfidId } = data;
-        if (!responsableId || !studentId || !rfidId) {
-            throw new Error("Données d'assignation RFID incomplètes.");
-        }
+function responsableGetStudentsForRfid(data) {
+  const { responsableId, universityId } = data;
+  const classeId = getResponsableClassId(responsableId, universityId);
+  if (!classeId) {
+    return createJsonResponse({ success: false, error: "Responsable non trouvé ou non associé à une classe." });
+  }
 
-        // 1. Vérification de sécurité
-        const classInfo = getResponsableClassInfo(responsableId, ctx);
-        const studentMap = getStudentMap();
-        const studentInfo = studentMap[studentId.trim().toUpperCase()];
+  const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+  const allStudentsData = studentsSheet.getDataRange().getValues();
+  const headers = allStudentsData.shift();
+  
+  const col = {
+      ID_ETUDIANT: headers.indexOf('ID_ETUDIANT'), 
+      NOM_COMPLET: headers.indexOf('NOM_COMPLET'), 
+      ID_CLASSE_FK: headers.indexOf('ID_CLASSE_FK'),
+      ID_CARTE_RFID: headers.indexOf('ID_RFID') // Assurez-vous que le nom de colonne est correct
+  };
 
-        if (!studentInfo || studentInfo.classId !== classInfo.classId) {
-            throw new Error("Cet étudiant n'appartient pas à votre classe.");
-        }
+  if (Object.values(col).includes(-1)) {
+      return createJsonResponse({ success: false, error: "Une ou plusieurs colonnes requises sont introuvables dans la feuille Étudiants." });
+  }
 
-        // 2. Vérifier que l'ID RFID n'est pas déjà utilisé
-        const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
-        const studentsData = studentsSheet.getDataRange().getValues();
-        const headers = studentsData[0];
-        const rfidIdx = headers.indexOf('ID_RFID');
-        const studentIdIdx = headers.indexOf('ID_ETUDIANT');
+  const studentsWithCard = [];
+  const studentsWithoutCard = [];
 
-        if (rfidIdx === -1) throw new Error("La colonne ID_RFID est introuvable dans la feuille Étudiants.");
-
-        const existingRfid = studentsData.slice(1).find(row => row[rfidIdx] === rfidId);
-        if (existingRfid) {
-            throw new Error(`Cette carte RFID est déjà assignée à l'étudiant avec l'ID ${existingRfid[studentIdIdx]}.`);
-        }
-
-        // 3. Trouver et mettre à jour l'étudiant
-        const studentRowIndex = studentsData.findIndex(row => row[studentIdIdx] === studentId);
-        if (studentRowIndex === -1) throw new Error("Étudiant non trouvé pour la mise à jour.");
-
-        studentsSheet.getRange(studentRowIndex + 1, rfidIdx + 1).setValue(rfidId);
-        SpreadsheetApp.flush();
-
-        // Invalider les caches
-        clearStudentCache();
-        cache.remove(`students_resp_${responsableId}`);
-
-        logAction('responsableAssignRfid', { responsableId, studentId, rfidId });
-        return createJsonResponse({ success: true, message: `La carte RFID a été assignée avec succès à ${studentInfo.name}.` });
-
-    } catch (error) {
-        logError('responsableAssignRfid', error);
-        return createJsonResponse({ success: false, error: error.message });
+  allStudentsData.forEach(row => {
+    if (row[col.ID_CLASSE_FK] == classeId) {
+      const student = {
+        ID_ETUDIANT: row[col.ID_ETUDIANT],
+        NOM_COMPLET: row[col.NOM_COMPLET],
+        ID_CARTE_RFID: row[col.ID_CARTE_RFID]
+      };
+      if (student.ID_CARTE_RFID) {
+        studentsWithCard.push(student);
+      } else {
+        studentsWithoutCard.push(student);
+      }
     }
+  });
+
+  return createJsonResponse({ success: true, data: { studentsWithCard, studentsWithoutCard } });
+}
+
+
+/**
+ * ACTION: responsableAssignRfid
+ * Assigne un ID de carte RFID à un étudiant.
+ * @param {object} data - { responsableId, universityId, studentId, rfidId }
+ * @returns {object} { success: true, message: "..." }
+ */
+function responsableAssignRfid(data) {
+  const { responsableId, universityId, studentId, rfidId } = data;
+  
+  // 1. Vérifier que le responsable est légitime
+  const classeId = getResponsableClassId(responsableId, universityId);
+  if (!classeId) {
+    return createJsonResponse({ success: false, error: "Accès non autorisé." });
+  }
+
+  const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+  const allStudentsData = studentsSheet.getDataRange().getValues();
+  const headers = allStudentsData[0];
+  const col = {
+      ID_ETUDIANT: headers.indexOf('ID_ETUDIANT'), 
+      ID_CLASSE_FK: headers.indexOf('ID_CLASSE_FK'),
+      ID_CARTE_RFID: headers.indexOf('ID_RFID')
+  };
+
+  // 2. Vérifier que la carte n'est pas déjà utilisée
+  for (let i = 1; i < allStudentsData.length; i++) {
+    if (allStudentsData[i][col.ID_CARTE_RFID] == rfidId) {
+      return createJsonResponse({ success: false, error: `Cette carte RFID est déjà assignée à un autre étudiant (ID: ${allStudentsData[i][col.ID_ETUDIANT]}).` });
+    }
+  }
+
+  // 3. Trouver l'étudiant et assigner la carte
+  for (let i = 1; i < allStudentsData.length; i++) {
+    if (allStudentsData[i][col.ID_ETUDIANT] == studentId) {
+      // Vérifier que l'étudiant est bien dans la classe du responsable
+      if (allStudentsData[i][col.ID_CLASSE_FK] != classeId) {
+        return createJsonResponse({ success: false, error: "Cet étudiant ne fait pas partie de votre classe." });
+      }
+      studentsSheet.getRange(i + 1, col.ID_CARTE_RFID + 1).setValue(rfidId);
+      return createJsonResponse({ success: true, message: `La carte RFID a été assignée avec succès à l'étudiant ${studentId}.` });
+    }
+  }
+
+  return createJsonResponse({ success: false, error: "Étudiant non trouvé." });
 }
 
 /**
- * NOUVEAU: Enregistre la présence via un ID RFID.
- * @param {object} data - Contient { rfidId }.
- * @param {object} ctx - Le contexte de la requête.
+ * ACTION: responsableRecordRfidAttendance
+ * Enregistre la présence d'un étudiant via un scan de carte RFID.
+ * @param {object} data - { responsableId, universityId, rfidId }
+ * @returns {object} { success: true, message: "..." }
  */
-function recordAttendanceByRfid(data, ctx) {
-    try {
-        const { rfidId } = data;
-        if (!rfidId) throw new Error("ID RFID manquant.");
+function responsableRecordRfidAttendance(data) {
+  const { responsableId, universityId, rfidId } = data;
 
-        // 1. Trouver l'étudiant correspondant à l'ID RFID
-        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
-        const headers = studentsData[0];
-        const studentIdIdx = headers.indexOf('ID_ETUDIANT');
-        const rfidIdx = headers.indexOf('ID_RFID');
-        const studentRow = studentsData.slice(1).find(row => row[rfidIdx] === rfidId);
+  // 1. Vérifier le responsable et trouver le cours actuel
+  const classeId = getResponsableClassId(responsableId, universityId);
+  if (!classeId) return createJsonResponse({ success: false, error: "Accès non autorisé." });
 
-        if (!studentRow) throw new Error("Aucun étudiant n'est associé à cette carte RFID.");
+  const courseResponse = responsableGetCurrentCourse({ responsableId }, createRequestContext());
+  const currentCourseResult = JSON.parse(courseResponse.getContent());
+  if (!currentCourseResult.success) {
+    return createJsonResponse({ success: false, error: "Aucun cours n'est actuellement en session pour cette classe." });
+  }
+  const currentCourse = currentCourseResult.data;
 
-        // 2. Utiliser la fonction de scan existante avec l'ID étudiant trouvé
-        return scanStudentForAttendance({ studentId: studentRow[studentIdIdx] }, ctx);
+  // 2. Trouver l'étudiant correspondant à la carte RFID
+  const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+  const studentsData = studentsSheet.getDataRange().getValues();
+  const studentHeaders = studentsData[0];
+  const studentCol = {
+      ID_ETUDIANT: studentHeaders.indexOf('ID_ETUDIANT'), 
+      NOM_COMPLET: studentHeaders.indexOf('NOM_COMPLET'),
+      ID_CLASSE_FK: studentHeaders.indexOf('ID_CLASSE_FK'),
+      ID_CARTE_RFID: studentHeaders.indexOf('ID_RFID')
+  };
 
-    } catch (error) {
-        logError('recordAttendanceByRfid', error);
-        return createJsonResponse({ success: false, error: error.message });
+  let studentInfo = null;
+  for (let i = 1; i < studentsData.length; i++) {
+    if (studentsData[i][studentCol.ID_CARTE_RFID] == rfidId) {
+      studentInfo = {
+        id: studentsData[i][studentCol.ID_ETUDIANT],
+        name: studentsData[i][studentCol.NOM_COMPLET],
+        classId: studentsData[i][studentCol.ID_CLASSE_FK]
+      };
+      break;
     }
+  }
+
+  if (!studentInfo) {
+    return createJsonResponse({ success: false, error: `Carte RFID non reconnue: ${rfidId}` });
+  }
+
+  // 3. Vérifier que l'étudiant est dans la bonne classe
+  if (studentInfo.classId != classeId) {
+    return createJsonResponse({ success: false, error: `L'étudiant ${studentInfo.name} n'appartient pas à cette classe.` });
+  }
+
+  // 4. Enregistrer la présence (logique similaire à scanStudentForAttendance)
+  const presencesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN);
+  const presencesData = presencesSheet.getDataRange().getValues();
+  const presencesHeaders = presencesData[0];
+  const presencesCol = {
+      ID_ETUDIANT: presencesHeaders.indexOf('ID_ETUDIANT'),
+      MODULE: presencesHeaders.indexOf('MODULE'),
+      DATE_SCAN: presencesHeaders.indexOf('DATE_SCAN')
+  };
+
+  const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+  for (let i = 1; i < presencesData.length; i++) {
+    if (presencesData[i][presencesCol.ID_ETUDIANT] == studentInfo.id && presencesData[i][presencesCol.MODULE] == currentCourse.module && presencesData[i][presencesCol.DATE_SCAN] == todayStr) {
+      return createJsonResponse({ success: true, message: `${studentInfo.name} est déjà marqué(e) présent(e).` });
+    }
+  }
+
+  const timestamp = new Date();
+  presencesSheet.appendRow([
+    timestamp, // TIMESTAMP
+    studentInfo.id, // ID_ETUDIANT
+    studentInfo.name, // NOM_ETUDIANT
+    currentCourse.classe, // CLASSE
+    currentCourse.module, // MODULE
+    todayStr, // DATE_SCAN
+    Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss'), // HEURE_SCAN
+    'Présent' // STATUT_PRESENCE
+  ]);
+
+  return createJsonResponse({ success: true, message: `Présence de ${studentInfo.name} confirmée pour le cours de ${currentCourse.module}.` });
+}
+
+/**
+ * NOUVEAU: Helper pour récupérer l'ID de la classe d'un responsable.
+ * @param {string} responsableId - L'ID du responsable.
+ * @param {string} universityId - L'ID de l'université.
+ * @returns {string|null} L'ID de la classe ou null si non trouvé.
+ */
+function getResponsableClassId(responsableId, universityId) {
+    const respSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.RESPONSABLES);
+    const respData = respSheet.getDataRange().getValues();
+    const headers = respData.shift();
+    const idIdx = headers.indexOf('ID_RESPONSABLE');
+    const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
+    const classFkIdx = headers.indexOf('ID_CLASSE_FK');
+
+    for (const row of respData) {
+        if (row[idIdx] === responsableId && row[univFkIdx] === universityId) {
+            return row[classFkIdx];
+        }
+    }
+    return null;
 }
 
 /**
@@ -404,7 +530,7 @@ function adminGetSentMessages(data, ctx) {
         if (!universityId) throw new Error("ID de l'université manquant.");
 
         const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
-        const headers = messagesData[0];
+        const headers = studentsData[0];
         const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
         const authorIdx = headers.indexOf('AUTEUR_INFO');
 
