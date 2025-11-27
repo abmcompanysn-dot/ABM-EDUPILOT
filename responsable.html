@@ -1126,25 +1126,26 @@
         }
 
         function renderRfidStatus(panel, students) {
-             panel.innerHTML = `
+            // CORRECTION : La logique pour afficher le tableau était manquante.
+            panel.innerHTML = `
                 <h4 class="text-lg font-medium text-gray-900">Statut des cartes RFID</h4>
                 <div class="max-h-[70vh] overflow-y-auto table-responsive-wrapper pr-2">
                     ${students.length === 0 ? '<p class="text-gray-500 text-center py-4">Aucun étudiant n\'a de carte assignée.</p>' : `
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Étudiant</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Carte RFID</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étudiant</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Carte RFID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             ${students.map(s => `
                                 <tr>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">${s.NOM_COMPLET}</td>
-                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_CARTE_RFID}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_RFID}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-4">
-                                        <button onclick="handleUpdateRfid('${s.ID_ETUDIANT}', '${s.ID_CARTE_RFID}')" class="text-blue-600 hover:text-blue-900">Modifier</button>
+                                        <button onclick="handleUpdateRfid('${s.ID_ETUDIANT}', '${s.ID_RFID}')" class="text-blue-600 hover:text-blue-900">Modifier</button>
                                         <button onclick="handleRemoveRfid('${s.ID_ETUDIANT}')" class="text-red-600 hover:text-red-900">Supprimer</button>
                                     </td>
                                 </tr>`).join('')}
@@ -1153,6 +1154,7 @@
                     `}
                 </div>
              `;
+            // FIN DE LA CORRECTION
         }
 
         async function handleRfidAssign(event) {
