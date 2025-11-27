@@ -710,13 +710,18 @@ function responsableRecordRfidAttendance(data) {
       DATE_SCAN: presencesHeaders.indexOf('DATE_SCAN')
   };
 
+  // CORRECTION: Vérifier si l'étudiant est déjà présent pour ce cours aujourd'hui.
   const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
 
   for (let i = 1; i < presencesData.length; i++) {
-    if (presencesData[i][presencesCol.ID_ETUDIANT] == studentInfo.id && presencesData[i][presencesCol.MODULE] == currentCourse.module && presencesData[i][presencesCol.DATE_SCAN] == todayStr) {
+    const scanDate = presencesData[i][presencesCol.DATE_SCAN];
+    const scanDateStr = scanDate instanceof Date ? Utilities.formatDate(scanDate, Session.getScriptTimeZone(), 'yyyy-MM-dd') : scanDate;
+
+    if (presencesData[i][presencesCol.ID_ETUDIANT] == studentInfo.id && presencesData[i][presencesCol.MODULE] == currentCourse.module && scanDateStr == todayStr) {
       return createJsonResponse({ success: true, message: `${studentInfo.name} est déjà marqué(e) présent(e).` });
     }
   }
+  // FIN CORRECTION
 
   const timestamp = new Date();
   presencesSheet.appendRow([
