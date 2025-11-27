@@ -48,6 +48,21 @@
         @keyframes pulse {
             50% { opacity: .5; }
         }
+
+        /* NOUVEAU: Styles pour la notation par étoiles */
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse; /* Pour que le survol fonctionne de droite à gauche */
+            justify-content: center;
+            font-size: 2.5rem; /* Taille des étoiles */
+            color: #d1d5db; /* gris-300 */
+        }
+        .star-rating label { cursor: pointer; transition: color 0.2s; padding: 0 0.25rem; }
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: #f59e0b; /* ambre-500 */
+        }
     </style>
     <script src="config.js"></script> <!-- NOUVEAU: Fichier de configuration centralisé -->
 </head>
@@ -822,6 +837,17 @@
             const modalContentHtml = `
                 <form id="feedback-form">
                     <div class="space-y-6">
+                        <!-- NOUVEAU: Section pour la notation par étoiles -->
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-800 text-center">Quelle note globale donneriez-vous ?</h4>
+                            <div class="star-rating my-4">
+                                <input type="radio" id="star5" name="star_rating" value="5" class="hidden" required/><label for="star5" title="5 étoiles"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star4" name="star_rating" value="4" class="hidden"/><label for="star4" title="4 étoiles"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star3" name="star_rating" value="3" class="hidden"/><label for="star3" title="3 étoiles"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star2" name="star_rating" value="2" class="hidden"/><label for="star2" title="2 étoiles"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star1" name="star_rating" value="1" class="hidden"/><label for="star1" title="1 étoile"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
                         <div>
                             <h4 class="text-lg font-medium text-gray-800">Comment évaluez-vous l'application ?</h4>
                             <p class="text-sm text-gray-500">Cochez les cases qui correspondent à votre expérience.</p>
@@ -860,12 +886,16 @@
                     ratings[checkbox.value] = checkbox.checked;
                 });
 
+                // NOUVEAU: Récupérer la note en étoiles
+                const starRating = document.querySelector('input[name="star_rating"]:checked')?.value || '0';
+
                 const data = {
                     userRole: userRole,
                     userId: userId,
                     ratings: ratings,
                     corrections: document.getElementById('feedback-corrections').value,
-                    ideas: document.getElementById('feedback-ideas').value
+                    ideas: document.getElementById('feedback-ideas').value,
+                    starRating: starRating // NOUVEAU: Ajouter la note au corps de la requête
                 };
 
                 try {

@@ -255,7 +255,7 @@ function doPost(e) {
  */
 function submitFeedback(data) {
     try {
-        const { userRole, userId, ratings, corrections, ideas } = data;
+        const { userRole, userId, ratings, corrections, ideas, starRating } = data; // NOUVEAU: Ajout de starRating
         if (!userRole || !userId || !ratings) {
             throw new Error("Données d'avis incomplètes.");
         }
@@ -266,7 +266,7 @@ function submitFeedback(data) {
         // Convertir l'objet des notes en une chaîne de caractères lisible
         const ratingsString = Object.entries(ratings).map(([key, value]) => `${key}: ${value}`).join('; ');
 
-        avisSheet.appendRow([timestamp, userRole, userId, ratingsString, corrections || '', ideas || '']);
+        avisSheet.appendRow([timestamp, userRole, userId, ratingsString, corrections || '', ideas || '', starRating || '0']); // NOUVEAU: Ajout de starRating
 
         return createJsonResponse({ success: true, message: "Merci beaucoup ! Votre avis a été enregistré avec succès." });
 
@@ -3324,7 +3324,7 @@ function setup() {
       [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
       [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
       [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
-      ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION'], color: '#ffc107' }
+      ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION', 'NOTE_ETOILEE'], color: '#ffc107' }
     };
 
     // 3. Créer et formater les onglets
@@ -3519,8 +3519,8 @@ function getSheetConfigs() {
         [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
         [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
         [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
-        [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' },
-        [SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION'], color: '#ffc107' }
+        [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
+        ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION', 'NOTE_ETOILEE'], color: '#ffc107' }
     };
 }
 
