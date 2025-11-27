@@ -22,7 +22,8 @@ const SHEET_NAMES = {
   ERROR_LOG: 'Historique_Erreurs',   // NOUVEAU
   MODULES: 'Modules', // NOUVEAU
   MESSAGES: 'Messages' // NOUVEAU: Pour les notifications
-,
+, // NOUVEAU: Ajout de la feuille pour les avis
+  AVIS: 'Avis',
   MESSAGE_READS: 'Lectures_Messages' // NOUVEAU: Pour suivre les lectures
 };
 
@@ -230,6 +231,8 @@ function doPost(e) {
         return getStudentAbsenceReport(data, ctx);
     } else if (action === 'adminGetAssiduiteStats') { // NOUVEAU: Pour le graphe admin
         return adminGetAssiduiteStats(data, ctx);
+    } else if (action === 'submitFeedback') { // NOUVEAU: Pour les avis
+        return submitFeedback(data);
     } else if (action === 'adminGetStudentByRfid') { // NOUVEAU: Pour la recherche RFID par l'admin
         return adminGetStudentByRfid(data);
     } else {
@@ -244,6 +247,34 @@ function doPost(e) {
   }
 }
 
+/**
+ * NOUVEAU: ACTION: submitFeedback
+ * Enregistre un avis ou un retour d'utilisateur dans la feuille 'Avis'.
+ * @param {object} data - Contient { userRole, userId, ratings, corrections, ideas }.
+ * @returns {object} JSON response avec un message de succès.
+ */
+function submitFeedback(data) {
+    try {
+        const { userRole, userId, ratings, corrections, ideas } = data;
+        if (!userRole || !userId || !ratings) {
+            throw new Error("Données d'avis incomplètes.");
+        }
+
+        const avisSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.AVIS);
+        const timestamp = new Date();
+
+        // Convertir l'objet des notes en une chaîne de caractères lisible
+        const ratingsString = Object.entries(ratings).map(([key, value]) => `${key}: ${value}`).join('; ');
+
+        avisSheet.appendRow([timestamp, userRole, userId, ratingsString, corrections || '', ideas || '']);
+
+        return createJsonResponse({ success: true, message: "Merci beaucoup ! Votre avis a été enregistré avec succès." });
+
+    } catch (error) {
+        logError('submitFeedback', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 // ============================================================================
 // NOUVEAU: FONCTIONS POUR LA GESTION RFID
 // ============================================================================
@@ -3293,6 +3324,7 @@ function setup() {
       [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
       [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
       [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
+      ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION'], color: '#ffc107' }
     };
 
     // 3. Créer et formater les onglets
@@ -3487,7 +3519,8 @@ function getSheetConfigs() {
         [SHEET_NAMES.SCAN]: { headers: ['TIMESTAMP', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'MODULE', 'DATE_SCAN', 'HEURE_SCAN', 'STATUT_PRESENCE'], color: '#db4437', validations: { 'STATUT_PRESENCE': ['Présent', 'Absent', 'En retard', 'Justifié'] } },
         [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
         [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
-        [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
+        [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' },
+        [SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION'], color: '#ffc107' }
     };
 }
 

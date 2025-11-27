@@ -71,6 +71,7 @@
                      </button>
                      <div id="settings-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
                          <a href="#" onclick="openModal('profile'); toggleSettingsMenu();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Modifier mes infos</a>
+                         <!-- Le bouton "Donner mon avis" a été déplacé dans le panneau d'actions principal -->
                          <a href="#" onclick="studentLogout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Déconnexion</a>
                      </div>
                  </div>
@@ -125,6 +126,11 @@
                 <button id="rfid-card-btn" onclick="openModal('rfid-card')" class="hidden text-left p-4 bg-cyan-50 hover:bg-cyan-100 rounded-lg transition-all">
                     <i class="fas fa-id-card text-2xl text-cyan-500 mb-2"></i>
                     <p class="font-semibold">Ma Carte RFID</p>
+                </button>
+                <!-- NOUVEAU: Bouton pour donner son avis, déplacé ici -->
+                <button onclick="openFeedbackModal('Etudiant')" class="text-left p-4 bg-yellow-50 hover:bg-yellow-100 rounded-lg transition-all">
+                    <i class="fas fa-comments text-2xl text-yellow-500 mb-2"></i>
+                    <p class="font-semibold">Donner mon avis</p>
                 </button>
             </div>
         </div>
@@ -804,6 +810,73 @@
             } catch (error) {
                 modalBody.innerHTML = `<div class="text-center py-4"><div class="text-5xl text-red-500 mb-4"><i class="fas fa-times-circle"></i></div><p class="text-lg text-gray-700">Erreur lors de la génération du rapport : ${error.message}</p></div>`;
             }
+        }
+
+        /**
+         * NOUVEAU: Ouvre la modale pour donner un avis.
+         * @param {string} userRole - Le rôle de l'utilisateur ('Admin', 'Responsable', 'Etudiant').
+         */
+        function openFeedbackModal(userRole) {
+            const userId = sessionStorage.getItem(STUDENT_SESSION_KEY);
+
+            const modalContentHtml = `
+                <form id="feedback-form">
+                    <div class="space-y-6">
+                        <div>
+                            <h4 class="text-lg font-medium text-gray-800">Comment évaluez-vous l'application ?</h4>
+                            <p class="text-sm text-gray-500">Cochez les cases qui correspondent à votre expérience.</p>
+                            <div class="mt-4 space-y-3">
+                                <label class="flex items-center"><input type="checkbox" name="rating" value="facile" class="h-4 w-4 text-violet-600 border-gray-300 rounded"> <span class="ml-3 text-gray-700">Facile à utiliser</span></label>
+                                <label class="flex items-center"><input type="checkbox" name="rating" value="design-agreable" class="h-4 w-4 text-violet-600 border-gray-300 rounded"> <span class="ml-3 text-gray-700">Le design est agréable</span></label>
+                                <label class="flex items-center"><input type="checkbox" name="rating" value="utile" class="h-4 w-4 text-violet-600 border-gray-300 rounded"> <span class="ml-3 text-gray-700">Les fonctionnalités sont très utiles</span></label>
+                                <label class="flex items-center"><input type="checkbox" name="rating" value="rapide" class="h-4 w-4 text-violet-600 border-gray-300 rounded"> <span class="ml-3 text-gray-700">L'application est rapide</span></label>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="feedback-corrections" class="block text-sm font-medium text-gray-700">Quels sont les points à corriger ou les bugs que vous avez rencontrés ?</label>
+                            <textarea id="feedback-corrections" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md"></textarea>
+                        </div>
+                        <div>
+                            <label for="feedback-ideas" class="block text-sm font-medium text-gray-700">Avez-vous des idées pour améliorer le projet ?</label>
+                            <textarea id="feedback-ideas" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-200 rounded-md"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Envoyer mon avis</button>
+                    </div>
+                </form>
+            `;
+            openModal('custom'); // Ouvre la modale générique
+            document.getElementById('modal-title').textContent = 'Votre Avis Compte !';
+            document.getElementById('modal-body').innerHTML = modalContentHtml;
+
+            // Attacher le listener pour la soumission
+            document.getElementById('feedback-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setLoading(true, e.target);
+                
+                const ratings = {};
+                document.querySelectorAll('input[name="rating"]').forEach(checkbox => {
+                    ratings[checkbox.value] = checkbox.checked;
+                });
+
+                const data = {
+                    userRole: userRole,
+                    userId: userId,
+                    ratings: ratings,
+                    corrections: document.getElementById('feedback-corrections').value,
+                    ideas: document.getElementById('feedback-ideas').value
+                };
+
+                try {
+                    const result = await callApi('submitFeedback', data);
+                    modalBody.innerHTML = `<div class="text-center py-4"><div class="text-5xl text-green-500 mb-4"><i class="fas fa-check-circle"></i></div><p class="text-lg text-gray-700">${result.message}</p></div>`;
+                } catch (error) {
+                    modalBody.innerHTML = `<div class="text-center py-4"><div class="text-5xl text-red-500 mb-4"><i class="fas fa-times-circle"></i></div><p class="text-lg text-gray-700">${error.message}</p></div>`;
+                } finally {
+                    setLoading(false, e.target);
+                }
+            });
         }
 
         // --- FONCTIONS UTILITAIRES ---
