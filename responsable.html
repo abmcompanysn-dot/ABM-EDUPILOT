@@ -1133,8 +1133,9 @@
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étudiant</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID Carte RFID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Étudiant</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Carte RFID</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -1142,6 +1143,10 @@
                                 <tr>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-800">${s.NOM_COMPLET}</td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500 font-mono">${s.ID_CARTE_RFID}</td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium space-x-4">
+                                        <button onclick="handleUpdateRfid('${s.ID_ETUDIANT}', '${s.ID_CARTE_RFID}')" class="text-blue-600 hover:text-blue-900">Modifier</button>
+                                        <button onclick="handleRemoveRfid('${s.ID_ETUDIANT}')" class="text-red-600 hover:text-red-900">Supprimer</button>
+                                    </td>
                                 </tr>`).join('')}
                         </tbody>
                     </table>
@@ -1166,6 +1171,50 @@
                 showModal('Succès', result.message);
                 form.reset();
                 loadRfidPage(); // Recharger toute la page RFID pour mettre à jour les listes
+            } catch (error) {
+                showModal('Erreur', error.message);
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // NOUVEAU: Gère la mise à jour d'une carte RFID
+        async function handleUpdateRfid(studentId, currentRfidId) {
+            const newRfidId = prompt(`Veuillez scanner ou entrer le NOUVEL ID de la carte RFID pour l'étudiant ${studentId}.\n\nID Actuel : ${currentRfidId}`);
+
+            if (!newRfidId || newRfidId.trim() === '') {
+                alert("Mise à jour annulée.");
+                return;
+            }
+
+            if (newRfidId.trim() === currentRfidId) {
+                alert("Le nouvel ID est identique à l'ancien. Aucune modification n'a été effectuée.");
+                return;
+            }
+
+            showSpinner(true);
+            try {
+                const result = await callResponsableApi('responsableUpdateRfid', { studentId, newRfidId: newRfidId.trim() });
+                showModal('Succès', result.message);
+                loadRfidPage(); // Recharger la page RFID
+            } catch (error) {
+                showModal('Erreur', error.message);
+            } finally {
+                showSpinner(false);
+            }
+        }
+
+        // NOUVEAU: Gère la suppression d'une assignation RFID
+        async function handleRemoveRfid(studentId) {
+            if (!confirm(`Êtes-vous sûr de vouloir supprimer l'assignation de la carte RFID pour l'étudiant ${studentId} ?`)) {
+                return;
+            }
+
+            showSpinner(true);
+            try {
+                const result = await callResponsableApi('responsableRemoveRfid', { studentId });
+                showModal('Succès', result.message);
+                loadRfidPage(); // Recharger la page RFID
             } catch (error) {
                 showModal('Erreur', error.message);
             } finally {

@@ -216,6 +216,10 @@ function doPost(e) {
         return responsableGetStudentsForRfid(data);
     } else if (action === 'responsableAssignRfid') { // NOUVEAU: Pour RFID
         return responsableAssignRfid(data);
+    } else if (action === 'responsableUpdateRfid') { // NOUVEAU: Pour RFID
+        return responsableUpdateRfid(data);
+    } else if (action === 'responsableRemoveRfid') { // NOUVEAU: Pour RFID
+        return responsableRemoveRfid(data);
     } else if (action === 'responsableRecordRfidAttendance') { // NOUVEAU: Pour RFID
         return responsableRecordRfidAttendance(data);
     } else if (action === 'responsableGetAbsenceStats') { // NOUVEAU: Pour le graphe du responsable
@@ -549,6 +553,99 @@ function responsableAssignRfid(data) {
   }
 
   return createJsonResponse({ success: false, error: "Étudiant non trouvé." });
+}
+
+/**
+ * NOUVEAU: ACTION: responsableUpdateRfid
+ * Met à jour l'ID de la carte RFID pour un étudiant.
+ * @param {object} data - { responsableId, universityId, studentId, newRfidId }
+ * @returns {object} { success: true, message: "..." }
+ */
+function responsableUpdateRfid(data) {
+  try {
+    const { responsableId, universityId, studentId, newRfidId } = data;
+    if (!responsableId || !universityId || !studentId || !newRfidId) {
+      throw new Error("Données incomplètes pour la mise à jour de la carte RFID.");
+    }
+
+    // 1. Vérifier que le responsable est légitime
+    const classeId = getResponsableClassId(responsableId, universityId);
+    if (!classeId) {
+      return createJsonResponse({ success: false, error: "Accès non autorisé." });
+    }
+
+    const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+    const allStudentsData = studentsSheet.getDataRange().getValues();
+    const headers = allStudentsData[0];
+    const col = {
+        ID_ETUDIANT: headers.indexOf('ID_ETUDIANT'),
+        ID_CLASSE_FK: headers.indexOf('ID_CLASSE_FK'),
+        ID_CARTE_RFID: headers.indexOf('ID_RFID')
+    };
+
+    // 2. Vérifier que la nouvelle carte n'est pas déjà utilisée par un autre étudiant
+    for (let i = 1; i < allStudentsData.length; i++) {
+      if (allStudentsData[i][col.ID_ETUDIANT] !== studentId && allStudentsData[i][col.ID_CARTE_RFID] == newRfidId) {
+        return createJsonResponse({ success: false, error: `Cette carte RFID est déjà assignée à un autre étudiant (ID: ${allStudentsData[i][col.ID_ETUDIANT]}).` });
+      }
+    }
+
+    // 3. Trouver l'étudiant et mettre à jour la carte
+    for (let i = 1; i < allStudentsData.length; i++) {
+      if (allStudentsData[i][col.ID_ETUDIANT] == studentId) {
+        // Vérifier que l'étudiant est bien dans la classe du responsable
+        if (allStudentsData[i][col.ID_CLASSE_FK] != classeId) {
+          return createJsonResponse({ success: false, error: "Cet étudiant ne fait pas partie de votre classe." });
+        }
+        studentsSheet.getRange(i + 1, col.ID_CARTE_RFID + 1).setValue(newRfidId);
+        logAction('responsableUpdateRfid', { responsableId, studentId, newRfidId });
+        return createJsonResponse({ success: true, message: `La carte RFID de l'étudiant ${studentId} a été mise à jour.` });
+      }
+    }
+
+    return createJsonResponse({ success: false, error: "Étudiant non trouvé." });
+  } catch (error) {
+    logError('responsableUpdateRfid', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
+}
+
+/**
+ * NOUVEAU: ACTION: responsableRemoveRfid
+ * Supprime l'assignation d'une carte RFID pour un étudiant.
+ * @param {object} data - { responsableId, universityId, studentId }
+ * @returns {object} { success: true, message: "..." }
+ */
+function responsableRemoveRfid(data) {
+  try {
+    const { responsableId, universityId, studentId } = data;
+    if (!responsableId || !universityId || !studentId) {
+      throw new Error("Données incomplètes pour la suppression de la carte RFID.");
+    }
+
+    // 1. Vérifier que le responsable est légitime
+    const classeId = getResponsableClassId(responsableId, universityId);
+    if (!classeId) {
+      return createJsonResponse({ success: false, error: "Accès non autorisé." });
+    }
+
+    const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
+    const allStudentsData = studentsSheet.getDataRange().getValues();
+    const headers = allStudentsData[0];
+    const studentIdCol = headers.indexOf('ID_ETUDIANT');
+    const rfidCol = headers.indexOf('ID_RFID');
+
+    const studentRowIndex = allStudentsData.findIndex(row => row[studentIdCol] === studentId);
+
+    if (studentRowIndex === -1) return createJsonResponse({ success: false, error: "Étudiant non trouvé." });
+
+    studentsSheet.getRange(studentRowIndex + 1, rfidCol + 1).setValue(''); // Efface la valeur
+    logAction('responsableRemoveRfid', { responsableId, studentId });
+    return createJsonResponse({ success: true, message: `L'assignation de la carte RFID pour l'étudiant ${studentId} a été supprimée.` });
+  } catch (error) {
+    logError('responsableRemoveRfid', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
 }
 
 /**
@@ -3009,19 +3106,38 @@ function getStudentAttendanceHistory(data) {
  * NOUVEAU : Enregistre la présence d'un étudiant depuis le formulaire HTML.
  */
 function recordAttendance(data) {
-    try {
-        const { studentId, classe, module } = data;
-        if (!studentId || !classe || !module) {
-            return createJsonResponse({ success: false, error: 'Données de présence manquantes.' });
-        }
+  try {
+    const { studentId, classe, module } = data;
+    if (!studentId || !classe || !module) {
+      return createJsonResponse({ success: false, error: 'Données de présence manquantes.' });
+    }
 
-        // OPTIMISATION: Utiliser une map mise en cache pour trouver le nom de l'étudiant.
-        const studentMap = getStudentMap();
-        const studentInfo = studentMap[studentId.trim().toUpperCase()];
-        const studentName = studentInfo ? studentInfo.name : 'Inconnu';
+    const studentMap = getStudentMap();
+    const studentInfo = studentMap[studentId.trim().toUpperCase()];
+    const studentName = studentInfo ? studentInfo.name : 'Inconnu';
 
-        const timestamp = new Date();
-        SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN).appendRow([timestamp, studentId, studentName, classe, module, Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'yyyy-MM-dd'), Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss'), 'Présent']);
+    const scanSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN);
+    const scanData = scanSheet.getDataRange().getValues();
+    const headers = scanData[0];
+    const studentIdIdx = headers.indexOf('ID_ETUDIANT');
+    const moduleIdx = headers.indexOf('MODULE');
+    const dateScanIdx = headers.indexOf('DATE_SCAN');
+
+    const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+    // SÉCURITÉ: Vérifier si l'étudiant est déjà présent pour ce cours aujourd'hui
+    const isAlreadyPresent = scanData.slice(1).some(row =>
+      row[studentIdIdx] === studentId &&
+      row[moduleIdx] === module &&
+      Utilities.formatDate(new Date(row[dateScanIdx]), Session.getScriptTimeZone(), 'yyyy-MM-dd') === todayStr
+    );
+
+    if (isAlreadyPresent) {
+      return createJsonResponse({ success: true, message: `${studentName} est déjà marqué(e) présent(e) pour ce cours.` });
+    }
+
+    const timestamp = new Date();
+    scanSheet.appendRow([timestamp, studentId, studentName, classe, module, todayStr, Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss'), 'Présent']);
 
         // Invalider le cache de l'historique de l'étudiant
         cache.remove(`attendance_history_${studentId.trim().toUpperCase()}`);
@@ -3029,8 +3145,8 @@ function recordAttendance(data) {
 
         return createJsonResponse({ success: true, message: `Présence enregistrée avec succès pour ${studentName} (${studentId}).` });
     } catch (error) {
-        logError('recordAttendance', error);
-        return createJsonResponse({ success: false, error: `Erreur interne lors de l'enregistrement: ${error.message}` });
+    logError('recordAttendance', error);
+    return createJsonResponse({ success: false, error: `Erreur interne lors de l'enregistrement: ${error.message}` });
     }
 }
 
@@ -3080,32 +3196,43 @@ function getCurrentCourse(data) {
         return createJsonResponse({ success: false, error: 'Erreur de Configuration: Colonnes manquantes dans Planning.' });
     }
 
-    for (let i = 0; i < planningData.length; i++) {
-      const row = planningData[i];
-      // On vérifie juste la date, plus besoin de l'heure
-      if (!row[dateIdx] || !(row[dateIdx] instanceof Date)) {
-        continue;
-      }
+    // AMÉLIORATION: Trouver tous les cours confirmés pour aujourd'hui et prendre le plus récent.
+    const confirmedTodayCourses = planningData.filter(row => {
+        if (!row[dateIdx] || !(row[dateIdx] instanceof Date)) return false;
 
-      const courseDateStr = Utilities.formatDate(row[dateIdx], spreadsheetTimeZone, 'yyyy-MM-dd');
-      const requestClassName = classe ? classe.toString().trim() : '';
-      const status = row[statutIdx] ? row[statutIdx].toString().trim() : '';
+        const courseDateStr = Utilities.formatDate(row[dateIdx], spreadsheetTimeZone, 'yyyy-MM-dd');
+        if (courseDateStr !== todayStr) return false;
 
-      const courseModuleId = row[moduleIdFkIdx];
-      const moduleInfo = moduleMap.get(courseModuleId);
-      if (!moduleInfo) continue;
+        const status = row[statutIdx] ? row[statutIdx].toString().trim().toLowerCase() : '';
+        if (status !== 'confirmé') return false;
 
-      const courseClassName = classMap.get(moduleInfo.classId);
-      if (!courseClassName) continue;
-      
-      // MODIFICATION: On ne vérifie plus l'heure. Si un cours est trouvé pour la classe, pour aujourd'hui et qu'il est confirmé, on le retourne.
-      if (courseClassName.toLowerCase() === requestClassName.toLowerCase() && courseDateStr === todayStr && status.toLowerCase() === 'confirmé') {
-        const courseFound = { classe: courseClassName, module: moduleInfo.name };
-        return createJsonResponse({ success: true, data: courseFound });
-      }
+        const courseModuleId = row[moduleIdFkIdx];
+        const moduleInfo = moduleMap.get(courseModuleId);
+        if (!moduleInfo) return false;
+
+        const courseClassName = classMap.get(moduleInfo.classId);
+        return courseClassName && courseClassName.toLowerCase() === classe.toString().trim().toLowerCase();
+    });
+
+    if (confirmedTodayCourses.length === 0) {
+        return createJsonResponse({ success: false, error: `Aucun cours confirmé n'a été trouvé pour la classe "${classe}" aujourd'hui.` });
     }
-    // Si aucun cours n'a été trouvé pour aujourd'hui
-    return createJsonResponse({ success: false, error: `Aucun cours confirmé et actif n'a été trouvé pour la classe "${classe}" en ce moment.` });
+
+    // Trier les cours par heure de début (du plus récent au plus ancien)
+    confirmedTodayCourses.sort((a, b) => {
+        const timeA = a[startIdx] instanceof Date ? a[startIdx].getTime() : 0;
+        const timeB = b[startIdx] instanceof Date ? b[startIdx].getTime() : 0;
+        return timeB - timeA;
+    });
+
+    // Le cours actuel est le premier de la liste triée (le plus récent)
+    const currentCourseRow = confirmedTodayCourses[0];
+    const currentModuleId = currentCourseRow[moduleIdFkIdx];
+    const currentModuleInfo = moduleMap.get(currentModuleId);
+    const currentClassName = classMap.get(currentModuleInfo.classId);
+
+    const courseFound = { classe: currentClassName, module: currentModuleInfo.name };
+    return createJsonResponse({ success: true, data: courseFound });
 
   } catch (error) {
     logError('getCurrentCourse', error);
