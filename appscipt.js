@@ -225,6 +225,8 @@ function doPost(e) {
         return responsableRecordRfidAttendance(data);
     } else if (action === 'responsableGetAbsenceStats') { // NOUVEAU: Pour le graphe du responsable
         return responsableGetAbsenceStats(data, ctx);
+    } else if (action === 'responsableMarkOnlineAttendance') { // NOUVEAU: Pour le pointage en ligne
+        return responsableMarkOnlineAttendance(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
         return getStudentAbsenceReport(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
@@ -4344,6 +4346,83 @@ function scanStudentForAttendance(data, ctx) {
   }
 }
 
+/**
+ * NOUVEAU: ACTION: responsableMarkOnlineAttendance
+ * Enregistre la présence pour plusieurs étudiants cochés lors d'un cours en ligne.
+ * @param {object} data - Contient { responsableId, universityId, courseId, studentIds }.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object} JSON response avec un message de succès.
+ */
+function responsableMarkOnlineAttendance(data, ctx) {
+    try {
+        const { responsableId, courseId, studentIds } = data;
+        if (!responsableId || !courseId || !studentIds || !Array.isArray(studentIds) || studentIds.length === 0) {
+            throw new Error("Données incomplètes pour le pointage en ligne.");
+        }
+
+        // 1. Vérification de sécurité et récupération des informations
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId, className } = classInfo;
+
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const planningHeaders = planningData[0];
+        const p_courseIdIdx = planningHeaders.indexOf('ID_COURS');
+        const p_moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+        const courseRow = planningData.slice(1).find(row => row[p_courseIdIdx] === courseId);
+        if (!courseRow) throw new Error("Cours non trouvé.");
+
+        const moduleId = courseRow[p_moduleIdFkIdx];
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+        const moduleInfo = moduleMap.get(moduleId);
+
+        if (!moduleInfo || moduleInfo.classId !== classId) {
+            throw new Error("Action non autorisée. Ce cours n'appartient pas à votre classe.");
+        }
+        const moduleName = moduleInfo.name;
+
+        // 2. Préparation des données pour l'enregistrement
+        const presencesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN);
+        const presencesData = presencesSheet.getDataRange().getValues();
+        const presencesHeaders = presencesData[0];
+        const pr_studentIdIdx = presencesHeaders.indexOf('ID_ETUDIANT');
+        const pr_moduleIdx = presencesHeaders.indexOf('MODULE');
+        const pr_dateScanIdx = presencesHeaders.indexOf('DATE_SCAN');
+
+        const studentMap = getStudentMap();
+        const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+        // Créer un Set des présences existantes pour ce cours aujourd'hui pour une vérification rapide
+        const existingPresences = new Set(
+            presencesData.slice(1)
+            .filter(row => row[pr_moduleIdx] === moduleName && row[pr_dateScanIdx] === todayStr)
+            .map(row => row[pr_studentIdIdx])
+        );
+
+        const rowsToAdd = [];
+        const timestamp = new Date();
+        const timeStr = Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss');
+
+        studentIds.forEach(studentId => {
+            if (!existingPresences.has(studentId)) {
+                const studentInfo = studentMap[studentId];
+                if (studentInfo && studentInfo.classId === classId) { // Double sécurité
+                    rowsToAdd.push([timestamp, studentId, studentInfo.name, className, moduleName, todayStr, timeStr, 'Présent']);
+                }
+            }
+        });
+
+        // 3. Enregistrement en masse
+        if (rowsToAdd.length > 0) {
+            presencesSheet.getRange(presencesSheet.getLastRow() + 1, 1, rowsToAdd.length, rowsToAdd[0].length).setValues(rowsToAdd);
+        }
+
+        return createJsonResponse({ success: true, message: `${rowsToAdd.length} étudiant(s) ont été marqués comme présents. ${studentIds.length - rowsToAdd.length} étaient déjà présents.` });
+
+    } catch (error) {
+        logError('responsableMarkOnlineAttendance', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 // ============================================================================
 // NOUVEAU : FONCTIONS DU TABLEAU DE BORD
 // ============================================================================

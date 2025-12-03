@@ -77,6 +77,9 @@
                 <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="modules-content">
                     Modules
                 </button>
+                <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="online-course-content">
+                    Cours en Ligne
+                </button>
                 <button class="resp-tab whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-target="attendance-content">
                     Historique des Présences
                 </button>
@@ -212,6 +215,27 @@
                     </form>
                 </div>
                 <div id="modules-list-container" class="lg:col-span-2 max-h-[70vh] overflow-y-auto pr-2 space-y-4"><p>Chargement des modules...</p></div>
+            </div>
+        </div>
+
+        <!-- NOUVEAU: Contenu pour le pointage des cours en ligne -->
+        <div id="online-course-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
+            <h3 class="text-xl font-bold text-gray-900 mb-4">Pointage pour un Cours en Ligne</h3>
+            <p class="text-sm text-gray-600 mb-6">Sélectionnez un cours pour afficher la liste des étudiants et faire l'appel. Seuls les étudiants cochés seront marqués comme présents pour ce cours.</p>
+            
+            <div class="space-y-6">
+                <div>
+                    <label for="online-course-select" class="block text-sm font-medium text-gray-700">Sélectionner le cours</label>
+                    <select id="online-course-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm rounded-md">
+                        <option value="">-- Choisissez un cours --</option>
+                    </select>
+                </div>
+
+                <form id="online-attendance-form">
+                    <div id="online-course-student-list" class="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
+                        <!-- La liste des étudiants sera injectée ici -->
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -536,6 +560,10 @@
                     }
                     if (tab.dataset.target === 'rfid-content' && !targetContent.dataset.loaded) { // CORRECTION: Appel de la fonction
                         loadRfidPage(); // Cette fonction est maintenant définie globalement
+                        targetContent.dataset.loaded = 'true';
+                    }
+                    if (tab.dataset.target === 'online-course-content' && !targetContent.dataset.loaded) {
+                        setupOnlineCourseTab();
                         targetContent.dataset.loaded = 'true';
                     }
                     if (tab.dataset.target === 'feedback-content' && !targetContent.dataset.loaded) {
