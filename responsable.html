@@ -1291,69 +1291,6 @@
                 // Le vidage et le focus sont maintenant faits au début de la fonction.
             }
         }
-
-        // NOUVEAU: Initialise l'onglet de pointage en ligne
-        async function setupOnlineCourseTab() {
-            const courseSelect = document.getElementById('online-course-select');
-            const studentListContainer = document.getElementById('online-course-student-list');
-            const form = document.getElementById('online-attendance-form');
-
-            if (!courseSelect || !studentListContainer || !form) return;
-
-            // 1. Charger les cours dans le select
-            try {
-                const result = await callResponsableApi('responsableGetCoursesForOnlineAttendance');
-                const courses = result.data.courses || [];
-                if (courses.length > 0) {
-                    courseSelect.innerHTML = '<option value="">-- Choisissez un cours --</option>' +
-                        courses.map(c => `<option value="${c.ID_COURS}">${c.NOM_MODULE} - ${new Date(c.DATE_COURS).toLocaleDateString('fr-FR')} ${new Date(c.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</option>`).join('');
-                } else {
-                    courseSelect.innerHTML = '<option value="">Aucun cours disponible pour le pointage</option>';
-                }
-            } catch (error) {
-                studentListContainer.innerHTML = `<p class="text-red-500">Erreur lors du chargement des cours: ${error.message}</p>`;
-            }
-
-            // 2. Écouter les changements sur le select
-            courseSelect.addEventListener('change', async (e) => {
-                const courseId = e.target.value;
-                studentListContainer.innerHTML = `<div class="skeleton h-16 w-full"></div>`; // Squelette
-                form.onsubmit = null; // Désactiver la soumission précédente
-
-                if (!courseId) {
-                    studentListContainer.innerHTML = '';
-                    return;
-                }
-
-                try {
-                    const result = await callResponsableApi('responsableGetStudentsForOnlineAttendance', { courseId });
-                    const students = result.data.students || [];
-
-                    if (students.length === 0) {
-                        studentListContainer.innerHTML = '<p class="text-gray-500">Aucun étudiant dans cette classe.</p>';
-                        return;
-                    }
-
-                    studentListContainer.innerHTML = students.map(s => `
-                        <label class="flex items-center p-3 bg-gray-50 rounded-md border hover:bg-gray-100 cursor-pointer">
-                            <input type="checkbox" name="student" value="${s.ID_ETUDIANT}" class="h-5 w-5 rounded border-gray-300 text-violet-600 focus:ring-violet-500">
-                            <span class="ml-3 text-sm font-medium text-gray-800">${s.NOM_COMPLET}</span>
-                        </label>
-                    `).join('') + `<button type="submit" class="w-full mt-6 bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700">Valider les présences</button>`;
-
-                    // 3. Gérer la soumission du formulaire
-                    form.onsubmit = async (submitEvent) => {
-                        submitEvent.preventDefault();
-                        const presentStudentIds = Array.from(form.querySelectorAll('input[name="student"]:checked')).map(cb => cb.value);
-                        showSpinner(true);
-                        try {
-                            const result = await callResponsableApi('responsableSubmitOnlineAttendance', { courseId, presentStudentIds });
-                            showModal('Succès', result.message);
-                        } catch (error) { showModal('Erreur', error.message); } finally { showSpinner(false); }
-                    };
-                } catch (error) { studentListContainer.innerHTML = `<p class="text-red-500">Erreur: ${error.message}</p>`; }
-            }
-        }
         // --- FONCTIONS UTILITAIRES ---
         // NOUVEAU: Affiche la liste des modules
         function renderModules(modules) {
