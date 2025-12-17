@@ -227,6 +227,8 @@ function doPost(e) {
         return responsableGetAbsenceStats(data, ctx);
     } else if (action === 'responsableMarkOnlineAttendance') { // NOUVEAU: Pour le pointage en ligne
         return responsableMarkOnlineAttendance(data, ctx);
+    } else if (action === 'responsableGetLastConfirmedCourse') { // NOUVEAU: Pour le pointage en ligne simplifié
+        return responsableGetLastConfirmedCourse(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
         return getStudentAbsenceReport(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant

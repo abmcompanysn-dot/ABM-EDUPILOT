@@ -221,18 +221,13 @@
         <!-- NOUVEAU: Contenu pour le pointage des cours en ligne -->
         <div id="online-course-content" class="tab-content hidden bg-white p-4 sm:p-6 rounded-xl shadow-sm">
             <h3 class="text-xl font-bold text-gray-900 mb-4">Pointage pour un Cours en Ligne</h3>
-            <p class="text-sm text-gray-600 mb-6">Sélectionnez un cours pour afficher la liste des étudiants et faire l'appel. Seuls les étudiants cochés seront marqués comme présents pour ce cours.</p>
+            <p class="text-sm text-gray-600 mb-6">Le dernier cours confirmé pour votre classe est affiché ci-dessous. Cochez les étudiants présents et enregistrez.</p>
             
             <div class="space-y-6">
-                <div>
-                    <label for="online-course-select" class="block text-sm font-medium text-gray-700">Sélectionner le cours</label>
-                    <select id="online-course-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-violet-500 focus:border-violet-500 sm:text-sm rounded-md">
-                        <option value="">-- Choisissez un cours --</option>
-                    </select>
-                </div>
+                <div id="online-course-info" class="bg-violet-50 p-4 rounded-lg border border-violet-200"></div>
 
                 <form id="online-attendance-form">
-                    <div id="online-course-student-list" class="max-h-[60vh] overflow-y-auto pr-2 space-y-3">
+                    <div id="online-course-student-list" class="max-h-[60vh] overflow-y-auto pr-2 space-y-3 border-t pt-4">
                         <!-- La liste des étudiants sera injectée ici -->
                     </div>
                 </form>
@@ -1421,66 +1416,56 @@
 
         // NOUVEAU: Initialise l'onglet de pointage en ligne
         async function setupOnlineCourseTab() {
-            const courseSelect = document.getElementById('online-course-select');
+            const courseInfoContainer = document.getElementById('online-course-info');
             const studentListContainer = document.getElementById('online-course-student-list');
             const attendanceForm = document.getElementById('online-attendance-form');
 
-            if (!courseSelect || !studentListContainer || !attendanceForm) return;
+            if (!courseInfoContainer || !studentListContainer || !attendanceForm) return;
 
-            // 1. Charger les cours dans le select
-            studentListContainer.innerHTML = '<p class="text-gray-500 text-center">Veuillez sélectionner un cours pour commencer.</p>';
+            courseInfoContainer.innerHTML = `<div class="skeleton h-12 w-full"></div>`;
+            studentListContainer.innerHTML = '';
+
             try {
-                const result = await callResponsableApi('responsableGetCoursesForOnlineAttendance');
-                const courses = result.data.courses || [];
-                if (courses.length > 0) {
-                    courseSelect.innerHTML = '<option value="">-- Choisissez un cours --</option>' + courses.map(c => 
-                        `<option value="${c.ID_COURS}">${c.NOM_MODULE} - ${new Date(c.DATE_COURS).toLocaleDateString('fr-FR')} ${new Date(c.HEURE_DEBUT).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</option>`
-                    ).join('');
-                } else {
-                    courseSelect.innerHTML = '<option value="">Aucun cours à venir trouvé</option>';
-                }
+                // 1. Récupérer le dernier cours confirmé
+                const courseResult = await callResponsableApi('responsableGetLastConfirmedCourse');
+                const course = courseResult.data.course;
+                const courseId = course.ID_COURS;
+
+                // Afficher les infos du cours
+                courseInfoContainer.innerHTML = `
+                    <p class="font-bold text-lg text-violet-800">${course.NOM_MODULE}</p>
+                    <p class="text-sm text-gray-600">Date: ${new Date(course.DATE_COURS).toLocaleDateString('fr-FR', {dateStyle: 'long'})}</p>
+                `;
+
+                // 2. Charger la liste des étudiants pour ce cours
+                const studentsResult = await callResponsableApi('responsableGetStudentsForOnlineAttendance', { courseId });
+                const { students, attendees } = studentsResult.data;
+                const attendeeSet = new Set(attendees);
+
+                studentListContainer.innerHTML = students.map(student => `
+                    <label class="flex items-center p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition cursor-pointer">
+                        <input type="checkbox" name="student" value="${student.ID_ETUDIANT}" class="h-5 w-5 rounded border-gray-300 text-violet-600 focus:ring-violet-500" ${attendeeSet.has(student.ID_ETUDIANT) ? 'checked' : ''}>
+                        <span class="ml-3 text-sm font-medium text-gray-800">${student.NOM_COMPLET}</span>
+                    </label>
+                `).join('') + `<button type="submit" class="w-full mt-6 bg-violet-600 text-white py-2.5 px-4 rounded-lg hover:bg-violet-700 font-semibold">Enregistrer les Présences</button>`;
+
+                // 3. Gérer la soumission du formulaire
+                attendanceForm.onsubmit = async (e) => {
+                    e.preventDefault();
+                    const presentStudentIds = Array.from(e.target.querySelectorAll('input[name="student"]:checked')).map(input => input.value);
+                    
+                    if (!confirm(`Vous allez marquer ${presentStudentIds.length} étudiant(s) comme présent(s) pour ce cours. Continuer ?`)) return;
+
+                    showSpinner(true);
+                    try {
+                        const result = await callResponsableApi('responsableMarkOnlineAttendance', { courseId, presentStudentIds });
+                        showModal('Succès', result.message);
+                    } catch (error) { showModal('Erreur', error.message); } finally { showSpinner(false); }
+                };
+
             } catch (error) {
-                courseSelect.innerHTML = `<option value="">Erreur: ${error.message}</option>`;
+                courseInfoContainer.innerHTML = `<p class="text-red-500 text-center font-medium">${error.message}</p>`;
             }
-
-            // 2. Écouter les changements sur le select
-            courseSelect.onchange = async (e) => {
-                const courseId = e.target.value;
-                if (!courseId) {
-                    studentListContainer.innerHTML = '<p class="text-gray-500 text-center">Veuillez sélectionner un cours pour commencer.</p>';
-                    return;
-                }
-                studentListContainer.innerHTML = `<div class="skeleton h-16 w-full"></div>`; // Squelette
-                try {
-                    const result = await callResponsableApi('responsableGetStudentsForOnlineAttendance', { courseId });
-                    const { students, attendees } = result.data;
-                    const attendeeSet = new Set(attendees);
-
-                    studentListContainer.innerHTML = students.map(student => `
-                        <label class="flex items-center p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition cursor-pointer">
-                            <input type="checkbox" name="student" value="${student.ID_ETUDIANT}" class="h-5 w-5 rounded border-gray-300 text-violet-600 focus:ring-violet-500" ${attendeeSet.has(student.ID_ETUDIANT) ? 'checked' : ''}>
-                            <span class="ml-3 text-sm font-medium text-gray-800">${student.NOM_COMPLET}</span>
-                        </label>
-                    `).join('') + `<button type="submit" class="w-full mt-6 bg-violet-600 text-white py-2.5 px-4 rounded-lg hover:bg-violet-700 font-semibold">Enregistrer les Présences</button>`;
-                } catch (error) {
-                    studentListContainer.innerHTML = `<p class="text-red-500 text-center">Erreur: ${error.message}</p>`;
-                }
-            };
-
-            // 3. Gérer la soumission du formulaire
-            attendanceForm.onsubmit = async (e) => {
-                e.preventDefault();
-                const courseId = courseSelect.value;
-                const presentStudentIds = Array.from(e.target.querySelectorAll('input[name="student"]:checked')).map(input => input.value);
-                
-                if (!confirm(`Vous allez marquer ${presentStudentIds.length} étudiant(s) comme présent(s) pour ce cours. Continuer ?`)) return;
-
-                showSpinner(true);
-                try {
-                    const result = await callResponsableApi('responsableMarkOnlineAttendance', { courseId, presentStudentIds });
-                    showModal('Succès', result.message);
-                } catch (error) { showModal('Erreur', error.message); } finally { showSpinner(false); }
-            };
         }
 
         // NOUVEAU: Fonction pour rendre le graphique des absences
