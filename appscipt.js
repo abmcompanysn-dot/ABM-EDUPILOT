@@ -1972,6 +1972,47 @@ function deleteCourseForAdmin(data) {
 }
 
 /**
+ * NOUVEAU: ACTION: responsableGetLastConfirmedCourse
+ * Récupère le dernier cours confirmé pour la classe d'un responsable.
+ * @param {object} data - Contient { responsableId }.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object} JSON response avec les données du cours.
+ */
+function responsableGetLastConfirmedCourse(data, ctx) {
+    try {
+        const { responsableId } = data;
+        if (!responsableId) throw new Error("ID du responsable manquant.");
+
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId } = classInfo;
+
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+        
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const planningHeaders = planningData[0];
+
+        const courses = planningData.slice(1).filter(row => {
+            const module = moduleMap.get(row[planningHeaders.indexOf('ID_MODULE_FK')]);
+            return module && module.classId === classId && row[planningHeaders.indexOf('STATUT')] === 'Confirmé';
+        }).map(row => {
+            const course = Object.fromEntries(planningHeaders.map((h, i) => [h, row[i]]));
+            course.NOM_MODULE = moduleMap.get(course.ID_MODULE_FK).name;
+            return course;
+        }).sort((a, b) => new Date(b.DATE_COURS) - new Date(a.DATE_COURS)); // Trier par date, le plus récent en premier
+
+        if (courses.length === 0) {
+            throw new Error("Aucun cours confirmé n'a été trouvé pour votre classe.");
+        }
+
+        return createJsonResponse({ success: true, data: { course: courses[0] } });
+
+    } catch (error) {
+        logError('responsableGetLastConfirmedCourse', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
  * NOUVEAU: Supprime une entité (filière, classe, responsable).
  */
 function adminDeleteEntity(data) {
