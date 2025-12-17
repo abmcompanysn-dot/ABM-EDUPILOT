@@ -1477,7 +1477,7 @@
 
                 showSpinner(true);
                 try {
-                    const result = await callResponsableApi('responsableSaveOnlineAttendance', { courseId, presentStudentIds });
+                    const result = await callResponsableApi('responsableMarkOnlineAttendance', { courseId, presentStudentIds });
                     showModal('Succès', result.message);
                 } catch (error) { showModal('Erreur', error.message); } finally { showSpinner(false); }
             };
