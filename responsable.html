@@ -1460,7 +1460,7 @@
                     e.preventDefault();
                     const studentIds = Array.from(e.target.querySelectorAll('input[name="student"]:checked')).map(input => input.value);
                     
-                    if (!confirm(`Vous allez marquer ${presentStudentIds.length} étudiant(s) comme présent(s) pour ce cours. Continuer ?`)) return;
+                    if (!confirm(`Vous allez marquer ${studentIds.length} étudiant(s) comme présent(s) pour ce cours. Continuer ?`)) return;
 
                     showSpinner(true);
                     try {
