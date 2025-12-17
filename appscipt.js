@@ -229,6 +229,8 @@ function doPost(e) {
         return responsableMarkOnlineAttendance(data, ctx);
     } else if (action === 'responsableGetLastConfirmedCourse') { // NOUVEAU: Pour le pointage en ligne simplifié
         return responsableGetLastConfirmedCourse(data, ctx);
+    } else if (action === 'responsableGetStudentsForOnlineAttendance') { // NOUVEAU: Pour le pointage en ligne
+        return responsableGetStudentsForOnlineAttendance(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
         return getStudentAbsenceReport(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
@@ -1998,7 +2000,13 @@ function responsableGetLastConfirmedCourse(data, ctx) {
             const course = Object.fromEntries(planningHeaders.map((h, i) => [h, row[i]]));
             course.NOM_MODULE = moduleMap.get(course.ID_MODULE_FK).name;
             return course;
-        }).sort((a, b) => new Date(b.DATE_COURS) - new Date(a.DATE_COURS)); // Trier par date, le plus récent en premier
+        }).sort((a, b) => {
+            // Combinaison de la date et de l'heure de début pour un tri précis
+            const dateA = new Date(a.DATE_COURS);
+            const dateB = new Date(b.DATE_COURS);
+            // Les heures sont déjà des objets Date, on peut les comparer directement
+            return (dateB.getTime() + b.HEURE_DEBUT.getTime()) - (dateA.getTime() + a.HEURE_DEBUT.getTime());
+        });
 
         if (courses.length === 0) {
             throw new Error("Aucun cours confirmé n'a été trouvé pour votre classe.");
@@ -2012,6 +2020,68 @@ function responsableGetLastConfirmedCourse(data, ctx) {
     }
 }
 
+/**
+ * NOUVEAU: ACTION: responsableGetStudentsForOnlineAttendance
+ * Récupère les étudiants d'une classe et ceux déjà présents pour un cours donné.
+ * @param {object} data - Contient { responsableId, courseId }.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object} JSON response avec { students, attendees }.
+ */
+function responsableGetStudentsForOnlineAttendance(data, ctx) {
+    try {
+        const { responsableId, courseId } = data;
+        if (!responsableId || !courseId) {
+            throw new Error("ID du responsable et du cours sont requis.");
+        }
+
+        // 1. Vérification de sécurité et récupération des informations
+        const classInfo = getResponsableClassInfo(responsableId, ctx);
+        const { classId } = classInfo;
+
+        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+        const planningHeaders = planningData[0];
+        const p_courseIdIdx = planningHeaders.indexOf('ID_COURS');
+        const p_moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+        const courseRow = planningData.slice(1).find(row => row[p_courseIdIdx] === courseId);
+        if (!courseRow) throw new Error("Cours non trouvé.");
+
+        const moduleId = courseRow[p_moduleIdFkIdx];
+        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+        const moduleInfo = moduleMap.get(moduleId);
+
+        if (!moduleInfo || moduleInfo.classId !== classId) {
+            throw new Error("Action non autorisée. Ce cours n'appartient pas à votre classe.");
+        }
+        const moduleName = moduleInfo.name;
+
+        // 2. Récupérer tous les étudiants de la classe
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const studentsHeaders = studentsData[0];
+        const s_idIdx = studentsHeaders.indexOf('ID_ETUDIANT');
+        const s_nameIdx = studentsHeaders.indexOf('NOM_COMPLET');
+        const s_classFkIdx = studentsHeaders.indexOf('ID_CLASSE_FK');
+        const students = studentsData.slice(1)
+            .filter(row => row[s_classFkIdx] === classId)
+            .map(row => ({ ID_ETUDIANT: row[s_idIdx], NOM_COMPLET: row[s_nameIdx] }))
+            .sort((a, b) => a.NOM_COMPLET.localeCompare(b.NOM_COMPLET));
+
+        // 3. Récupérer les présences déjà enregistrées pour ce cours aujourd'hui
+        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+        const scanHeaders = scanData[0];
+        const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+        const attendees = new Set(
+            scanData.slice(1)
+            .filter(row => row[scanHeaders.indexOf('MODULE')] === moduleName && row[scanHeaders.indexOf('DATE_SCAN')] === todayStr)
+            .map(row => row[scanHeaders.indexOf('ID_ETUDIANT')])
+        );
+
+        return createJsonResponse({ success: true, data: { students, attendees: Array.from(attendees) } });
+
+    } catch (error) {
+        logError('responsableGetStudentsForOnlineAttendance', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 /**
  * NOUVEAU: Supprime une entité (filière, classe, responsable).
  */
