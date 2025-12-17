@@ -1256,6 +1256,9 @@
             }
         }
 
+        // NOUVEAU: Prévention des scans en double
+        let lastScannedRfid = null;
+        let rfidScanTimeout = null;
         async function handleRfidAttendance(event) {
             const input = event.target;
             const rfidId = input.value;
@@ -1265,6 +1268,16 @@
             // On garde le focus pour que le prochain scan soit directement capturé.
             input.value = '';
             input.focus();
+
+            // AMÉLIORATION: Prévenir les doubles scans rapides du même ID
+            if (rfidId === lastScannedRfid) {
+                console.log(`Scan en double ignoré pour l'ID: ${rfidId}`);
+                return; // Ignorer si le même ID est scanné en moins de 3 secondes
+            }
+            lastScannedRfid = rfidId;
+            clearTimeout(rfidScanTimeout);
+            rfidScanTimeout = setTimeout(() => { lastScannedRfid = null; }, 3000); // Réinitialiser après 3 secondes
+            // FIN AMÉLIORATION
 
             const logContainer = document.getElementById('rfid-attendance-log');
             const logEntry = document.createElement('p');

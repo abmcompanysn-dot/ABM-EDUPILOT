@@ -686,6 +686,29 @@ function responsableRemoveRfid(data) {
 }
 
 /**
+ * NOUVEAU: Crée et met en cache une map des étudiants par ID RFID pour des recherches rapides.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {Map<string, object>} Une map où les clés sont les ID RFID.
+ */
+function getStudentMapByRfid(ctx) {
+    const cacheKey = 'all_students_map_by_rfid';
+    return getCachedData(cacheKey, () => {
+        const studentsData = _getRawSheetData(SHEET_NAMES.STUDENTS, ctx);
+        const headers = studentsData[0];
+        const idIdx = headers.indexOf('ID_ETUDIANT');
+        const nameIdx = headers.indexOf('NOM_COMPLET');
+        const classIdx = headers.indexOf('ID_CLASSE_FK');
+        const rfidIdx = headers.indexOf('ID_RFID');
+
+        if (rfidIdx === -1) throw new Error("La colonne 'ID_RFID' est introuvable dans la feuille Étudiants.");
+
+        const map = new Map();
+        studentsData.slice(1).forEach(row => { if (row[rfidIdx]) map.set(row[rfidIdx].toString(), { id: row[idIdx], name: row[nameIdx], classId: row[classIdx] }); });
+        return Object.fromEntries(map); // Convertir en objet pour la sérialisation du cache
+    }, 300); // Cache de 5 minutes
+}
+
+/**
  * ACTION: responsableRecordRfidAttendance
  * Enregistre la présence d'un étudiant via un scan de carte RFID.
  * @param {object} data - { responsableId, universityId, rfidId }
@@ -693,53 +716,36 @@ function responsableRemoveRfid(data) {
  */
 function responsableRecordRfidAttendance(data) {
   const { responsableId, universityId, rfidId } = data;
+  const ctx = createRequestContext(); // AMÉLIORATION: Utiliser le contexte pour optimiser
 
   // 1. Vérifier le responsable et trouver le cours actuel
   const classeId = getResponsableClassId(responsableId, universityId);
   if (!classeId) return createJsonResponse({ success: false, error: "Accès non autorisé." });
 
-  const courseResponse = responsableGetCurrentCourse({ responsableId }, createRequestContext());
+  const courseResponse = responsableGetCurrentCourse({ responsableId }, ctx);
   const currentCourseResult = JSON.parse(courseResponse.getContent());
   if (!currentCourseResult.success) {
     return createJsonResponse({ success: false, error: "Aucun cours n'est actuellement en session pour cette classe." });
   }
   const currentCourse = currentCourseResult.data;
 
-  // 2. Trouver l'étudiant correspondant à la carte RFID
-  const studentsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.STUDENTS);
-  const studentsData = studentsSheet.getDataRange().getValues();
-  const studentHeaders = studentsData[0];
-  const studentCol = {
-      ID_ETUDIANT: studentHeaders.indexOf('ID_ETUDIANT'), 
-      NOM_COMPLET: studentHeaders.indexOf('NOM_COMPLET'),
-      ID_CLASSE_FK: studentHeaders.indexOf('ID_CLASSE_FK'),
-      ID_CARTE_RFID: studentHeaders.indexOf('ID_RFID')
-  };
-
-  let studentInfo = null;
-  for (let i = 1; i < studentsData.length; i++) {
-    if (studentsData[i][studentCol.ID_CARTE_RFID] == rfidId) {
-      studentInfo = {
-        id: studentsData[i][studentCol.ID_ETUDIANT],
-        name: studentsData[i][studentCol.NOM_COMPLET],
-        classId: studentsData[i][studentCol.ID_CLASSE_FK]
-      };
-      break;
-    }
-  }
+  // 2. AMÉLIORATION: Trouver l'étudiant via la map RFID mise en cache (beaucoup plus rapide)
+  const studentMapByRfid = getStudentMapByRfid(ctx);
+  const studentInfo = studentMapByRfid[rfidId.toString()];
 
   if (!studentInfo) {
     return createJsonResponse({ success: false, error: `Carte RFID non reconnue: ${rfidId}` });
   }
 
   // 3. Vérifier que l'étudiant est dans la bonne classe
-  if (studentInfo.classId != classeId) {
+  if (studentInfo.classId !== classeId) {
     return createJsonResponse({ success: false, error: `L'étudiant ${studentInfo.name} n'appartient pas à cette classe.` });
   }
 
   // 4. Enregistrer la présence (logique similaire à scanStudentForAttendance)
-  const presencesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN);
-  const presencesData = presencesSheet.getDataRange().getValues();
+  // AMÉLIORATION: Utiliser le contexte pour lire les données de présence
+  const presencesSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN); // Garder pour l'écriture
+  const presencesData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
   const presencesHeaders = presencesData[0];
   const presencesCol = {
       ID_ETUDIANT: presencesHeaders.indexOf('ID_ETUDIANT'),
