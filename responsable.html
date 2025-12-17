@@ -1426,21 +1426,16 @@
             studentListContainer.innerHTML = '';
 
             try {
-                // 1. Récupérer tout le planning et trouver le dernier cours confirmé
-                const planningResult = await callResponsableApi('responsableGetPlanning');
-                const courses = planningResult.data || [];
-                
-                // Filtrer les cours confirmés et les trier par date/heure de début la plus récente
-                const lastConfirmedCourse = courses
-                    .filter(c => c.STATUT === 'Confirmé')
-                    .sort((a, b) => new Date(b.DATE_COURS + 'T' + b.HEURE_DEBUT) - new Date(a.DATE_COURS + 'T' + a.HEURE_DEBUT))[0];
+                // 1. Récupérer le dernier cours confirmé directement via l'API
+                const courseResult = await callResponsableApi('responsableGetLastConfirmedCourse');
+                const lastConfirmedCourse = courseResult.data.course;
 
                 if (!lastConfirmedCourse) {
                     throw new Error("Aucun cours confirmé n'a été trouvé dans votre planning. Veuillez d'abord confirmer un cours.");
                 }
 
                 const course = lastConfirmedCourse;
-                const courseId = course.ID_COURS; // ID_COURS est correct
+                const courseId = course.ID_COURS;
 
                 // Afficher les infos du cours
                 courseInfoContainer.innerHTML = `
@@ -1463,13 +1458,13 @@
                 // 3. Gérer la soumission du formulaire
                 attendanceForm.onsubmit = async (e) => {
                     e.preventDefault();
-                    const presentStudentIds = Array.from(e.target.querySelectorAll('input[name="student"]:checked')).map(input => input.value);
+                    const studentIds = Array.from(e.target.querySelectorAll('input[name="student"]:checked')).map(input => input.value);
                     
                     if (!confirm(`Vous allez marquer ${presentStudentIds.length} étudiant(s) comme présent(s) pour ce cours. Continuer ?`)) return;
 
                     showSpinner(true);
                     try {
-                        const result = await callResponsableApi('responsableMarkOnlineAttendance', { courseId, presentStudentIds });
+                        const result = await callResponsableApi('responsableMarkOnlineAttendance', { courseId, studentIds });
                         showModal('Succès', result.message);
                     } catch (error) { showModal('Erreur', error.message); } finally { showSpinner(false); }
                 };
