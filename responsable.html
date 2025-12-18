@@ -1193,7 +1193,7 @@
             event.preventDefault();
             const form = event.target;
             const studentId = document.getElementById('rfid-student-select').value;
-            const rfidId = document.getElementById('rfid-card-id').value;
+            const rfidId = document.getElementById('rfid-card-id').value.replace(/^0+/, ''); // Supprimer les zéros de début
 
             if (!studentId || !rfidId) {
                 showModal('Erreur', 'Veuillez sélectionner un étudiant et scanner une carte.');
@@ -1214,7 +1214,7 @@
 
         // NOUVEAU: Gère la mise à jour d'une carte RFID
         async function handleUpdateRfid(studentId, currentRfidId) {
-            const newRfidId = prompt(`Veuillez scanner ou entrer le NOUVEL ID de la carte RFID pour l'étudiant ${studentId}.\n\nID Actuel : ${currentRfidId}`);
+            let newRfidId = prompt(`Veuillez scanner ou entrer le NOUVEL ID de la carte RFID pour l'étudiant ${studentId}.\n\nID Actuel : ${currentRfidId}`);
 
             if (!newRfidId || newRfidId.trim() === '') {
                 alert("Mise à jour annulée.");
@@ -1222,6 +1222,8 @@
             }
 
             if (newRfidId.trim() === currentRfidId) {
+                newRfidId = newRfidId.trim().replace(/^0+/, ''); // Supprimer les zéros de début
+
                 alert("Le nouvel ID est identique à l'ancien. Aucune modification n'a été effectuée.");
                 return;
             }
@@ -1261,7 +1263,7 @@
         let rfidScanTimeout = null;
         async function handleRfidAttendance(event) {
             const input = event.target;
-            const rfidId = input.value;
+            let rfidId = input.value.replace(/^0+/, ''); // Supprimer les zéros de début
             if (!rfidId) return;
 
             // CORRECTION: Vider le champ immédiatement pour éviter la concaténation des scans.
