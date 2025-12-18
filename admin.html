@@ -2505,8 +2505,7 @@
          * @param {string} rfidId - L'identifiant unique lu depuis la carte RFID.
          */
         async function searchStudentByRFID(rfidId) {
-            rfidId = rfidId.replace(/^0+/, ''); // Supprimer les zéros de début
-            if (!rfidId) return; 
+            if (!rfidId) return;
 
             console.log(`Recherche de l'étudiant avec l'ID RFID : ${rfidId}`);
             showSpinner(true);
