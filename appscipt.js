@@ -23,7 +23,8 @@ const SHEET_NAMES = {
   MODULES: 'Modules', // NOUVEAU
   MESSAGES: 'Messages' // NOUVEAU: Pour les notifications
 , // NOUVEAU: Ajout de la feuille pour les avis
-  AVIS: 'Avis',
+  AVIS: 'Avis', 
+  DOOR_LOGS: 'Porte_Logs', // NOUVEAU: Pour les logs d'accès à la porte
   MESSAGE_READS: 'Lectures_Messages' // NOUVEAU: Pour suivre les lectures
 };
 
@@ -241,6 +242,10 @@ function doPost(e) {
         return submitFeedback(data);
     } else if (action === 'adminGetStudentByRfid') { // NOUVEAU: Pour la recherche RFID par l'admin
         return adminGetStudentByRfid(data);
+    } else if (action === 'requestDoorAccess') { // NOUVEAU: Pour le contrôle d'accès par porte
+        return requestDoorAccess(data);
+    } else if (action === 'adminGetDoorLogs') { // NOUVEAU: Pour récupérer les logs de la porte
+        return adminGetDoorLogs(data);
     } else {
       // Si l'action n'est pas dans notre liste, on renvoie une erreur
       Logger.log(`Action "${request.action}" non reconnue.`);
@@ -284,6 +289,110 @@ function submitFeedback(data) {
 // ============================================================================
 // NOUVEAU: FONCTIONS POUR LA GESTION RFID
 // ============================================================================
+
+/**
+ * NOUVEAU: ACTION: requestDoorAccess
+ * Gère une demande d'ouverture de porte depuis un lecteur RFID (ESP32).
+ * Vérifie si l'étudiant a un cours en ce moment et enregistre sa présence.
+ * @param {object} data - Contient { rfidId }.
+ * @returns {object} JSON response avec { success: true } si l'accès est autorisé.
+ */
+function requestDoorAccess(data) {
+    try {
+        const { rfidId } = data;
+        if (!rfidId) {
+            // Pas besoin de log ici car la requête est invalide
+            return createJsonResponse({ success: false, error: 'ID RFID manquant.' });
+        }
+        const ctx = createRequestContext();
+
+        // 1. Trouver l'étudiant par son ID RFID
+        const studentMapByRfid = getStudentMapByRfid(ctx);
+        const studentInfo = studentMapByRfid[rfidId.toString()];
+
+        if (!studentInfo) {
+            logDoorAccessAttempt(rfidId, null, null, 'Refusé', 'Carte RFID non reconnue');
+            return createJsonResponse({ success: false, error: 'Carte RFID non reconnue.' });
+        }
+
+        // 2. Vérifier si un cours est actuellement en session pour la classe de l'étudiant
+        const currentCourse = findCurrentCourseForClass(studentInfo.classId, ctx);
+
+        if (!currentCourse) {
+            logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Refusé', 'Aucun cours en ce moment');
+            return createJsonResponse({ success: false, error: 'Aucun cours en ce moment.' });
+        }
+
+        // 3. Enregistrer la présence de l'étudiant
+        const attendanceResponse = recordAttendance({
+            studentId: studentInfo.id,
+            classe: currentCourse.classe,
+            module: currentCourse.module
+        });
+        const attendanceResult = JSON.parse(attendanceResponse.getContent());
+
+        // Si le pointage réussit (ou si l'étudiant était déjà présent), on autorise l'accès.
+        if (attendanceResult.success) {
+            logAction('requestDoorAccess_success', { rfidId, studentId: studentInfo.id, course: currentCourse.module });
+            logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Autorisé', `Pointage pour le cours: ${currentCourse.module}`);
+            return createJsonResponse({ success: true, message: `Accès autorisé pour ${studentInfo.name}.`, studentName: studentInfo.name });
+        } else {
+            // Ce cas est peu probable mais sert de sécurité
+            logError('requestDoorAccess_attendance_fail', new Error(attendanceResult.error));
+            logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Refusé', `Erreur de pointage: ${attendanceResult.error}`);
+            return createJsonResponse({ success: false, error: `Erreur de pointage: ${attendanceResult.error}` });
+        }
+    } catch (error) {
+        logError('requestDoorAccess', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
+
+/**
+ * NOUVEAU: ACTION: adminGetDoorLogs
+ * Récupère l'historique des tentatives d'accès par la porte pour une université.
+ * @param {object} data - Contient { universityId }.
+ * @returns {object} JSON response avec la liste des logs.
+ */
+function adminGetDoorLogs(data) {
+    try {
+        const { universityId } = data;
+        if (!universityId) throw new Error("ID de l'université manquant.");
+
+        const cacheKey = `door_logs_${universityId}`;
+        const logs = getCachedData(cacheKey, () => {
+            const ctx = createRequestContext();
+            
+            // 1. Récupérer tous les étudiants de l'université pour filtrer les logs
+            const studentIdsForUniv = new Set(
+                _getRawSheetData(SHEET_NAMES.STUDENTS, ctx).slice(1)
+                .filter(row => row[6] === universityId) // ID_UNIVERSITE_FK est à l'index 6
+                .map(row => row[0]) // ID_ETUDIANT est à l'index 0
+            );
+
+            // 2. Lire les logs de la porte
+            const doorLogsData = _getRawSheetData(SHEET_NAMES.DOOR_LOGS, ctx);
+            const headers = doorLogsData[0];
+            const studentIdIdx = headers.indexOf('ID_ETUDIANT_TROUVE');
+
+            // 3. Filtrer les logs pour ne garder que ceux concernant les étudiants de l'université
+            // Ou les tentatives avec des cartes inconnues (ID_ETUDIANT_TROUVE sera vide)
+            const universityLogs = doorLogsData.slice(1).filter(row => {
+                const studentId = row[studentIdIdx];
+                return !studentId || studentIdsForUniv.has(studentId);
+            }).map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
+              .sort((a, b) => new Date(b.TIMESTAMP) - new Date(a.TIMESTAMP)); // Trier par plus récent
+
+            return universityLogs;
+        }, 60); // Cache court de 1 minute
+
+        return createJsonResponse({ success: true, data: logs });
+
+    } catch (error) {
+        logError('adminGetDoorLogs', error);
+        return createJsonResponse({ success: false, error: error.message });
+    }
+}
 
 /**
  * NOUVEAU: ACTION: responsableGetAbsenceStats
@@ -3401,6 +3510,90 @@ function getCurrentCourse(data) {
 // ============================================================================
 
 /**
+ * NOUVEAU: Enregistre une tentative d'accès par porte dans la feuille 'Porte_Logs'.
+ * @param {string} rfidId - L'ID RFID qui a été scanné.
+ * @param {string|null} studentId - L'ID de l'étudiant trouvé, ou null.
+ * @param {string|null} studentName - Le nom de l'étudiant, ou null.
+ * @param {string} status - 'Autorisé' ou 'Refusé'.
+ * @param {string} reason - La raison du statut (ex: 'Carte non reconnue', 'Pointage OK').
+ */
+function logDoorAccessAttempt(rfidId, studentId, studentName, status, reason) {
+    try {
+        const logSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.DOOR_LOGS);
+        if (logSheet) {
+            logSheet.appendRow([
+                new Date(),
+                rfidId,
+                studentId || '',
+                studentName || 'Inconnu',
+                status,
+                reason
+            ]);
+            // Invalider le cache des logs de porte pour l'université concernée
+            if (studentId) {
+                const studentMap = getStudentMap();
+                const studentInfo = studentMap[studentId.toUpperCase()];
+                if (studentInfo && studentInfo.universityId) {
+                    cache.remove(`door_logs_${studentInfo.universityId}`);
+                }
+            }
+        }
+    } catch (e) {
+        logError('logDoorAccessAttempt', e);
+    }
+}
+
+/**
+ * NOUVEAU: Trouve le cours actuel pour une classe donnée, avec une marge de tolérance.
+ * @param {string} classId - L'ID de la classe.
+ * @param {object} ctx - Le contexte de la requête.
+ * @returns {object|null} L'objet du cours actuel ou null.
+ */
+function findCurrentCourseForClass(classId, ctx) {
+    const now = new Date();
+    const spreadsheetTimeZone = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+    const todayStr = Utilities.formatDate(now, spreadsheetTimeZone, 'yyyy-MM-dd');
+
+    const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+    const planningHeaders = planningData[0];
+    const p_moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+    const p_dateIdx = planningHeaders.indexOf('DATE_COURS');
+    const p_startIdx = planningHeaders.indexOf('HEURE_DEBUT');
+    const p_endIdx = planningHeaders.indexOf('HEURE_FIN');
+    const p_statusIdx = planningHeaders.indexOf('STATUT');
+
+    const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+
+    const currentCourseRow = planningData.slice(1).find(row => {
+        const moduleInfo = moduleMap.get(row[p_moduleIdFkIdx]);
+        if (!moduleInfo || moduleInfo.classId !== classId || row[p_statusIdx] !== 'Confirmé') return false;
+
+        const courseDate = new Date(row[p_dateIdx]);
+        const courseDateStr = Utilities.formatDate(courseDate, spreadsheetTimeZone, 'yyyy-MM-dd');
+        if (courseDateStr !== todayStr) return false;
+
+        const startTime = new Date(row[p_startIdx]);
+        const endTime = new Date(row[p_endIdx]);
+
+        const startDateTime = new Date(courseDate.getFullYear(), courseDate.getMonth(), courseDate.getDate(), startTime.getHours(), startTime.getMinutes());
+        const endDateTime = new Date(courseDate.getFullYear(), courseDate.getMonth(), courseDate.getDate(), endTime.getHours(), endTime.getMinutes());
+
+        // Marge de tolérance de 15 minutes avant le début et 15 minutes après la fin.
+        const gracePeriod = 15 * 60 * 1000; // 15 minutes en millisecondes
+        const startWithGrace = new Date(startDateTime.getTime() - gracePeriod);
+        const endWithGrace = new Date(endDateTime.getTime() + gracePeriod);
+
+        return now >= startWithGrace && now <= endWithGrace;
+    });
+
+    if (!currentCourseRow) return null;
+
+    const moduleInfo = moduleMap.get(currentCourseRow[p_moduleIdFkIdx]);
+    const classMap = new Map(_getRawSheetData(SHEET_NAMES.CLASSES, ctx).slice(1).map(row => [row[0], row[1]]));
+    return { module: moduleInfo.name, classe: classMap.get(moduleInfo.classId) };
+}
+
+/**
  * Initialise la structure du Google Sheet (onglets, en-têtes).
  * MISE À JOUR : Ajout de la colonne DATE_INSCRIPTION.
  */
@@ -3445,7 +3638,8 @@ function setup() {
       [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
       [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
       [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
-      ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION', 'NOTE_ETOILEE'], color: '#ffc107' }
+      ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION', 'NOTE_ETOILEE'], color: '#ffc107' },
+      [SHEET_NAMES.DOOR_LOGS]: { headers: ['TIMESTAMP', 'ID_RFID_SCANNE', 'ID_ETUDIANT_TROUVE', 'NOM_ETUDIANT', 'STATUT_ACCES', 'RAISON'], color: '#3c4043' } // NOUVEAU
     };
 
     // 3. Créer et formater les onglets
@@ -3641,7 +3835,8 @@ function getSheetConfigs() {
         [SHEET_NAMES.CONDUCT]: { headers: ['ID_INCIDENT', 'DATE', 'ID_ETUDIANT', 'NOM_ETUDIANT', 'CLASSE', 'DESCRIPTION_INCIDENT', 'MESURE_PRISE'], color: '#673ab7' },
         [SHEET_NAMES.ACTION_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'DONNEES', 'UTILISATEUR_IP'], color: '#78909c' },
         [SHEET_NAMES.ERROR_LOG]: { headers: ['TIMESTAMP', 'ACTION', 'REQUETE', 'MESSAGE_ERREUR', 'SUGGESTION_DEBUG', 'PILE_APPEL'], color: '#d50000' }
-        ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION', 'NOTE_ETOILEE'], color: '#ffc107' }
+        ,[SHEET_NAMES.AVIS]: { headers: ['TIMESTAMP', 'ROLE_UTILISATEUR', 'ID_UTILISATEUR', 'NOTES (Facilité, Design, Utilité)', 'POINTS_A_CORRIGER', 'IDEES_AMELIORATION', 'NOTE_ETOILEE'], color: '#ffc107' },
+        [SHEET_NAMES.DOOR_LOGS]: { headers: ['TIMESTAMP', 'ID_RFID_SCANNE', 'ID_ETUDIANT_TROUVE', 'NOM_ETUDIANT', 'STATUT_ACCES', 'RAISON'], color: '#3c4043' } // NOUVEAU
     };
 }
 

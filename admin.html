@@ -83,6 +83,9 @@
                 <a href="#" onclick="showPage('tools-page', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Outils (QR/Liens)
                 </a>
+                <a href="#" onclick="showPage('page-door-logs', this)" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
+                    Logs d'Accès Porte
+                </a>
                 <a href="#" onclick="openFeedbackModal('Admin')" class="nav-link flex items-center py-3 px-6 text-gray-300 hover:bg-white/10 hover:text-white">
                     Donner mon avis
                 </a>
@@ -609,6 +612,64 @@
         </div>
     </div>
 
+    <!-- NOUVEAU: Page des logs d'accès porte -->
+    <div id="page-door-logs" class="page-container hidden space-y-6">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">Historique d'Accès à la Porte</h1>
+                <p class="mt-1 text-sm text-gray-600">Suivi en temps réel des tentatives d'ouverture de porte par carte RFID.</p>
+            </div>
+            <button onclick="loadDoorLogs(true)" class="refresh-btn flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">
+                <i class="fas fa-sync-alt"></i>
+                <span>Rafraîchir</span>
+            </button>
+        </div>
+
+        <!-- Filtres -->
+        <div class="bg-white p-4 rounded-lg shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="door-log-filter-text" class="block mb-2 text-sm font-medium text-gray-900">Filtrer par ID ou Nom</label>
+                    <input type="text" id="door-log-filter-text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block w-full p-2.5" placeholder="ID RFID, ID Étudiant, Nom...">
+                </div>
+                <div>
+                    <label for="door-log-filter-status" class="block mb-2 text-sm font-medium text-gray-900">Filtrer par Statut</label>
+                    <select id="door-log-filter-status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-violet-500 focus:border-violet-500 block w-full p-2.5">
+                        <option value="">Tous les statuts</option>
+                        <option value="Autorisé">Autorisé</option>
+                        <option value="Refusé">Refusé</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tableau des logs -->
+        <div class="relative overflow-x-auto shadow-md sm:rounded-lg bg-white">
+            <table class="w-full text-sm text-left text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">Date & Heure</th>
+                        <th scope="col" class="px-6 py-3">Statut</th>
+                        <th scope="col" class="px-6 py-3">ID RFID Scanné</th>
+                        <th scope="col" class="px-6 py-3">Étudiant</th>
+                        <th scope="col" class="px-6 py-3">Raison / Détails</th>
+                    </tr>
+                </thead>
+                <tbody id="door-logs-table-body">
+                    <!-- Squelette de chargement -->
+                    <tr><td colspan="5" class="p-4 text-center">
+                        <div role="status" class="space-y-2.5 animate-pulse max-w-lg mx-auto">
+                            <div class="flex items-center w-full"><div class="h-4 bg-gray-200 rounded-full w-full"></div></div>
+                            <div class="flex items-center w-full"><div class="h-4 bg-gray-300 rounded-full w-full"></div></div>
+                            <div class="flex items-center w-full"><div class="h-4 bg-gray-200 rounded-full w-full"></div></div>
+                            <span class="sr-only">Chargement...</span>
+                        </div>
+                    </td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
             </main>
         </div>
     </div>
@@ -719,7 +780,8 @@
                 'stats-page': 'Statistiques', // NOUVEAU
                 'tools-page': 'Outils',
                 'students-page': 'Étudiants',
-                'student-profile-page': 'Profil Étudiant' // NOUVEAU
+                'student-profile-page': 'Profil Étudiant', // NOUVEAU
+                'page-door-logs': 'Logs d\'Accès Porte' // NOUVEAU
             };
             document.getElementById('page-title').textContent = pageTitles[pageId] || 'Administration';
 
@@ -755,6 +817,8 @@
                 setupStatsPage();
             } else if (pageId === 'messages-page') {
                 setupMessagesPage();
+            } else if (pageId === 'page-door-logs') {
+                loadDoorLogs();
             } else if (pageId === 'main-dashboard') {
                 loadInteractiveDashboard(); // NOUVEAU
             }
@@ -2528,6 +2592,103 @@
                 document.getElementById('rfid-search-input').value = '';
             }
         }
+
+        // Stockage global pour les logs afin d'éviter les appels API répétés pour le filtrage
+        let allDoorLogs = [];
+
+        /**
+         * Charge les logs d'accès à la porte depuis l'API.
+         * @param {boolean} forceRefresh - Si true, force le rechargement depuis l'API.
+         */
+        async function loadDoorLogs(forceRefresh = false) {
+            const tableBody = document.getElementById('door-logs-table-body');
+            if (!tableBody) return;
+
+            // Afficher le squelette de chargement
+            tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center">Chargement des données...</td></tr>`;
+
+            try {
+                if (forceRefresh || allDoorLogs.length === 0) {
+                    const result = await callAdminApi('adminGetDoorLogs');
+                    allDoorLogs = result.data;
+                }
+                renderDoorLogs(allDoorLogs);
+            } catch (error) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-red-500">Erreur: ${error.message}</td></tr>`;
+            }
+        }
+
+        /**
+         * Affiche les logs dans le tableau.
+         * @param {Array} logs - Le tableau des objets de log.
+         */
+        function renderDoorLogs(logs) {
+            const tableBody = document.getElementById('door-logs-table-body');
+            if (!logs || logs.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-500">Aucun log d'accès enregistré.</td></tr>`;
+                return;
+            }
+
+            tableBody.innerHTML = logs.map(log => {
+                const isSuccess = log.STATUT_ACCES === 'Autorisé';
+                const statusClass = isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                const statusIcon = isSuccess ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-times-circle"></i>';
+
+                return `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
+                            ${new Date(log.TIMESTAMP).toLocaleString('fr-FR')}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="flex items-center gap-2 text-xs font-medium px-2.5 py-0.5 rounded-full ${statusClass}">
+                                ${statusIcon}
+                                ${log.STATUT_ACCES}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 font-mono">
+                            ${log.ID_RFID_SCANNE}
+                        </td>
+                        <td class="px-6 py-4">
+                            ${log.NOM_ETUDIANT || '<span class="text-gray-400">N/A</span>'}<br>
+                            <span class="text-xs font-mono text-gray-400">${log.ID_ETUDIANT_TROUVE || ''}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            ${log.RAISON}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        /**
+         * Applique les filtres sur les logs affichés.
+         */
+        function applyDoorLogsFilter() {
+            const filterText = document.getElementById('door-log-filter-text').value.toLowerCase();
+            const filterStatus = document.getElementById('door-log-filter-status').value;
+
+            const filteredLogs = allDoorLogs.filter(log => {
+                const textMatch = !filterText ||
+                    log.ID_RFID_SCANNE.toLowerCase().includes(filterText) ||
+                    (log.ID_ETUDIANT_TROUVE && log.ID_ETUDIANT_TROUVE.toLowerCase().includes(filterText)) ||
+                    (log.NOM_ETUDIANT && log.NOM_ETUDIANT.toLowerCase().includes(filterText));
+
+                const statusMatch = !filterStatus || log.STATUT_ACCES === filterStatus;
+
+                return textMatch && statusMatch;
+            });
+
+            renderDoorLogs(filteredLogs);
+        }
+
+        // Attacher les listeners pour les filtres
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterTextInput = document.getElementById('door-log-filter-text');
+            const filterStatusInput = document.getElementById('door-log-filter-status');
+
+            if (filterTextInput) filterTextInput.addEventListener('input', applyDoorLogsFilter);
+            if (filterStatusInput) filterStatusInput.addEventListener('change', applyDoorLogsFilter);
+        });
     </script>
 
 
