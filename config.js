@@ -3,7 +3,7 @@
 /* ================================================================== */
 
 
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxHZNTpGGAFDnvft7d2Ad8w1bkk7i-a88eugb2tbZhvwQm-lhtIHUwlmgCe7ntQZxn6lw/exec';
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxh8LAOlprbLnTn7BJQDKNr6R80qJwJgerkLHJMa97rxUfZNYTwC8wRpboaVxEd_6fpCQ/exec';
 // CORRECTION: Utilisation des noms de clés de session cohérents avec les autres fichiers.
 // --- Clés de session et autres constantes ---
 const ADMIN_SESSION_KEY = 'abm_admin_token';

@@ -234,8 +234,6 @@ function doPost(e) {
         return responsableGetStudentsForOnlineAttendance(data, ctx);
     } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
         return getStudentAbsenceReport(data, ctx);
-    } else if (action === 'getStudentAbsenceReport') { // NOUVEAU: Pour le rapport de l'étudiant
-        return getStudentAbsenceReport(data, ctx);
     } else if (action === 'adminGetAssiduiteStats') { // NOUVEAU: Pour le graphe admin
         return adminGetAssiduiteStats(data, ctx);
     } else if (action === 'submitFeedback') { // NOUVEAU: Pour les avis
@@ -1005,7 +1003,7 @@ function adminGetSentMessages(data, ctx) {
         if (!universityId) throw new Error("ID de l'université manquant.");
 
         const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
-        const headers = studentsData[0];
+        const headers = messagesData[0];
         const univFkIdx = headers.indexOf('ID_UNIVERSITE_FK');
         const authorIdx = headers.indexOf('AUTEUR_INFO');
 
@@ -1073,7 +1071,7 @@ function responsableGetSentMessages(data, ctx) {
         const messagesData = _getRawSheetData(SHEET_NAMES.MESSAGES, ctx);
         const headers = messagesData[0];
         const authorIdx = headers.indexOf('AUTEUR_INFO');
-
+        
         const sentMessages = messagesData.slice(1)
             .filter(row => row[authorIdx] === authorSignature)
             .map(row => Object.fromEntries(headers.map((h, i) => [h, row[i]])))
@@ -3128,7 +3126,8 @@ function getResponsableClassInfo(responsableId, ctx) {
         const responsableRow = respData.slice(1).find(row => row[respIdIdx] === responsableId);
         if (!responsableRow) throw new Error('Responsable non trouvé.');
         const classId = responsableRow[classFkIdx];
-        const universityId = responsableRow[univFkIdx];        const responsableName = responsableRow[respNameIdx]; // NOUVEAU
+        const universityId = responsableRow[univFkIdx];
+        const responsableName = responsableRow[respNameIdx]; // NOUVEAU
 
         // 2. Trouver le nom de la classe
         const classesHeaders = classesData[0];

@@ -1,176 +1,141 @@
-/*
- * =================================================================================
- * CONTRÔLEUR DE PORTE RFID POUR ABM EDUPILOTE
- * =================================================================================
- * Matériel requis :
- *  - ESP32
- *  - Lecteur RFID avec sortie Wiegand (ex: Wiegand 26)
- *  - Module Relais 5V
- *  - Gâche électrique 12V (ou autre tension)
- *  - Alimentation externe pour la gâche
- *
- * Développé par ABM Company Tech
- * =================================================================================
- */
-
+#include <SPI.h>
+#include <MFRC522.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include <WiFiClientSecure.h> // CORRECTION: Ajout de l'include manquant
+#include <WiFiClientSecure.h>
 #include <ArduinoJson.h>
-#include "Wiegand.h" // Bibliothèque à installer: "Wiegand-ESP32" par monkeyboard
 
-// --- CONFIGURATION À MODIFIER ---
-const char* ssid = "NOM_DE_VOTRE_WIFI";
-const char* password = "MOT_DE_PASSE_WIFI";
+// --- CONFIGURATION ---
+const char* ssid = "abmcy";
+const char* password = "test1234v";
+String scriptUrl = "https://script.google.com/macros/s/AKfycbyXFSa8oS36xe6fNpNn1W6kWJz7TkZf2wK1XvgdCeaFj6sXveZIiLDHCJuO-tVTvkMctA/exec";
 
-// URL de votre Web App Google Apps Script
-String scriptUrl = "https://script.google.com/macros/s/AKfycbwBYwl1maJmn_91zolF4W9Rj2lIYYW3CixOhTDangswBte6jl5Zq47ykobAIVZKdDSF-g/exec";
+// --- PINOUT (RC522) ---
+#define SS_PIN    5   // RC522 SDA/SS
+#define SCK_PIN   18  // RC522 SCK
+#define MOSI_PIN  23  // RC522 MOSI
+#define MISO_PIN  19  // RC522 MISO
+#define RST_PIN   26  // RC522 RST
 
-// Broches (Pins) de l'ESP32
-const int RELAY_PIN = 23;      // Broche connectée à l'entrée 'IN' du module relais
-const int WIEGAND_D0_PIN = 16; // Broche pour Wiegand D0 (fil vert)
-const int WIEGAND_D1_PIN = 17; // Broche pour Wiegand D1 (fil blanc)
+#define PIN_RELAY    4
 
-// --- FIN DE LA CONFIGURATION ---
+// --- CONFIGURATION RELAIS ---
+// Mettre 'true' si le relais s'active avec un signal LOW (0V) - Cas fréquent
+// Mettre 'false' si le relais s'active avec un signal HIGH (3.3V/5V)
+#define RELAY_ACTIVE_LOW  true 
 
-Wiegand wiegand;
+#if RELAY_ACTIVE_LOW
+  #define RELAY_OPEN   LOW
+  #define RELAY_CLOSE  HIGH
+#else
+  #define RELAY_OPEN   HIGH
+  #define RELAY_CLOSE  LOW
+#endif
 
-// Certificat racine pour la connexion HTTPS à Google (valide jusqu'en 2028)
-const char* root_ca = \
-"-----BEGIN CERTIFICATE-----\n" \
-"MIIDujCCAqKgAwIBAgILBAAAAAABD4Ym5g0wDQYJKoZIhvcNAQEFBQAwTDEgMB4G\n" \
-"A1UECxMXR2xvYmFsU2lnbiBSb290IENBIC0gUjIxEzARBgNVBAoTCkdsb2JhbFNp\n" \
-"Z24xEzARBgNVBAMTCkdsb2JhbFNpZ24wHhcNMDYxMjE1MDgwMDAwWhcNMjExMjE1\n" \
-"MDgwMDAwWjBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMjETMBEG\n" \
-"A1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjCCASIwDQYJKoZI\n" \
-"hvcNAQEBBQADggEPADCCAQoCggEBAKbPJA6+Bgd8um2Uo5ZsoE7S5SPzL60RyxU4\n" \
-"va3b45GfGBgzR5O2YXB0N8lRkYOKJoIu4WoGzt5w2k/kkYLSAn64vADOLQuwAitZ\n" \
-"oP6xt9c/ANqdkp5TwmT8A6GkHKHx1c/JTDeFQBsAB1fTEsoRsbZRKIg5P6+m7wpp\n" \
-"D4a1S2sfYckzBDAH9muRT7tZVbbJ1oRosggrpdYSHqYl02qsErsgsrrIqve6vNnB\n" \
-"Pah5i65PctrlUsoag1P1GSIUomsR09ma1R+O1Tz/MSiGHYOLYtKjsg2GB3DUA0T2\n" \
-"N5grl2L3iPYVw6I1PlS+Ar1K0LoCCdtyfsAMIF74mgj6AEr7LgUCAwEAAaOBnDCB\n" \
-"mTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/BAUwAwEB/zAdBgNVHQ4EFgQUm+IH\n" \
-"V2ccHsBqBt5ZtJot39wZhi8wNgYDVR0fBC8wLTAroCmgJ4YlaHR0cDovL2NybC5n\n" \
-"bG9iYWxzaWduLm5ldC9yb290LXIyLmNybDAfBgNVHSMEGDAWgBSb4gdXZxwewGoG\n" \
-"3lm0mi3f3BmGLzANBgkqhkiG9w0BAQUFAAOCAQEAmYFThdMgl+9L0uAbGwWMllm+\n" \
-"8uRk26yaFK6fE+l+uppA6bOV5Gf4TycGIe1s2sR4I8+Vp51Jbfg2qBCMoM3o0QTd\n" \
-"Zt2+y3qPAjFNu5TUIu61a1c/G2gO2I4+z9M0xO2Vz7vnKFr21r9v6jw4J9n0l8L0\n" \
-"r97i4XvKj5ETMzt0N4jYKFx7/Y29L/pcEvxdd1W6AZT+I+r2VAm9TPyJv92Y\n" \
-"V+w9I25lT0Jie6je9J2CuuOUbJnBPS0S3oGNd+EDh+qGzQk2xO2x5B6PyFLbVv3a\n" \
-"3Yp40G9ES2rjsweU1/L+8IBzhM16wA+BqpyLgE/aC9d1gTRGAb7F2aTC2Yn2Ag==\n" \
-"-----END CERTIFICATE-----\n";
+#define PIN_LED_WIFI (21) // LED Connexion (Verte)
+#define PIN_LED_SCAN (22) // LED Passage Carte (Bleue)
+#define PIN_BUZZER   (27) // Buzzer
 
+MFRC522 mfrc522(SS_PIN, RST_PIN); // Create MFRC522 instance
+
+void beep(int duration, int count = 1) {
+  for (int i = 0; i < count; i++) {
+    digitalWrite(PIN_BUZZER, HIGH);
+    delay(duration);
+    digitalWrite(PIN_BUZZER, LOW);
+    if (count > 1 && i < count - 1) delay(100);
+  }
+}
 
 void setup() {
   Serial.begin(115200);
-  Serial.println("\n[INFO] Démarrage du contrôleur de porte ABM EduPilote...");
+  
+  pinMode(PIN_RELAY, OUTPUT); digitalWrite(PIN_RELAY, RELAY_CLOSE);
+  pinMode(PIN_LED_WIFI, OUTPUT); digitalWrite(PIN_LED_WIFI, LOW);
+  pinMode(PIN_LED_SCAN, OUTPUT); digitalWrite(PIN_LED_SCAN, LOW);
+  pinMode(PIN_BUZZER, OUTPUT); digitalWrite(PIN_BUZZER, LOW);
 
-  // Configuration du relais
-  pinMode(RELAY_PIN, OUTPUT);
-  digitalWrite(RELAY_PIN, LOW); // S'assurer que la porte est fermée au démarrage
+  // Test Buzzer au démarrage
+  beep(100, 2);
 
-  // Connexion au WiFi
-  Serial.print("[WIFI] Connexion à ");
-  Serial.println(ssid);
+  // Connexion WiFi
   WiFi.begin(ssid, password);
+  Serial.print("Connexion au WiFi");
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
+    delay(500); Serial.print(".");
+    digitalWrite(PIN_LED_WIFI, !digitalRead(PIN_LED_WIFI)); // Clignote
   }
-  Serial.println("\n[WIFI] Connecté !");
-  Serial.print("[WIFI] Adresse IP: ");
-  Serial.println(WiFi.localIP());
+  Serial.println(" Connecté !");
+  digitalWrite(PIN_LED_WIFI, HIGH); // Fixe quand connecté
+  beep(500); // Bip long connexion OK
 
-  // Initialisation du lecteur Wiegand
-  wiegand.begin(WIEGAND_D0_PIN, WIEGAND_D1_PIN);
-  Serial.println("[WIEGAND] Lecteur initialisé. En attente de cartes...");
+  // Init SPI bus and MFRC522
+  SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, SS_PIN); // Init SPI bus
+  mfrc522.PCD_Init();   // Init MFRC522 card
+  mfrc522.PCD_DumpVersionToSerial();  // Show details of PCD - MFRC522 Card Reader details
+  Serial.println("Prêt à scanner...");
 }
 
 void loop() {
-  // Vérifie si une carte a été scannée
-  if (wiegand.available()) {
-    // Récupère le code de la carte
-    // La bibliothèque gère la conversion en nombre décimal
-    String rfidCode = String(wiegand.getCode());
-    
-    Serial.println("---------------------------------");
-    Serial.print("[WIEGAND] Carte détectée ! ID: ");
-    Serial.println(rfidCode);
-
-    // Envoie la demande d'accès au serveur
-    requestAccess(rfidCode);
+  // Look for new cards
+  if ( ! mfrc522.PICC_IsNewCardPresent() || ! mfrc522.PICC_ReadCardSerial()) {
+    delay(50);
+    return;
   }
-}
 
-// Fonction pour envoyer la demande d'accès au script Google
-void requestAccess(String rfidId) {
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    WiFiClientSecure client; // Cette ligne nécessite <WiFiClientSecure.h>
+  // A card has been detected
+    digitalWrite(PIN_LED_SCAN, HIGH); // Allumer LED Scan
+    beep(50); // Bip court scan
     
-    // Utiliser le certificat racine pour la connexion sécurisée
-    client.setCACert(root_ca);
-
-    http.begin(client, scriptUrl);
-    http.addHeader("Content-Type", "application/json");
-
-    // Création du corps de la requête JSON
-    JsonDocument jsonDoc;
-    jsonDoc["action"] = "requestDoorAccess";
-    jsonDoc["data"]["rfidId"] = rfidId;
-
-    String requestBody;
-    serializeJson(jsonDoc, requestBody);
-
-    Serial.print("[HTTP] Envoi de la requête: ");
-    Serial.println(requestBody);
-
-    // Envoi de la requête POST
-    int httpResponseCode = http.POST(requestBody);
-
-    if (httpResponseCode > 0) {
-      String response = http.getString();
-      Serial.print("[HTTP] Code de réponse: ");
-      Serial.println(httpResponseCode);
-      Serial.print("[HTTP] Réponse du serveur: ");
-      Serial.println(response);
-
-      // Analyse de la réponse JSON
-      JsonDocument responseDoc;
-      DeserializationError error = deserializeJson(responseDoc, response);
-
-      if (error) {
-        Serial.print("[JSON] Erreur de désérialisation: ");
-        Serial.println(error.c_str());
-        return;
-      }
-
-      bool success = responseDoc["success"];
-      if (success) {
-        Serial.println("[ACCES] Accès autorisé ! Ouverture de la porte.");
-        openDoor();
-      } else {
-        const char* errorMessage = responseDoc["error"];
-        Serial.print("[ACCES] Accès refusé. Raison: ");
-        Serial.println(errorMessage);
-      }
-
-    } else {
-      Serial.print("[HTTP] Erreur de la requête POST, code: ");
-      Serial.println(httpResponseCode);
+    String rfidId = "";
+    for (byte i = 0; i < mfrc522.uid.size; i++) {
+      rfidId += String(mfrc522.uid.uidByte[i]);
     }
+    Serial.println("ID: " + rfidId);
 
-    http.end();
-  } else {
-    Serial.println("[WIFI] Non connecté. Impossible d'envoyer la requête.");
-  }
-}
+    if(WiFi.status() == WL_CONNECTED){
+      WiFiClientSecure client;
+      client.setInsecure(); // Nécessaire pour HTTPS sur Google Script sans certificat complexe
 
-// Fonction pour activer le relais et ouvrir la porte
-void openDoor() {
-  Serial.println("[RELAIS] Activation du relais...");
-  digitalWrite(RELAY_PIN, HIGH); // Active le relais
-  delay(3000);                   // Maintient la porte ouverte pendant 3 secondes
-  digitalWrite(RELAY_PIN, LOW);  // Désactive le relais
-  Serial.println("[RELAIS] Relais désactivé. Porte refermée.");
+      HTTPClient http;
+      http.begin(client, scriptUrl);
+      http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // CRUCIAL : suit la redirection Google
+      
+      http.addHeader("Content-Type", "application/json");
+      String payload = "{\"action\":\"requestDoorAccess\", \"data\":{\"rfidId\":\"" + rfidId + "\"}}";
+      int httpCode = http.POST(payload);
+      
+      if (httpCode > 0) {
+        String response = http.getString();
+        Serial.println("Réponse : " + response);
+
+        // Analyse JSON propre
+        StaticJsonDocument<200> doc;
+        DeserializationError error = deserializeJson(doc, response);
+
+        if (!error && doc["success"] == true) {
+           Serial.println("ACCÈS AUTORISÉ");
+           beep(100, 2); // 2 bips succès
+           digitalWrite(PIN_RELAY, RELAY_OPEN); delay(3000); digitalWrite(PIN_RELAY, RELAY_CLOSE);
+        } else {
+           String errorMsg = doc["error"] | "Raison inconnue";
+           Serial.println("ACCÈS REFUSÉ : " + errorMsg);
+           // Clignotement rapide + Bips erreur
+           for(int i=0; i<3; i++) { 
+             digitalWrite(PIN_LED_SCAN, LOW); 
+             digitalWrite(PIN_BUZZER, HIGH);
+             delay(100); 
+             digitalWrite(PIN_LED_SCAN, HIGH); 
+             digitalWrite(PIN_BUZZER, LOW);
+             delay(100); 
+           }
+        }
+      }
+      http.end();
+    }
+    
+    digitalWrite(PIN_LED_SCAN, LOW);
+    mfrc522.PICC_HaltA(); // Halt PICC
+    mfrc522.PCD_StopCrypto1(); // Stop encryption on PCD
+    delay(1000); // Wait a bit before next scan
 }
