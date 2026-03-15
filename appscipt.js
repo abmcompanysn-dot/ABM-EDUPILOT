@@ -48,12 +48,17 @@ function showExportDialog() {
   SpreadsheetApp.getUi().showSidebar(html);
 }
 /**
- * Gère les requêtes GET (scans de QR Code).
+ * Gère les requêtes GET.
+ * Utilisé pour les tests de connectivité et pour les requêtes RFID de l'ESP32.
  */
 function doGet(e) {
-  // La fonction doGet n'est plus utilisée pour servir des pages HTML.
-  // Tout le frontend est maintenant géré par un service externe (Netlify/Vercel).
-  // On peut la garder pour des tests de connectivité simples.
+  // Gérer les requêtes RFID de l'ESP32 via l'URL (ex: ?rfidId=12345)
+  if (e && e.parameter && e.parameter.rfidId) {
+    // On simule une requête de type 'data' pour réutiliser la logique de `requestDoorAccess`
+    const data = { rfidId: e.parameter.rfidId };
+    return requestDoorAccess(data);
+  }
+  // Comportement par défaut pour les tests de connectivité du navigateur
   return createJsonResponse({ success: true, message: 'ABM EduPilote Backend v3.0 - Actif' });
 }
 
@@ -450,56 +455,6 @@ function responsableGetAbsenceStats(data, ctx) {
 
     } catch (error) {
         logError('responsableGetAbsenceStats', error);
-        return createJsonResponse({ success: false, error: error.message });
-    }
-}
-
-/**
- * NOUVEAU: ACTION: getStudentAbsenceReport
- * Récupère la liste des cours où un étudiant a été absent.
- * @param {object} data - Contient { studentId }.
- * @param {object} ctx - Le contexte de la requête.
- * @returns {object} JSON response avec la liste des cours manqués.
- */
-function getStudentAbsenceReport(data, ctx) {
-    try {
-        const { studentId } = data;
-        if (!studentId) throw new Error("ID de l'étudiant manquant.");
-
-        const studentMap = getStudentMap();
-        const studentInfo = studentMap[studentId.toUpperCase()];
-        if (!studentInfo) throw new Error("Étudiant non trouvé.");
-
-        // 1. Récupérer tous les cours confirmés pour la classe de l'étudiant
-        const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
-        const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
-        
-        const scheduledCourses = planningData.slice(1).filter(row => {
-            const module = moduleMap.get(row[1]); // ID_MODULE_FK
-            return module && module.classId === studentInfo.classId && row[5] === 'Confirmé'; // STATUT
-        }).map(row => ({
-            date: Utilities.formatDate(new Date(row[2]), Session.getScriptTimeZone(), 'yyyy-MM-dd'), // DATE_COURS
-            module: moduleMap.get(row[1]).name
-        }));
-
-        // 2. Récupérer toutes les présences de l'étudiant
-        const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
-        const studentPresences = new Set(
-            scanData.slice(1)
-            .filter(row => row[1] === studentId) // ID_ETUDIANT
-            .map(row => `${Utilities.formatDate(new Date(row[5]), Session.getScriptTimeZone(), 'yyyy-MM-dd')}_${row[4]}`) // DATE_SCAN + MODULE
-        );
-
-        // 3. Comparer pour trouver les absences
-        const absenceReport = scheduledCourses.filter(course => {
-            const presenceKey = `${course.date}_${course.module}`;
-            return !studentPresences.has(presenceKey);
-        });
-
-        return createJsonResponse({ success: true, data: absenceReport });
-
-    } catch (error) {
-        logError('getStudentAbsenceReport', error);
         return createJsonResponse({ success: false, error: error.message });
     }
 }

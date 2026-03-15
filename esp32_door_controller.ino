@@ -98,12 +98,13 @@ void loop() {
       client.setInsecure(); // Nécessaire pour HTTPS sur Google Script sans certificat complexe
 
       HTTPClient http;
-      http.begin(client, scriptUrl);
+      // Construction de l'URL avec l'ID en paramètre (GET)
+      String url = scriptUrl + "?rfidId=" + rfidId;
+      http.begin(client, url);
       http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS); // CRUCIAL : suit la redirection Google
       
-      http.addHeader("Content-Type", "application/json");
-      String payload = "{\"action\":\"requestDoorAccess\", \"data\":{\"rfidId\":\"" + rfidId + "\"}}";
-      int httpCode = http.POST(payload);
+      // Requête GET (plus fiable pour Google Script que POST)
+      int httpCode = http.GET();
       
       if (httpCode > 0) {
         String response = http.getString();
