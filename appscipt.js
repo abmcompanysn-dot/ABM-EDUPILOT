@@ -301,54 +301,68 @@ function submitFeedback(data) {
  * @returns {object} JSON response avec { success: true } si l'accès est autorisé.
  */
 function requestDoorAccess(data) {
-    try {
-        const { rfidId } = data;
-        if (!rfidId) {
-            // Pas besoin de log ici car la requête est invalide
-            return createJsonResponse({ success: false, error: 'ID RFID manquant.' });
-        }
-        const ctx = createRequestContext();
-
-        // 1. Trouver l'étudiant par son ID RFID
-        const studentMapByRfid = getStudentMapByRfid(ctx);
-        const studentInfo = studentMapByRfid[rfidId.toString()];
-
-        if (!studentInfo) {
-            logDoorAccessAttempt(rfidId, null, null, 'Refusé', 'Carte RFID non reconnue');
-            return createJsonResponse({ success: false, error: 'Carte RFID non reconnue.' });
-        }
-
-        // 2. Vérifier si un cours est actuellement en session pour la classe de l'étudiant
-        const currentCourse = findCurrentCourseForClass(studentInfo.classId, ctx);
-
-        if (!currentCourse) {
-            logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Refusé', 'Aucun cours en ce moment');
-            return createJsonResponse({ success: false, error: 'Aucun cours en ce moment.' });
-        }
-
-        // 3. Enregistrer la présence de l'étudiant
-        const attendanceResponse = recordAttendance({
-            studentId: studentInfo.id,
-            classe: currentCourse.classe,
-            module: currentCourse.module
-        });
-        const attendanceResult = JSON.parse(attendanceResponse.getContent());
-
-        // Si le pointage réussit (ou si l'étudiant était déjà présent), on autorise l'accès.
-        if (attendanceResult.success) {
-            logAction('requestDoorAccess_success', { rfidId, studentId: studentInfo.id, course: currentCourse.module });
-            logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Autorisé', `Pointage pour le cours: ${currentCourse.module}`);
-            return createJsonResponse({ success: true, message: `Accès autorisé pour ${studentInfo.name}.`, studentName: studentInfo.name });
-        } else {
-            // Ce cas est peu probable mais sert de sécurité
-            logError('requestDoorAccess_attendance_fail', new Error(attendanceResult.error));
-            logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Refusé', `Erreur de pointage: ${attendanceResult.error}`);
-            return createJsonResponse({ success: false, error: `Erreur de pointage: ${attendanceResult.error}` });
-        }
-    } catch (error) {
-        logError('requestDoorAccess', error);
-        return createJsonResponse({ success: false, error: error.message });
+  try {
+    const { rfidId } = data;
+    if (!rfidId) {
+      return createJsonResponse({ success: false, error: 'ID RFID manquant.' });
     }
+    const ctx = createRequestContext();
+
+    // 1. Trouver l'étudiant par son ID RFID (rapide, car mis en cache)
+    const studentMapByRfid = getStudentMapByRfid(ctx);
+    const studentInfo = studentMapByRfid[rfidId.toString()];
+
+    if (!studentInfo) {
+      logDoorAccessAttempt(rfidId, null, null, 'Refusé', 'Carte RFID non reconnue');
+      return createJsonResponse({ success: false, error: 'Carte RFID non reconnue.' });
+    }
+
+    // 2. Vérifier si un cours est actuellement en session pour la classe de l'étudiant (optimisé)
+    const currentCourse = findCurrentCourseForClass(studentInfo.classId, ctx);
+
+    if (!currentCourse) {
+      logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Refusé', 'Aucun cours en ce moment');
+      return createJsonResponse({ success: false, error: 'Aucun cours en ce moment.' });
+    }
+
+    // --- OPTIMISATION MAJEURE : Logique de présence intégrée et optimisée ---
+    const scanSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAMES.SCAN);
+    const scanData = _getRawSheetData(SHEET_NAMES.SCAN, ctx);
+    const headers = scanData[0];
+    const studentIdIdx = headers.indexOf('ID_ETUDIANT');
+    const moduleIdx = headers.indexOf('MODULE');
+    const dateScanIdx = headers.indexOf('DATE_SCAN');
+
+    const todayStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+
+    // Étape A: Filtrer les scans pour ne garder que ceux d'aujourd'hui. C'est la clé de l'optimisation.
+    const todaysScans = scanData.slice(1).filter(row => {
+      const scanDate = row[dateScanIdx];
+      if (!scanDate) return false;
+      const scanDateStr = scanDate instanceof Date ? Utilities.formatDate(scanDate, Session.getScriptTimeZone(), 'yyyy-MM-dd') : scanDate.toString().split(' ')[0];
+      return scanDateStr === todayStr;
+    });
+
+    // Étape B: Chercher dans le tableau beaucoup plus petit des scans d'aujourd'hui.
+    const isAlreadyPresent = todaysScans.some(row => row[studentIdIdx] === studentInfo.id && row[moduleIdx] === currentCourse.module);
+
+    if (isAlreadyPresent) {
+      logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Autorisé', `Déjà présent pour: ${currentCourse.module}`);
+      return createJsonResponse({ success: true, message: `Accès autorisé pour ${studentInfo.name}. (Déjà présent)`, studentName: studentInfo.name });
+    }
+
+    // Étape C: Si pas déjà présent, on enregistre la présence.
+    const timestamp = new Date();
+    scanSheet.appendRow([timestamp, studentInfo.id, studentInfo.name, currentCourse.classe, currentCourse.module, todayStr, Utilities.formatDate(timestamp, Session.getScriptTimeZone(), 'HH:mm:ss'), 'Présent']);
+    cache.remove(`attendance_history_${studentInfo.id}`);
+    
+    logDoorAccessAttempt(rfidId, studentInfo.id, studentInfo.name, 'Autorisé', `Pointage pour le cours: ${currentCourse.module}`);
+    return createJsonResponse({ success: true, message: `Accès autorisé pour ${studentInfo.name}.`, studentName: studentInfo.name });
+
+  } catch (error) {
+    logError('requestDoorAccess', error);
+    return createJsonResponse({ success: false, error: error.message });
+  }
 }
 
 /**
@@ -3504,47 +3518,50 @@ function logDoorAccessAttempt(rfidId, studentId, studentName, status, reason) {
  * @returns {object|null} L'objet du cours actuel ou null.
  */
 function findCurrentCourseForClass(classId, ctx) {
-    const now = new Date();
-    const spreadsheetTimeZone = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
-    const todayStr = Utilities.formatDate(now, spreadsheetTimeZone, 'yyyy-MM-dd');
+  const now = new Date();
+  const spreadsheetTimeZone = SpreadsheetApp.getActiveSpreadsheet().getSpreadsheetTimeZone();
+  const todayStr = Utilities.formatDate(now, spreadsheetTimeZone, 'yyyy-MM-dd');
 
-    const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
-    const planningHeaders = planningData[0];
-    const p_moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
-    const p_dateIdx = planningHeaders.indexOf('DATE_COURS');
-    const p_startIdx = planningHeaders.indexOf('HEURE_DEBUT');
-    const p_endIdx = planningHeaders.indexOf('HEURE_FIN');
-    const p_statusIdx = planningHeaders.indexOf('STATUT');
+  const planningData = _getRawSheetData(SHEET_NAMES.PLANNING, ctx);
+  const planningHeaders = planningData[0];
+  const p_moduleIdFkIdx = planningHeaders.indexOf('ID_MODULE_FK');
+  const p_dateIdx = planningHeaders.indexOf('DATE_COURS');
+  const p_startIdx = planningHeaders.indexOf('HEURE_DEBUT');
+  const p_endIdx = planningHeaders.indexOf('HEURE_FIN');
+  const p_statusIdx = planningHeaders.indexOf('STATUT');
 
-    const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
+  // OPTIMISATION: Pré-filtrer le planning pour ne garder que les cours confirmés d'aujourd'hui.
+  const todaysConfirmedCourses = planningData.slice(1).filter(row => {
+    if (row[p_statusIdx] !== 'Confirmé') return false;
+    const courseDate = row[p_dateIdx];
+    if (!courseDate) return false;
+    const courseDateStr = courseDate instanceof Date ? Utilities.formatDate(courseDate, spreadsheetTimeZone, 'yyyy-MM-dd') : courseDate.toString().split(' ')[0];
+    return courseDateStr === todayStr;
+  });
 
-    const currentCourseRow = planningData.slice(1).find(row => {
-        const moduleInfo = moduleMap.get(row[p_moduleIdFkIdx]);
-        if (!moduleInfo || moduleInfo.classId !== classId || row[p_statusIdx] !== 'Confirmé') return false;
+  const moduleMap = new Map(_getRawSheetData(SHEET_NAMES.MODULES, ctx).slice(1).map(row => [row[0], { name: row[1], classId: row[2] }]));
 
-        const courseDate = new Date(row[p_dateIdx]);
-        const courseDateStr = Utilities.formatDate(courseDate, spreadsheetTimeZone, 'yyyy-MM-dd');
-        if (courseDateStr !== todayStr) return false;
+  // Chercher dans la liste beaucoup plus petite des cours d'aujourd'hui.
+  const currentCourseRow = todaysConfirmedCourses.find(row => {
+    const moduleInfo = moduleMap.get(row[p_moduleIdFkIdx]);
+    if (!moduleInfo || moduleInfo.classId !== classId) return false;
 
-        const startTime = new Date(row[p_startIdx]);
-        const endTime = new Date(row[p_endIdx]);
+    const courseDate = new Date(row[p_dateIdx]);
+    const startTime = new Date(row[p_startIdx]);
+    const endTime = new Date(row[p_endIdx]);
+    const startDateTime = new Date(courseDate.getFullYear(), courseDate.getMonth(), courseDate.getDate(), startTime.getHours(), startTime.getMinutes());
+    const endDateTime = new Date(courseDate.getFullYear(), courseDate.getMonth(), courseDate.getDate(), endTime.getHours(), endTime.getMinutes());
+    const gracePeriod = 15 * 60 * 1000;
+    const startWithGrace = new Date(startDateTime.getTime() - gracePeriod);
+    const endWithGrace = new Date(endDateTime.getTime() + gracePeriod);
+    return now >= startWithGrace && now <= endWithGrace;
+  });
 
-        const startDateTime = new Date(courseDate.getFullYear(), courseDate.getMonth(), courseDate.getDate(), startTime.getHours(), startTime.getMinutes());
-        const endDateTime = new Date(courseDate.getFullYear(), courseDate.getMonth(), courseDate.getDate(), endTime.getHours(), endTime.getMinutes());
+  if (!currentCourseRow) return null;
 
-        // Marge de tolérance de 15 minutes avant le début et 15 minutes après la fin.
-        const gracePeriod = 15 * 60 * 1000; // 15 minutes en millisecondes
-        const startWithGrace = new Date(startDateTime.getTime() - gracePeriod);
-        const endWithGrace = new Date(endDateTime.getTime() + gracePeriod);
-
-        return now >= startWithGrace && now <= endWithGrace;
-    });
-
-    if (!currentCourseRow) return null;
-
-    const moduleInfo = moduleMap.get(currentCourseRow[p_moduleIdFkIdx]);
-    const classMap = new Map(_getRawSheetData(SHEET_NAMES.CLASSES, ctx).slice(1).map(row => [row[0], row[1]]));
-    return { module: moduleInfo.name, classe: classMap.get(moduleInfo.classId) };
+  const moduleInfo = moduleMap.get(currentCourseRow[p_moduleIdFkIdx]);
+  const classMap = new Map(_getRawSheetData(SHEET_NAMES.CLASSES, ctx).slice(1).map(row => [row[0], row[1]]));
+  return { module: moduleInfo.name, classe: classMap.get(moduleInfo.classId) };
 }
 
 /**

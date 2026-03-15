@@ -22,7 +22,7 @@ String scriptUrl = "https://script.google.com/macros/s/AKfycbyXFSa8oS36xe6fNpNn1
 // --- CONFIGURATION RELAIS ---
 // Mettre 'true' si le relais s'active avec un signal LOW (0V) - Cas fréquent
 // Mettre 'false' si le relais s'active avec un signal HIGH (3.3V/5V)
-#define RELAY_ACTIVE_LOW  true 
+#define RELAY_ACTIVE_LOW  false 
 
 #if RELAY_ACTIVE_LOW
   #define RELAY_OPEN   LOW
@@ -117,7 +117,7 @@ void loop() {
         if (!error && doc["success"] == true) {
            Serial.println("ACCÈS AUTORISÉ");
            beep(100, 2); // 2 bips succès
-           digitalWrite(PIN_RELAY, RELAY_OPEN); delay(3000); digitalWrite(PIN_RELAY, RELAY_CLOSE);
+           digitalWrite(PIN_RELAY, RELAY_OPEN); delay(15000); digitalWrite(PIN_RELAY, RELAY_CLOSE);
         } else {
            String errorMsg = doc["error"] | "Raison inconnue";
            Serial.println("ACCÈS REFUSÉ : " + errorMsg);
