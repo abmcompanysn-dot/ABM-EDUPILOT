@@ -121,6 +121,7 @@
                         <ul class="flex grow justify-end flex-wrap items-center">
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="index.html">Accueil</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="fonctionnement.html">Comment ça marche ?</a></li>
+                            <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="tourniquet.html">Tourniquet 3D</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center" href="mentions-legales.html">Mentions Légales</a></li>
                             <li><a class="font-medium text-gray-300 hover:text-white px-4 py-3 flex items-center transition duration-150 ease-in-out" href="#contact">Contact</a></li>
                         </ul>
@@ -150,6 +151,7 @@
             <ul class="flex flex-col items-center text-white space-y-8">
                 <li><a href="index.html" class="text-2xl font-medium hover:text-violet-300">Accueil</a></li>
                 <li><a href="fonctionnement.html" class="text-2xl font-medium hover:text-violet-300">Comment ça marche ?</a></li>
+                <li><a href="tourniquet.html" class="text-2xl font-medium hover:text-violet-300">Tourniquet 3D</a></li>
                 <li><a href="mentions-legales.html" class="text-2xl font-medium hover:text-violet-300">Mentions Légales</a></li>
                 <li><a href="#contact" class="text-2xl font-medium hover:text-violet-300">Contact</a></li>
                 <li>
@@ -255,6 +257,32 @@
                             <h2 class="text-2xl font-bold">Espace Étudiant</h2>
                             <p class="text-sm opacity-80 mt-1">Consultez vos présences et pointez.</p>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NOUVEAU : le tourniquet EduPilote en 3D -->
+        <section id="tourniquet" class="max-w-7xl mx-auto mt-20" aria-labelledby="tourniquet-titre">
+            <div class="grid grid-cols-1 lg:grid-cols-2 bg-white rounded-3xl shadow-lg overflow-hidden">
+                <a href="tourniquet.html" class="block relative group aspect-[1200/630] lg:aspect-auto overflow-hidden bg-slate-100" aria-label="Ouvrir le tourniquet EduPilote en 3D">
+                    <img src="assets/tourniquet-3d.jpg" alt="Le tourniquet EduPilote en 3D : caisson en inox et trois bras" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" width="1200" height="630">
+                    <span class="absolute bottom-4 left-4 bg-[#1C2B5A]/90 text-white text-sm font-semibold px-3 py-1.5 rounded-full"><i class="fas fa-cube mr-2"></i>3D interactive</span>
+                </a>
+                <div class="p-6 sm:p-10 text-left">
+                    <p class="text-sm font-semibold tracking-widest uppercase text-violet-600">Nouveau · contrôle d'accès</p>
+                    <h2 id="tourniquet-titre" class="text-3xl md:text-4xl font-bold mt-2 bg-gradient-to-r from-[#1C2B5A] to-[#7C3AED] text-transparent bg-clip-text">Le tourniquet EduPilote</h2>
+                    <p class="text-gray-600 mt-4 text-lg leading-relaxed">L'étudiant présente sa carte ou le QR code de son téléphone. Le tourniquet s'ouvre s'il a cours en ce moment, et sa présence est enregistrée à l'heure exacte du passage.</p>
+                    <ul class="mt-6 space-y-3 text-gray-700">
+                        <li class="flex gap-3"><i class="fas fa-id-card text-violet-600 mt-1 w-5 text-center"></i><span>Carte NFC EduPilote ou QR code de l'application</span></li>
+                        <li class="flex gap-3"><i class="fas fa-wifi text-violet-600 mt-1 w-5 text-center"></i><span>Fonctionne même quand le réseau est coupé, puis envoie les passages</span></li>
+                        <li class="flex gap-3"><i class="fas fa-user-check text-violet-600 mt-1 w-5 text-center"></i><span>Un seul passage par carte, compté automatiquement</span></li>
+                        <li class="flex gap-3"><i class="fas fa-industry text-violet-600 mt-1 w-5 text-center"></i><span>En inox, conçu pour être fabriqué par des artisans locaux</span></li>
+                    </ul>
+                    <div class="mt-8 flex flex-wrap gap-3">
+                        <a href="tourniquet.html#passage" class="inline-flex items-center bg-violet-600 hover:bg-violet-700 text-white font-semibold px-5 py-3 rounded-lg transition"><i class="fas fa-play mr-2"></i>Simuler un passage</a>
+                        <a href="tourniquet.html#montage" class="inline-flex items-center bg-white border border-violet-200 text-violet-700 hover:bg-violet-50 font-semibold px-5 py-3 rounded-lg transition"><i class="fas fa-screwdriver-wrench mr-2"></i>Voir le montage</a>
+                        <a href="tourniquet.html" class="inline-flex items-center text-violet-700 hover:text-violet-900 font-semibold px-2 py-3"><i class="fas fa-cube mr-2"></i>Explorer en 3D</a>
                     </div>
                 </div>
             </div>
