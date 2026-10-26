@@ -1,0 +1,572 @@
+[
+ {
+  "ids": [
+   "socle"
+  ],
+  "title": "Platine de base",
+  "mat": "Acier S235 galvanisé, 1200 × 280 × 10 mm",
+  "role": "Elle porte tout le tourniquet et se fixe au sol par quatre chevilles chimiques M12."
+ },
+ {
+  "ids": [
+   "poteau1",
+   "poteau2",
+   "poteau3",
+   "poteau4"
+  ],
+  "title": "Poteaux d'ossature",
+  "mat": "Tube carré inox 30 × 30 × 2, longueur 1048 mm",
+  "role": "Les quatre poteaux forment les angles du caisson ; ils sont soudés sur la platine."
+ },
+ {
+  "ids": [
+   "lisse-av-bas",
+   "lisse-ar-bas",
+   "lisse-av-haut",
+   "lisse-ar-haut",
+   "lisse-av-milieu",
+   "lisse-ar-milieu"
+  ],
+  "title": "Lisses d'ossature",
+  "mat": "Tube carré inox 30 × 30 × 2, longueur 1137 mm",
+  "role": "Six lisses horizontales, devant et derrière : en bas, au milieu et en haut. Elles portent le carter."
+ },
+ {
+  "ids": [
+   "traverse-entree-bas",
+   "traverse-sortie-bas",
+   "traverse-entree-haut",
+   "traverse-sortie-haut"
+  ],
+  "title": "Traverses d'ossature",
+  "mat": "Tube carré inox 30 × 30 × 2, longueur 217 mm",
+  "role": "Elles relient l'avant et l'arrière aux deux bouts du caisson."
+ },
+ {
+  "ids": [
+   "carter",
+   "carter-epaulement"
+  ],
+  "title": "Carter des roulements",
+  "mat": "Acier, tube Ø70, alésages Ø52 H7, longueur 161 mm",
+  "role": "Il loge les deux roulements de l'axe ; un épaulement intérieur les arrête."
+ },
+ {
+  "ids": [
+   "bride"
+  ],
+  "title": "Bride du carter",
+  "mat": "Acier S235, 130 × 130 × 8 mm",
+  "role": "Soudée au bout du carter. Elle est boulonnée en haut sur les pattes et porte les colonnes du mécanisme."
+ },
+ {
+  "ids": [
+   "patte1",
+   "patte2"
+  ],
+  "title": "Pattes de fixation",
+  "mat": "Acier S235, 30 × 40 × 6 mm, 2 pièces",
+  "role": "Soudées sous la lisse haute ; la bride y est serrée par deux vis M10."
+ },
+ {
+  "ids": [
+   "flasque1",
+   "flasque1-languette",
+   "flasque2",
+   "flasque2-languette"
+  ],
+  "title": "Flasques de maintien",
+  "mat": "Acier S235, 8 mm, 2 pièces",
+  "role": "Soudées de chaque côté du carter, elles descendent jusqu'à la lisse du milieu où leur languette est vissée."
+ },
+ {
+  "ids": [
+   "axe",
+   "axe-epaulement",
+   "axe-filetage"
+  ],
+  "title": "Axe principal",
+  "mat": "Acier 42CrMo4 traité, Ø25 h7, longueur 275 mm",
+  "role": "Il relie les bras au disque. Il porte un épaulement Ø30, deux rainures de clavette, un filetage M25 et un taraudage M8."
+ },
+ {
+  "ids": [
+   "roulement1-ext",
+   "roulement1-int",
+   "roulement1-bille1",
+   "roulement1-bille2",
+   "roulement1-bille3",
+   "roulement1-bille4",
+   "roulement1-bille5",
+   "roulement1-bille6",
+   "roulement1-bille7",
+   "roulement1-bille8",
+   "roulement1-bille9"
+  ],
+  "title": "Roulements à billes 6205-2RS",
+  "mat": "Achat, Ø25 × Ø52 × 15 mm, 2 pièces",
+  "role": "Deux roulements étanches de neuf billes chacun : l'axe tourne sans effort et sans jeu."
+ },
+ {
+  "ids": [
+   "entretoise"
+  ],
+  "title": "Entretoise",
+  "mat": "Acier, Ø32 × Ø25 × 105 mm",
+  "role": "Elle tient l'écart exact entre les deux roulements."
+ },
+ {
+  "ids": [
+   "disque"
+  ],
+  "title": "Disque indexeur",
+  "mat": "Acier S355, Ø140 × 10 mm, crans trempés",
+  "role": "Trois crans droits pour le cliquet et trois crans en V pour le galet : une position de repos tous les 120 degrés."
+ },
+ {
+  "ids": [
+   "moyeu-disque"
+  ],
+  "title": "Moyeu du disque",
+  "mat": "Acier, Ø45 × 22,5 mm",
+  "role": "Soudé au disque, il allonge la portée de la clavette et s'appuie sur le roulement."
+ },
+ {
+  "ids": [
+   "clavette-disque"
+  ],
+  "title": "Clavette du disque",
+  "mat": "Achat, acier, 8 × 7 × 28 mm",
+  "role": "Elle transmet la rotation de l'axe au disque."
+ },
+ {
+  "ids": [
+   "rondelle-frein",
+   "ecrou"
+  ],
+  "title": "Écrou à encoches et rondelle frein",
+  "mat": "Achat, KM5 M25 × 1,5 et MB5",
+  "role": "L'écrou serre tout l'empilage contre l'épaulement de l'axe ; la languette de la rondelle l'empêche de se desserrer."
+ },
+ {
+  "ids": [
+   "platine-meca",
+   "platine-meca-aile"
+  ],
+  "title": "Platine du mécanisme",
+  "mat": "Acier S235, 8 mm",
+  "role": "Elle porte le cliquet, l'électroaimant, le levier et le capteur."
+ },
+ {
+  "ids": [
+   "colonne1"
+  ],
+  "title": "Colonne",
+  "mat": "Acier, Ø16, taraudée M8",
+  "role": "Elle relie la bride à la platine du mécanisme."
+ },
+ {
+  "ids": [
+   "colonne-pivot"
+  ],
+  "title": "Colonne-pivot",
+  "mat": "Acier, Ø14, taraudée M8",
+  "role": "Elle sert d'axe au cliquet et de seconde colonne à la platine."
+ },
+ {
+  "ids": [
+   "cliquet",
+   "cliquet-oeil",
+   "cliquet-dent"
+  ],
+  "title": "Cliquet de verrouillage",
+  "mat": "Acier 42CrMo4 trempé",
+  "role": "Sa dent entre dans un cran du disque : la rotation est bloquée dans les deux sens."
+ },
+ {
+  "ids": [
+   "bague-cliquet"
+  ],
+  "title": "Bague bronze du cliquet",
+  "mat": "Achat, Ø14 × Ø18",
+  "role": "Le cliquet tourne dessus sans gripper."
+ },
+ {
+  "ids": [
+   "electroaimant",
+   "plongeur"
+  ],
+  "title": "Électroaimant et son plongeur",
+  "mat": "Achat, 24 volts, course 10 mm, au moins 40 newtons",
+  "role": "Il soulève le cliquet quand la carte est acceptée."
+ },
+ {
+  "ids": [
+   "butee-ressort",
+   "ressort-cliquet"
+  ],
+  "title": "Ressort du cliquet et sa butée",
+  "mat": "Ressort de compression (achat), butée soudée",
+  "role": "Le ressort garde la dent dans le cran quand l'électroaimant est coupé."
+ },
+ {
+  "ids": [
+   "levier"
+  ],
+  "title": "Levier de crantage",
+  "mat": "Acier S235, 6 mm",
+  "role": "Il pousse le galet contre le disque."
+ },
+ {
+  "ids": [
+   "galet",
+   "axe-galet"
+  ],
+  "title": "Galet et son axe",
+  "mat": "Achat, roulement 608 Ø22 ; axe Ø8 fileté M8",
+  "role": "Le galet roule sur le disque et tombe dans les crans en V : il ramène toujours un bras à l'horizontale."
+ },
+ {
+  "ids": [
+   "axe-levier"
+  ],
+  "title": "Axe du levier",
+  "mat": "Acier, Ø10, fileté M10",
+  "role": "C'est le pivot du levier, fixé sur la platine par un écrou."
+ },
+ {
+  "ids": [
+   "axe-ressort-levier",
+   "ressort-levier"
+  ],
+  "title": "Ressort du levier",
+  "mat": "Ressort de compression (achat) sur goupille Ø8",
+  "role": "Il garde le galet au contact du disque."
+ },
+ {
+  "ids": [
+   "capteur",
+   "support-capteur"
+  ],
+  "title": "Capteur inductif et son équerre",
+  "mat": "Achat, M12 × 1, 24 volts ; équerre acier 6 mm",
+  "role": "Le capteur voit passer les crans du disque à 2,5 mm : il compte chaque passage."
+ },
+ {
+  "ids": [
+   "plateau"
+  ],
+  "title": "Plateau du moyeu",
+  "mat": "Inox 304, Ø150 × 15 mm",
+  "role": "Les trois bras y sont soudés."
+ },
+ {
+  "ids": [
+   "moyeu"
+  ],
+  "title": "Fût du moyeu",
+  "mat": "Inox 304, Ø60, alésage Ø25 H7",
+  "role": "Il est claveté sur l'axe ; une vis de pression bloque la clavette."
+ },
+ {
+  "ids": [
+   "clavette-moyeu"
+  ],
+  "title": "Clavette du moyeu",
+  "mat": "Achat, acier, 8 × 7 × 40 mm",
+  "role": "Elle transmet la poussée des bras à l'axe."
+ },
+ {
+  "ids": [
+   "rondelle",
+   "vis",
+   "vis-tige"
+  ],
+  "title": "Rondelle d'arrêt et vis de bout d'axe",
+  "mat": "Inox A4, Ø32 et M8",
+  "role": "Elles bloquent le moyeu en bout d'axe."
+ },
+ {
+  "ids": [
+   "bras1",
+   "bras2",
+   "bras3"
+  ],
+  "title": "Bras",
+  "mat": "Tube inox 316, Ø38 × 2, 3 pièces",
+  "role": "Trois bras à 120 degrés, coupés en biais à 45 degrés au pied et soudés tout autour."
+ },
+ {
+  "ids": [
+   "embout1",
+   "embout2",
+   "embout3"
+  ],
+  "title": "Embouts de bras",
+  "mat": "Achat, caoutchouc ou polyamide",
+  "role": "Ils protègent le bout des bras."
+ },
+ {
+  "ids": [
+   "lecteur"
+  ],
+  "title": "Lecteur de carte et de QR code",
+  "mat": "Achat, NFC 13,56 MHz et module QR",
+  "role": "Il lit la carte EduPilote ou le QR code du téléphone."
+ },
+ {
+  "ids": [
+   "voyant-entree",
+   "voyant-sortie"
+  ],
+  "title": "Voyants d'entrée et de sortie",
+  "mat": "Achat, 24 volts",
+  "role": "Flèche verte ou croix rouge, à chaque bout du tourniquet."
+ },
+ {
+  "ids": [
+   "controleur"
+  ],
+  "title": "Coffret contrôleur",
+  "mat": "Achat, ESP32 industriel, Ethernet",
+  "role": "Il décide l'ouverture, dialogue avec le serveur et garde la liste hors ligne."
+ },
+ {
+  "ids": [
+   "alimentation"
+  ],
+  "title": "Alimentation et batteries",
+  "mat": "Achat, 24 volts et deux batteries 12 volts",
+  "role": "Le tourniquet continue de fonctionner pendant une coupure de courant."
+ },
+ {
+  "ids": [
+   "panneau-passage"
+  ],
+  "title": "Panneau côté passage",
+  "mat": "Inox 316L brossé, 1200 × 1050 × 1,5 mm",
+  "role": "Il porte la lumière par laquelle sort le carter."
+ },
+ {
+  "ids": [
+   "panneau-arriere"
+  ],
+  "title": "Panneau arrière",
+  "mat": "Inox 316L brossé, 1200 × 1050 × 1,5 mm",
+  "role": "Il ferme l'arrière du caisson."
+ },
+ {
+  "ids": [
+   "joue-entree",
+   "joue-sortie"
+  ],
+  "title": "Joues d'extrémité",
+  "mat": "Inox 316L brossé, 280 × 1050 × 1,5 mm, 2 pièces",
+  "role": "Elles ferment les deux bouts et portent les voyants."
+ },
+ {
+  "ids": [
+   "capot",
+   "capot-bord-av",
+   "capot-bord-ar",
+   "capot-bord-e",
+   "capot-bord-s"
+  ],
+  "title": "Capot",
+  "mat": "Inox 316L, 1,5 mm, bords pliés de 20 mm",
+  "role": "Il ferme le dessus, porte le lecteur et se ferme par deux serrures à clé."
+ },
+ {
+  "ids": [
+   "cheville1-tige",
+   "cheville1-rondelle",
+   "cheville1-ecrou",
+   "cheville2-tige",
+   "cheville2-rondelle",
+   "cheville2-ecrou",
+   "cheville3-tige",
+   "cheville3-rondelle",
+   "cheville3-ecrou",
+   "cheville4-tige",
+   "cheville4-rondelle",
+   "cheville4-ecrou",
+   "soudure-poteau1-1",
+   "soudure-poteau1-2",
+   "soudure-poteau1-3",
+   "soudure-poteau1-4",
+   "soudure-poteau2-1",
+   "soudure-poteau2-2",
+   "soudure-poteau2-3",
+   "soudure-poteau2-4",
+   "soudure-poteau3-1",
+   "soudure-poteau3-2",
+   "soudure-poteau3-3",
+   "soudure-poteau3-4",
+   "soudure-poteau4-1",
+   "soudure-poteau4-2",
+   "soudure-poteau4-3",
+   "soudure-poteau4-4",
+   "vis-bride1-tete",
+   "vis-bride1-tige",
+   "vis-bride1-rondelle",
+   "vis-bride1-ecrou",
+   "vis-bride2-tete",
+   "vis-bride2-tige",
+   "vis-bride2-rondelle",
+   "vis-bride2-ecrou",
+   "soudure-patte1",
+   "soudure-patte2",
+   "soudure-bride",
+   "vis-flasque1-1-tete",
+   "vis-flasque1-1-tige",
+   "vis-flasque1-2-tete",
+   "vis-flasque1-2-tige",
+   "soudure-flasque1-1",
+   "soudure-flasque1-2",
+   "vis-flasque2-1-tete",
+   "vis-flasque2-1-tige",
+   "vis-flasque2-2-tete",
+   "vis-flasque2-2-tige",
+   "soudure-flasque2-1",
+   "soudure-flasque2-2",
+   "vis-colonne1-tete",
+   "vis-colonne1-tige",
+   "soudure-colonne1",
+   "vis-colonne2-tete",
+   "vis-colonne2-tige",
+   "soudure-colonne2",
+   "axe-levier-filetage",
+   "ecrou-axe-levier",
+   "ecrou-galet",
+   "vis-electro1-tete",
+   "vis-electro1-tige",
+   "vis-electro2-tete",
+   "vis-electro2-tige",
+   "ecrou-capteur1",
+   "ecrou-capteur2",
+   "vis-tige",
+   "vis-pression",
+   "soudure-bras1",
+   "soudure-bras2",
+   "soudure-bras3",
+   "entretoise-controleur1",
+   "entretoise-controleur2",
+   "entretoise-controleur3",
+   "entretoise-controleur4",
+   "entretoise-alimentation1",
+   "entretoise-alimentation2",
+   "entretoise-alimentation3",
+   "entretoise-alimentation4",
+   "vis-lecteur1",
+   "vis-lecteur1-tige",
+   "vis-lecteur2",
+   "vis-lecteur2-tige",
+   "vis-lecteur3",
+   "vis-lecteur3-tige",
+   "vis-lecteur4",
+   "vis-lecteur4-tige",
+   "vis-voyant-entree1",
+   "vis-voyant-entree1-tige",
+   "vis-voyant-entree2",
+   "vis-voyant-entree2-tige",
+   "vis-voyant-entree3",
+   "vis-voyant-entree3-tige",
+   "vis-voyant-entree4",
+   "vis-voyant-entree4-tige",
+   "vis-voyant-sortie1",
+   "vis-voyant-sortie1-tige",
+   "vis-voyant-sortie2",
+   "vis-voyant-sortie2-tige",
+   "vis-voyant-sortie3",
+   "vis-voyant-sortie3-tige",
+   "vis-voyant-sortie4",
+   "vis-voyant-sortie4-tige",
+   "vis-panneau-av1",
+   "vis-panneau-av1-tige",
+   "vis-panneau-ar1",
+   "vis-panneau-ar1-tige",
+   "vis-panneau-av2",
+   "vis-panneau-av2-tige",
+   "vis-panneau-ar2",
+   "vis-panneau-ar2-tige",
+   "vis-panneau-av3",
+   "vis-panneau-av3-tige",
+   "vis-panneau-ar3",
+   "vis-panneau-ar3-tige",
+   "vis-panneau-av4",
+   "vis-panneau-av4-tige",
+   "vis-panneau-ar4",
+   "vis-panneau-ar4-tige",
+   "vis-panneau-av5",
+   "vis-panneau-av5-tige",
+   "vis-panneau-ar5",
+   "vis-panneau-ar5-tige",
+   "vis-panneau-av6",
+   "vis-panneau-av6-tige",
+   "vis-panneau-ar6",
+   "vis-panneau-ar6-tige",
+   "vis-panneau-av7",
+   "vis-panneau-av7-tige",
+   "vis-panneau-ar7",
+   "vis-panneau-ar7-tige",
+   "vis-panneau-av8",
+   "vis-panneau-av8-tige",
+   "vis-panneau-ar8",
+   "vis-panneau-ar8-tige",
+   "vis-panneau-av9",
+   "vis-panneau-av9-tige",
+   "vis-panneau-ar9",
+   "vis-panneau-ar9-tige",
+   "vis-panneau-av10",
+   "vis-panneau-av10-tige",
+   "vis-panneau-ar10",
+   "vis-panneau-ar10-tige",
+   "vis-panneau-av11",
+   "vis-panneau-av11-tige",
+   "vis-panneau-ar11",
+   "vis-panneau-ar11-tige",
+   "vis-panneau-av12",
+   "vis-panneau-av12-tige",
+   "vis-panneau-ar12",
+   "vis-panneau-ar12-tige",
+   "vis-joue-e1",
+   "vis-joue-e1-tige",
+   "vis-joue-s1",
+   "vis-joue-s1-tige",
+   "vis-joue-e2",
+   "vis-joue-e2-tige",
+   "vis-joue-s2",
+   "vis-joue-s2-tige",
+   "vis-joue-e3",
+   "vis-joue-e3-tige",
+   "vis-joue-s3",
+   "vis-joue-s3-tige",
+   "vis-joue-e4",
+   "vis-joue-e4-tige",
+   "vis-joue-s4",
+   "vis-joue-s4-tige",
+   "vis-joue-e5",
+   "vis-joue-e5-tige",
+   "vis-joue-s5",
+   "vis-joue-s5-tige",
+   "vis-joue-e6",
+   "vis-joue-e6-tige",
+   "vis-joue-s6",
+   "vis-joue-s6-tige",
+   "vis-joue-e7",
+   "vis-joue-e7-tige",
+   "vis-joue-s7",
+   "vis-joue-s7-tige",
+   "vis-joue-e8",
+   "vis-joue-e8-tige",
+   "vis-joue-s8",
+   "vis-joue-s8-tige",
+   "serrure1",
+   "serrure2",
+   "axe-galet-filetage"
+  ],
+  "title": "Visserie et soudures",
+  "mat": "Inox A4 ; cordons de soudure TIG",
+  "role": "Toutes les vis, écrous, chevilles, rivets-écrous, entretoises et cordons de soudure du tourniquet."
+ }
+]

@@ -1,0 +1,241 @@
+[
+ {
+  "fichier": "01_Platine_de_base_120028010.step",
+  "piece": "Platine de base 1200×280×10",
+  "groupe": "Socle",
+  "qte": 1,
+  "encombrement": "1200 × 280 × 10",
+  "dxf": "01_Platine_de_base_120028010.dxf"
+ },
+ {
+  "fichier": "02_Poteau_d_ossature_30302.step",
+  "piece": "Poteau d'ossature 30×30×2",
+  "groupe": "Ossature",
+  "qte": 4,
+  "encombrement": "30 × 30 × 1048"
+ },
+ {
+  "fichier": "03_Lisse_d_ossature_30302.step",
+  "piece": "Lisse d'ossature 30×30×2",
+  "groupe": "Ossature",
+  "qte": 6,
+  "encombrement": "1137 × 30 × 30"
+ },
+ {
+  "fichier": "04_Traverse_d_ossature_30302.step",
+  "piece": "Traverse d'ossature 30×30×2",
+  "groupe": "Ossature",
+  "qte": 4,
+  "encombrement": "30 × 217 × 30"
+ },
+ {
+  "fichier": "05_Carter_70_logements_52_H7.step",
+  "piece": "Carter Ø70, logements Ø52 H7",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "70 × 70 × 161"
+ },
+ {
+  "fichier": "06_Bride_de_fixation_du_carter_1301308.step",
+  "piece": "Bride de fixation du carter 130×130×8",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "130 × 130 × 8",
+  "dxf": "06_Bride_de_fixation_du_carter_1301308.dxf"
+ },
+ {
+  "fichier": "07_Patte_de_fixation_30406_sous_la_lisse_haute_M10.step",
+  "piece": "Patte de fixation 30×40×6 (sous la lisse haute, M10)",
+  "groupe": "Ossature",
+  "qte": 2,
+  "encombrement": "30 × 40 × 6",
+  "dxf": "07_Patte_de_fixation_30406_sous_la_lisse_haute_M10.dxf"
+ },
+ {
+  "fichier": "08_Flasque_de_maintien_du_carter_8_mm.step",
+  "piece": "Flasque de maintien du carter 8 mm",
+  "groupe": "Ossature",
+  "qte": 2,
+  "encombrement": "48 × 407 × 72",
+  "dxf": "08_Flasque_de_maintien_du_carter_8_mm.dxf"
+ },
+ {
+  "fichier": "09_Axe_25_h7_acier_42CrMo4_traite_L_275_epaulement_30.step",
+  "piece": "Axe Ø25 h7 acier 42CrMo4 traité, L 275, épaulement Ø30",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "30 × 30 × 275"
+ },
+ {
+  "fichier": "10_Entretoise_entre_bagues_interieures_32_25_105.step",
+  "piece": "Entretoise entre bagues intérieures Ø32 × Ø25 × 105",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "32 × 32 × 105"
+ },
+ {
+  "fichier": "11_Disque_indexeur_140_3_crans_de_verrouillage_3_crans_en_V.step",
+  "piece": "Disque indexeur Ø140 (3 crans de verrouillage, 3 crans en V)",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "139 × 140 × 10",
+  "dxf": "11_Disque_indexeur_140_3_crans_de_verrouillage_3_crans_en_V.dxf"
+ },
+ {
+  "fichier": "12_Moyeu_du_disque_45_22_5_soude_au_disque.step",
+  "piece": "Moyeu du disque Ø45 × 22,5 (soudé au disque)",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "45 × 45 × 22"
+ },
+ {
+  "fichier": "13_Platine_du_mecanisme_8_mm_acier.step",
+  "piece": "Platine du mécanisme 8 mm (acier)",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "224 × 125 × 8",
+  "dxf": "13_Platine_du_mecanisme_8_mm_acier.dxf"
+ },
+ {
+  "fichier": "14_Colonne_16_taraudee_M8_bride_platine.step",
+  "piece": "Colonne Ø16 taraudée M8 (bride → platine)",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "16 × 16 × 29"
+ },
+ {
+  "fichier": "15_Colonne_pivot_14_du_cliquet_taraudee_M8_bride_platine.step",
+  "piece": "Colonne-pivot Ø14 du cliquet, taraudée M8 (bride → platine)",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "14 × 14 × 29"
+ },
+ {
+  "fichier": "16_Cliquet_de_verrouillage_acier_trempe.step",
+  "piece": "Cliquet de verrouillage acier trempé",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "73 × 26 × 19",
+  "dxf": "16_Cliquet_de_verrouillage_acier_trempe.dxf"
+ },
+ {
+  "fichier": "17_Butee_du_ressort_de_cliquet_soudee_sur_la_platine.step",
+  "piece": "Butée du ressort de cliquet (soudée sur la platine)",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "16 × 8 × 12",
+  "dxf": "17_Butee_du_ressort_de_cliquet_soudee_sur_la_platine.dxf"
+ },
+ {
+  "fichier": "18_Levier_de_crantage.step",
+  "piece": "Levier de crantage",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "12 × 70 × 6",
+  "dxf": "18_Levier_de_crantage.dxf"
+ },
+ {
+  "fichier": "19_Axe_du_galet_8.step",
+  "piece": "Axe du galet Ø8",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "8 × 8 × 16"
+ },
+ {
+  "fichier": "20_Axe_du_levier_10.step",
+  "piece": "Axe du levier Ø10",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "10 × 10 × 28"
+ },
+ {
+  "fichier": "21_Goupille_d_appui_du_ressort_de_levier.step",
+  "piece": "Goupille d'appui du ressort de levier",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "8 × 8 × 10"
+ },
+ {
+  "fichier": "22_Equerre_du_capteur.step",
+  "piece": "Équerre du capteur",
+  "groupe": "Mécanisme",
+  "qte": 1,
+  "encombrement": "6 × 62 × 33",
+  "dxf": "22_Equerre_du_capteur.dxf"
+ },
+ {
+  "fichier": "23_Plateau_du_moyeu_inox_150_15.step",
+  "piece": "Plateau du moyeu inox Ø150 × 15",
+  "groupe": "Bras",
+  "qte": 1,
+  "encombrement": "150 × 150 × 15",
+  "dxf": "23_Plateau_du_moyeu_inox_150_15.dxf"
+ },
+ {
+  "fichier": "24_Fut_du_moyeu_inox_60_alesage_25_H7.step",
+  "piece": "Fût du moyeu inox Ø60, alésage Ø25 H7",
+  "groupe": "Bras",
+  "qte": 1,
+  "encombrement": "60 × 60 × 45"
+ },
+ {
+  "fichier": "25_Rondelle_d_arret_32.step",
+  "piece": "Rondelle d'arrêt Ø32",
+  "groupe": "Bras",
+  "qte": 1,
+  "encombrement": "32 × 32 × 3"
+ },
+ {
+  "fichier": "26_Vis_M8_inox_A4.step",
+  "piece": "Vis M8 inox A4",
+  "groupe": "Bras",
+  "qte": 1,
+  "encombrement": "13 × 11 × 5"
+ },
+ {
+  "fichier": "27_Bras_tube_inox_316_382.step",
+  "piece": "Bras tube inox 316 Ø38×2",
+  "groupe": "Bras",
+  "qte": 3,
+  "encombrement": "38 × 38 × 455"
+ },
+ {
+  "fichier": "28_Panneau_cote_passage_lumiere_pour_le_carter.step",
+  "piece": "Panneau côté passage (lumière pour le carter)",
+  "groupe": "Habillage",
+  "qte": 1,
+  "encombrement": "1200 × 2 × 1050",
+  "dxf": "28_Panneau_cote_passage_lumiere_pour_le_carter.dxf"
+ },
+ {
+  "fichier": "29_Panneau_arriere.step",
+  "piece": "Panneau arrière",
+  "groupe": "Habillage",
+  "qte": 1,
+  "encombrement": "1200 × 2 × 1050",
+  "dxf": "29_Panneau_arriere.dxf"
+ },
+ {
+  "fichier": "30_Joue_d_extremite_entree.step",
+  "piece": "Joue d'extrémité entrée",
+  "groupe": "Habillage",
+  "qte": 1,
+  "encombrement": "2 × 280 × 1050",
+  "dxf": "30_Joue_d_extremite_entree.dxf"
+ },
+ {
+  "fichier": "31_Joue_d_extremite_sortie.step",
+  "piece": "Joue d'extrémité sortie",
+  "groupe": "Habillage",
+  "qte": 1,
+  "encombrement": "2 × 280 × 1050",
+  "dxf": "31_Joue_d_extremite_sortie.dxf"
+ },
+ {
+  "fichier": "32_Capot_superieur_amovible_1220300.step",
+  "piece": "Capot supérieur amovible 1220×300",
+  "groupe": "Habillage",
+  "qte": 1,
+  "encombrement": "1220 × 300 × 20"
+ }
+]

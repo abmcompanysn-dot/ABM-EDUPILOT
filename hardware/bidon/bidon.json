@@ -1,0 +1,427 @@
+{
+ "name": "Bidon 20 L PEHD",
+ "repere": "mm ; origine au centre de la base ; x largeur, y épaisseur, z vertical",
+ "params": {
+  "largeur": 345.0,
+  "epaisseur": 165.0,
+  "hauteur_corps": 415.0,
+  "paroi": 2.5,
+  "encombrement": [
+   345,
+   170,
+   471
+  ]
+ },
+ "calculs": {
+  "volume_interieur_l": 22.2,
+  "niveau_20l_mm": 372,
+  "masse_vide_kg": 1.24,
+  "masse_pleine_eau_kg": 21.2,
+  "bascule_plein_deg": 23.9
+ },
+ "parts": [
+  {
+   "id": "corps-x",
+   "name": "Corps (âme en largeur)",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "box",
+   "center": [
+    0.0,
+    0.0,
+    207.5
+   ],
+   "size": [
+    345.0,
+    125.0,
+    415.0
+   ],
+   "basis": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  {
+   "id": "corps-y",
+   "name": "Corps (âme en épaisseur)",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "box",
+   "center": [
+    0.0,
+    0.0,
+    207.5
+   ],
+   "size": [
+    305.0,
+    165.0,
+    415.0
+   ],
+   "basis": [
+    [
+     1.0,
+     0.0,
+     0.0
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.0,
+     0.0,
+     1.0
+    ]
+   ]
+  },
+  {
+   "id": "angle1",
+   "name": "Arête arrondie R20",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    152.5,
+    62.5,
+    0.0
+   ],
+   "p2": [
+    152.5,
+    62.5,
+    415.0
+   ],
+   "r": 20.0
+  },
+  {
+   "id": "angle2",
+   "name": "Arête arrondie R20",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    -152.5,
+    62.5,
+    0.0
+   ],
+   "p2": [
+    -152.5,
+    62.5,
+    415.0
+   ],
+   "r": 20.0
+  },
+  {
+   "id": "angle3",
+   "name": "Arête arrondie R20",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    -152.5,
+    -62.5,
+    0.0
+   ],
+   "p2": [
+    -152.5,
+    -62.5,
+    415.0
+   ],
+   "r": 20.0
+  },
+  {
+   "id": "angle4",
+   "name": "Arête arrondie R20",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    152.5,
+    -62.5,
+    0.0
+   ],
+   "p2": [
+    152.5,
+    -62.5,
+    415.0
+   ],
+   "r": 20.0
+  },
+  {
+   "id": "x-avant-1",
+   "name": "Nervure du X de renfort",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "box",
+   "center": [
+    0.0,
+    83.0,
+    207.5
+   ],
+   "size": [
+    411.6430492550554,
+    4.0,
+    18.0
+   ],
+   "basis": [
+    [
+     0.643761629109411,
+     0.0,
+     0.7652260874319413
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     -0.7652260874319413,
+     0.0,
+     0.643761629109411
+    ]
+   ]
+  },
+  {
+   "id": "x-avant-2",
+   "name": "Nervure du X de renfort",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "box",
+   "center": [
+    0.0,
+    83.0,
+    207.5
+   ],
+   "size": [
+    411.6430492550554,
+    4.0,
+    18.0
+   ],
+   "basis": [
+    [
+     0.643761629109411,
+     0.0,
+     -0.7652260874319413
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.7652260874319413,
+     -0.0,
+     0.643761629109411
+    ]
+   ]
+  },
+  {
+   "id": "x-arriere-1",
+   "name": "Nervure du X de renfort",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "box",
+   "center": [
+    0.0,
+    -83.0,
+    207.5
+   ],
+   "size": [
+    411.6430492550554,
+    4.0,
+    18.0
+   ],
+   "basis": [
+    [
+     0.643761629109411,
+     0.0,
+     0.7652260874319413
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     -0.7652260874319413,
+     0.0,
+     0.643761629109411
+    ]
+   ]
+  },
+  {
+   "id": "x-arriere-2",
+   "name": "Nervure du X de renfort",
+   "group": "Corps",
+   "color": "#f28c38",
+   "type": "box",
+   "center": [
+    0.0,
+    -83.0,
+    207.5
+   ],
+   "size": [
+    411.6430492550554,
+    4.0,
+    18.0
+   ],
+   "basis": [
+    [
+     0.643761629109411,
+     0.0,
+     -0.7652260874319413
+    ],
+    [
+     0.0,
+     1.0,
+     0.0
+    ],
+    [
+     0.7652260874319413,
+     -0.0,
+     0.643761629109411
+    ]
+   ]
+  },
+  {
+   "id": "barre",
+   "name": "Barre de portage Ø22",
+   "group": "Poignées",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    -141.0,
+    0.0,
+    460.0
+   ],
+   "p2": [
+    61.0,
+    0.0,
+    460.0
+   ],
+   "r": 11.0
+  },
+  {
+   "id": "montant1",
+   "name": "Montant de poignée Ø20",
+   "group": "Poignées",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    -130.0,
+    0.0,
+    413.0
+   ],
+   "p2": [
+    -130.0,
+    0.0,
+    460.0
+   ],
+   "r": 10.0
+  },
+  {
+   "id": "montant2",
+   "name": "Montant de poignée Ø20",
+   "group": "Poignées",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    -40.0,
+    0.0,
+    413.0
+   ],
+   "p2": [
+    -40.0,
+    0.0,
+    460.0
+   ],
+   "r": 10.0
+  },
+  {
+   "id": "montant3",
+   "name": "Montant de poignée Ø20",
+   "group": "Poignées",
+   "color": "#f28c38",
+   "type": "cyl",
+   "p1": [
+    50.0,
+    0.0,
+    413.0
+   ],
+   "p2": [
+    50.0,
+    0.0,
+    460.0
+   ],
+   "r": 10.0
+  },
+  {
+   "id": "goulot",
+   "name": "Goulot Ø52, ouverture Ø42",
+   "group": "Goulot",
+   "color": "#f28c38",
+   "type": "tube",
+   "p1": [
+    115.0,
+    0.0,
+    409.0
+   ],
+   "p2": [
+    130.3909064496551,
+    0.0,
+    451.2861679353659
+   ],
+   "r": 26.0,
+   "r_in": 21.0
+  },
+  {
+   "id": "bouchon",
+   "name": "Bouchon à vis Ø62",
+   "group": "Goulot",
+   "color": "#2b2f36",
+   "type": "cyl",
+   "p1": [
+    125.60262444309573,
+    0.0,
+    438.13047124436315
+   ],
+   "p2": [
+    133.81110788291178,
+    0.0,
+    460.683094143225
+   ],
+   "r": 31.0
+  },
+  {
+   "id": "event",
+   "name": "Évent à clapet",
+   "group": "Goulot",
+   "color": "#2b2f36",
+   "type": "cyl",
+   "p1": [
+    -150.0,
+    0.0,
+    413.0
+   ],
+   "p2": [
+    -150.0,
+    0.0,
+    427.0
+   ],
+   "r": 6.0
+  }
+ ]
+}
