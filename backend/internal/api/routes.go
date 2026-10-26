@@ -341,6 +341,20 @@ func (s *Server) routes() {
 		}
 		return res, err
 	})
+	s.handle("GET /api/v1/sessions/{id}/qr", user, func(r *http.Request, p *app.Principal) (any, error) {
+		return a.SessionQRCode(r.Context(), p, r.PathValue("id"))
+	})
+	s.handle("POST /api/v1/checkin", user, func(r *http.Request, p *app.Principal) (any, error) {
+		in, err := decode[app.CheckInInput](r)
+		if err != nil {
+			return nil, err
+		}
+		res, err := a.CheckIn(r.Context(), p, in)
+		if err == nil {
+			scanOutcomes.WithLabelValues(res.Outcome).Inc()
+		}
+		return res, err
+	})
 
 	// ------------------------------------------------------------ personnel et étudiants
 	s.handle("GET /api/v1/staff", user, func(r *http.Request, p *app.Principal) (any, error) { return a.ListStaff(r.Context(), p) })

@@ -325,6 +325,73 @@ func TestPointageCompletEtJournal(t *testing.T) {
 	})
 }
 
+func TestPointageParQR(t *testing.T) {
+	e := newEnv(t)
+	s := e.setup()
+	studentLogin := func(id, email string) *client {
+		var out struct {
+			TempPassword string `json:"temp_password"`
+		}
+		s.admin.must("POST", "/api/v1/users/"+id+"/reset-password", nil, &out)
+		return e.login(email, out.TempPassword)
+	}
+	a := studentLogin(s.students["A"], "a@ecole.test")
+
+	// Seul le personnel obtient le QR à projeter.
+	a.expect(http.StatusForbidden, "GET", "/api/v1/sessions/"+s.sessionID+"/qr", nil)
+	var qr struct {
+		Token string `json:"token"`
+		URL   string `json:"url"`
+	}
+	s.resp.must("GET", "/api/v1/sessions/"+s.sessionID+"/qr", nil, &qr)
+	if qr.Token == "" || !strings.HasPrefix(qr.URL, "https://edupilote.test/presence?t=") {
+		t.Fatalf("QR : %+v", qr)
+	}
+
+	checkin := func(c *client, tok string) scanRes {
+		var r scanRes
+		c.must("POST", "/api/v1/checkin", map[string]any{"token": tok}, &r)
+		return r
+	}
+	if r := checkin(a, qr.Token); r.Outcome != "present" {
+		t.Fatalf("pointage QR : %+v", r)
+	}
+	if r := checkin(a, qr.Token); r.Outcome != "deja" {
+		t.Fatalf("second pointage QR : %+v", r)
+	}
+	if r := checkin(a, qr.Token+"x"); r.Outcome != "refuse" {
+		t.Fatalf("jeton falsifié accepté : %+v", r)
+	}
+	// Le personnel ne pointe pas à la place d'un étudiant avec ce lien.
+	s.resp.expect(http.StatusForbidden, "POST", "/api/v1/checkin", map[string]any{"token": qr.Token})
+
+	// Un étudiant d'une autre classe est refusé.
+	var other struct {
+		Student id `json:"student"`
+	}
+	s.admin.must("POST", "/api/v1/students", map[string]any{"full_name": "Étudiant D", "email": "d@ecole.test", "matricule": "MATD", "class_id": s.class2ID}, &other)
+	d := studentLogin(other.Student.ID, "d@ecole.test")
+	if r := checkin(d, qr.Token); r.Outcome != "refuse" {
+		t.Fatalf("étudiant d'une autre classe accepté : %+v", r)
+	}
+
+	eventually(t, "présence QR écrite par le worker", func() bool {
+		var r struct {
+			Students []struct {
+				StudentID string  `json:"student_id"`
+				Method    *string `json:"method"`
+			} `json:"students"`
+		}
+		s.resp.must("GET", "/api/v1/sessions/"+s.sessionID+"/roster", nil, &r)
+		for _, st := range r.Students {
+			if st.StudentID == s.students["A"] && st.Method != nil && *st.Method == "qr" {
+				return true
+			}
+		}
+		return false
+	})
+}
+
 func TestPageIdentite(t *testing.T) {
 	e := newEnv(t)
 	s := e.setup()

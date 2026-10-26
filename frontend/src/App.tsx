@@ -31,6 +31,7 @@ const StudentSchedule = named(student, 'StudentSchedule')
 const StudentAttendancePage = named(student, 'StudentAttendancePage')
 const StudentCardPage = named(student, 'StudentCardPage')
 const ProProfileEditor = named(student, 'ProProfileEditor')
+const PresencePage = named(() => import('./pages/student/Presence'), 'PresencePage')
 
 /** Protège une route : connexion obligatoire et, si précisé, rôle autorisé. */
 function Guard({ roles, children }: { roles?: Role[]; children: ReactNode }) {
@@ -86,6 +87,7 @@ export function App() {
         <Route path="/etudiant/presences" element={<Guard roles={['etudiant']}><StudentAttendancePage /></Guard>} />
         <Route path="/etudiant/carte" element={<Guard roles={['etudiant']}><StudentCardPage /></Guard>} />
         <Route path="/etudiant/profil" element={<Guard roles={['etudiant']}><ProProfileEditor /></Guard>} />
+        <Route path="/presence" element={<Guard roles={['etudiant']}><PresencePage /></Guard>} />
         <Route path="/annonces" element={<AnnouncementsPage />} />
         <Route path="/notifications" element={<NotificationsPage />} />
       </Route>

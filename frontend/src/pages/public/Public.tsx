@@ -1,7 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BadgeCheck, CalendarCheck2, Contact, ExternalLink, IdCard, Nfc, Share2, ShieldAlert, ShieldCheck, Smartphone } from 'lucide-react'
+import {
+  ArrowRight,
+  BadgeCheck,
+  BellRing,
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  Contact,
+  ExternalLink,
+  GraduationCap,
+  IdCard,
+  Nfc,
+  QrCode,
+  Radio,
+  Share2,
+  ShieldAlert,
+  ShieldCheck,
+  Smartphone,
+  Users,
+  WifiOff,
+} from 'lucide-react'
 import { api, errorMessage } from '../../lib/api'
 import { homeFor, useAuth } from '../../lib/auth'
 import { fmtDate, fmtRate, fmtTime } from '../../lib/format'
@@ -53,46 +73,186 @@ export function LoginPage() {
       setBusy(false)
     }
   }
+  const loginForm = (
+    <form id="connexion" onSubmit={submit} className="scroll-mt-24 rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-black/5 sm:p-8">
+      <h2 className="font-display text-2xl font-bold text-navy">Connexion</h2>
+      <p className="mb-6 mt-1 text-sm text-slate-500">Un seul accès pour l'administration, les responsables et les étudiants.</p>
+      <div className="space-y-4">
+        <Field label="Adresse email">
+          <Input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="prenom.nom@ecole.sn" />
+        </Field>
+        <Field label="Mot de passe">
+          <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+        </Field>
+        <ErrorBox error={err} />
+        <Button type="submit" loading={busy} className="w-full py-3 text-base">
+          Se connecter <ArrowRight className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="mt-6 space-y-1.5 border-t border-slate-100 pt-4 text-xs text-slate-500">
+        <p>Mot de passe oublié ? L'administration vous donne un mot de passe provisoire.</p>
+        <p>Étudiant sans compte ? Utilisez le lien d'inscription de votre classe.</p>
+      </div>
+    </form>
+  )
+
   return (
-    <PublicShell>
-      <div className="grid items-center gap-10 py-6 lg:grid-cols-2">
-        <div className="text-white">
-          <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">Chaque présence compte.</h1>
-          <p className="mt-4 max-w-md text-lg text-navy-100/80">Pointage par carte NFC, planning, alertes d'absence et carte d'identité étudiante infalsifiable, pour toute l'école.</p>
-          <ul className="mt-8 space-y-3 text-navy-50">
+    <div className="min-h-screen bg-slate-50 text-slate-800">
+      {/* ------------------------------------------------ en-tête */}
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-navy-900/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-5 py-3 text-white">
+          <img src="/logo.svg" alt="" className="h-9 w-9" />
+          <span className="font-display text-lg font-bold">ABM EduPilote</span>
+          <nav className="ml-auto hidden items-center gap-6 text-sm text-navy-100 md:flex">
+            <a href="#fonctionnement" className="hover:text-white">Comment ça marche</a>
+            <a href="#fonctionnalites" className="hover:text-white">Fonctionnalités</a>
+            <a href="#espaces" className="hover:text-white">Pour qui</a>
+          </nav>
+          <a href="#connexion" className="ml-auto rounded-full bg-gold px-4 py-2 text-sm font-bold text-navy-900 hover:brightness-105 md:ml-4">
+            Se connecter
+          </a>
+        </div>
+      </header>
+
+      {/* ------------------------------------------------ accroche + connexion */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy to-navy-700 text-white">
+        <div className="pointer-events-none absolute -right-32 -top-32 h-96 w-96 rounded-full bg-brand/30 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -left-24 h-96 w-96 rounded-full bg-gold/10 blur-3xl" />
+        <div className="relative mx-auto grid max-w-6xl items-center gap-10 px-5 py-14 lg:grid-cols-[1.1fr_1fr] lg:py-20">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-gold ring-1 ring-white/15">
+              <QrCode className="h-3.5 w-3.5" /> Nouveau : pointage par QR code
+            </span>
+            <h1 className="mt-5 font-display text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
+              Chaque présence <span className="text-gold">compte.</span>
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-navy-100/85">
+              L'appel en classe en quelques secondes&nbsp;: le responsable affiche un QR code, chaque étudiant le scanne avec son téléphone, la feuille de présence se remplit en direct.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <a href="#connexion" className="inline-flex items-center gap-2 rounded-xl bg-gold px-5 py-3 font-bold text-navy-900 shadow-lg shadow-gold/20 hover:brightness-105 lg:hidden">
+                Se connecter <ArrowRight className="h-4 w-4" />
+              </a>
+              <a href="#fonctionnement" className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-5 py-3 font-semibold text-white ring-1 ring-white/20 hover:bg-white/15">
+                Voir comment ça marche
+              </a>
+            </div>
+            <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4">
+              {[
+                ['En direct', 'présences visibles à la seconde'],
+                ['10 000', 'pointages simultanés testés'],
+                ['0 papier', "plus de feuille d'appel"],
+              ].map(([v, l]) => (
+                <div key={v} className="rounded-2xl bg-white/5 p-3 ring-1 ring-white/10">
+                  <dt className="font-display text-lg font-bold text-gold sm:text-xl">{v}</dt>
+                  <dd className="mt-0.5 text-xs leading-snug text-navy-100/80">{l}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          <div className="lg:pl-6">{loginForm}</div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ comment ça marche */}
+      <section id="fonctionnement" className="scroll-mt-16 bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <h2 className="text-center font-display text-3xl font-bold text-navy sm:text-4xl">L'appel en trois gestes</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-center text-slate-600">Aucune application à installer : l'appareil photo du téléphone suffit, sur iPhone comme sur Android.</p>
+          <ol className="mt-12 grid gap-6 md:grid-cols-3">
             {[
-              [Nfc, 'Le téléphone du responsable devient le lecteur de cartes'],
-              [ShieldCheck, 'Carte NTAG 424 DNA : impossible à copier'],
-              [CalendarCheck2, "Alertes automatiques dès 3 absences d'affilée"],
-            ].map(([I, t], i) => {
-              const Icon = I as typeof Nfc
+              [QrCode, 'Le responsable affiche le QR', "Depuis la page du cours, un bouton projette un QR code en plein écran. Il change toutes les 15 secondes : une photo envoyée à un absent ne sert à rien."],
+              [Smartphone, "L'étudiant le scanne", "Il vise le code avec l'appareil photo de son téléphone. Sa présence est confirmée en une seconde, avec l'heure et, s'il l'autorise, le lieu."],
+              [Radio, 'La liste se remplit en direct', 'Le responsable voit les présents arriver un par un, les retards sont repérés automatiquement et les absences signalées après le cours.'],
+            ].map(([I, title, text], i) => {
+              const Icon = I as typeof QrCode
               return (
-                <li key={i} className="flex items-center gap-3">
-                  <Icon className="h-5 w-5 text-gold" /> {t as string}
+                <li key={i} className="relative rounded-3xl bg-slate-50 p-6 ring-1 ring-slate-100">
+                  <span className="absolute right-5 top-5 font-display text-4xl font-bold text-slate-200">{i + 1}</span>
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-navy text-gold">
+                    <Icon className="h-6 w-6" />
+                  </span>
+                  <h3 className="mt-5 font-display text-lg font-bold text-navy">{title as string}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-slate-600">{text as string}</p>
                 </li>
               )
             })}
-          </ul>
+          </ol>
         </div>
-        <form onSubmit={submit} className="rounded-2xl bg-white p-6 shadow-xl sm:p-8">
-          <h2 className="font-display text-xl font-bold text-navy">Connexion</h2>
-          <p className="mb-5 mt-1 text-sm text-slate-500">Administration, responsables et étudiants.</p>
-          <div className="space-y-3">
-            <Field label="Adresse email">
-              <Input type="email" autoComplete="username" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
-            </Field>
-            <Field label="Mot de passe">
-              <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-            </Field>
-            <ErrorBox error={err} />
-            <Button type="submit" loading={busy} className="w-full py-2.5">
-              Se connecter
-            </Button>
+      </section>
+
+      {/* ------------------------------------------------ fonctionnalités */}
+      <section id="fonctionnalites" className="scroll-mt-16 py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <h2 className="text-center font-display text-3xl font-bold text-navy sm:text-4xl">Tout le suivi de l'école, au même endroit</h2>
+          <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              [QrCode, 'QR code anti-fraude', 'Code renouvelé en continu, valable seulement pendant le cours et pour les étudiants de la classe.'],
+              [Nfc, 'Cartes NFC', "Le téléphone du responsable lit la carte de l'étudiant. Cartes NTAG 424 DNA impossibles à copier."],
+              [BellRing, "Alertes d'absence", "Étudiant et responsable prévenus dès 3 absences d'affilée (seuil réglable)."],
+              [CalendarDays, 'Planning des cours', "Emploi du temps par classe, cours confirmés ou annulés, consultable par chaque étudiant."],
+              [IdCard, "Carte d'identité numérique", 'Chaque carte ouvre une page signée à usage unique : une capture ou un lien copié est refusé.'],
+              [WifiOff, 'Fonctionne hors connexion', 'Sans réseau, les pointages sont gardés sur le téléphone et envoyés dès le retour de la connexion.'],
+            ].map(([I, title, text]) => {
+              const Icon = I as typeof QrCode
+              return (
+                <div key={title as string} className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md">
+                  <Icon className="h-7 w-7 text-brand" />
+                  <h3 className="mt-4 font-display text-base font-bold text-navy">{title as string}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{text as string}</p>
+                </div>
+              )
+            })}
           </div>
-          <p className="mt-5 text-xs text-slate-500">Mot de passe oublié ? Demandez à l'administration un mot de passe provisoire. Étudiant sans compte ? Utilisez le lien d'inscription de votre classe.</p>
-        </form>
-      </div>
-    </PublicShell>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ espaces */}
+      <section id="espaces" className="scroll-mt-16 bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-6xl px-5">
+          <h2 className="text-center font-display text-3xl font-bold text-navy sm:text-4xl">Un espace pour chacun</h2>
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {[
+              [Building2, 'Administration', ['Filières, classes et années', 'Comptes du personnel et des étudiants', 'Statistiques et journal complet']],
+              [Users, 'Responsables', ['QR de présence et lecture NFC', 'Feuille de présence en direct', 'Annonces à la classe']],
+              [GraduationCap, 'Étudiants', ['Pointage en un scan', 'Planning et historique de présence', 'Carte et profil professionnel']],
+            ].map(([I, title, items]) => {
+              const Icon = I as typeof QrCode
+              return (
+                <div key={title as string} className="rounded-3xl bg-gradient-to-b from-navy-50 to-white p-6 ring-1 ring-navy-100">
+                  <Icon className="h-8 w-8 text-navy" />
+                  <h3 className="mt-4 font-display text-xl font-bold text-navy">{title as string}</h3>
+                  <ul className="mt-3 space-y-2">
+                    {(items as string[]).map((t) => (
+                      <li key={t} className="flex items-start gap-2 text-sm text-slate-700">
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" /> {t}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------ appel final + pied */}
+      <section className="bg-navy-900 py-14 text-center text-white">
+        <div className="mx-auto max-w-2xl px-5">
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">Prêt pour le prochain cours ?</h2>
+          <p className="mt-2 text-navy-100/80">Connectez-vous avec l'adresse email donnée par votre établissement.</p>
+          <a href="#connexion" className="mt-6 inline-flex items-center gap-2 rounded-xl bg-gold px-6 py-3 font-bold text-navy-900 hover:brightness-105">
+            Se connecter <ArrowRight className="h-4 w-4" />
+          </a>
+        </div>
+        <footer className="mx-auto mt-12 flex max-w-6xl flex-col items-center justify-between gap-3 border-t border-white/10 px-5 pt-6 text-xs text-navy-100/60 sm:flex-row">
+          <span>© {new Date().getFullYear()} ABMCY — African Business Manager Company</span>
+          <Link to="/mentions-legales" className="hover:text-white">
+            Mentions légales et données personnelles
+          </Link>
+        </footer>
+      </section>
+    </div>
   )
 }
 

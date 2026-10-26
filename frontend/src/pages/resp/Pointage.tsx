@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, CheckCheck, CloudOff, MapPin, Nfc, Radio, Square, UserCheck, UserX, Wifi } from 'lucide-react'
+import { ArrowLeft, CheckCheck, CloudOff, MapPin, Nfc, QrCode, Radio, Square, UserCheck, UserX, Wifi } from 'lucide-react'
 import { api, errorMessage } from '../../lib/api'
 import { fmtRange, fmtTime, statusLabel } from '../../lib/format'
 import { useLive } from '../../lib/live'
@@ -9,6 +9,7 @@ import { beep, nfcSupported, startScan, vibrate, type Tap } from '../../lib/nfc'
 import { enqueue, flush, pendingCount } from '../../lib/offline'
 import type { RosterEntry, ScanResult, Session } from '../../lib/types'
 import { Avatar, Badge, Button, Card, ErrorBox, Select, Spinner, attendanceTone, cx, useToast } from '../../components/ui'
+import { QrPresence } from './QrPresence'
 
 type Roster = { session: Session; students: RosterEntry[] }
 
@@ -40,6 +41,7 @@ export function PointagePage() {
   const [pending, setPending] = useState(pendingCount(id))
   const [online, setOnline] = useState(navigator.onLine)
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [showQr, setShowQr] = useState(false)
   const abort = useRef<AbortController>()
   const geo = useRef<{ lat: number; lng: number }>()
   const recent = useRef(new Map<string, number>())
@@ -152,6 +154,7 @@ export function PointagePage() {
 
   return (
     <div className="mx-auto max-w-4xl">
+      {showQr && <QrPresence sessionId={id} present={present} total={students.length} onClose={() => setShowQr(false)} />}
       <Link to={`/classes/${session.class_id}`} className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-slate-600 hover:text-navy">
         <ArrowLeft className="h-4 w-4" /> {session.class_name}
       </Link>
@@ -211,6 +214,9 @@ export function PointagePage() {
               ) : (
                 <p className="max-w-[14rem] text-center text-xs text-slate-500">Lecture NFC indisponible ici (Chrome Android requis). Sur iPhone : touchez la carte, puis « Pointer présent » sur la page qui s'ouvre.</p>
               )}
+              <Button onClick={() => setShowQr(true)} variant="secondary" className="w-48 py-3" disabled={session.status === 'annule'}>
+                <QrCode className="h-5 w-5" /> Afficher le QR
+              </Button>
               <label className="flex items-center gap-2 text-xs text-slate-600">
                 <input type="checkbox" checked={useGeo} onChange={(e) => setUseGeo(e.target.checked)} /> <MapPin className="h-3.5 w-3.5" /> Enregistrer le lieu
               </label>

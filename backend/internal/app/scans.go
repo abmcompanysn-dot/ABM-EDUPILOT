@@ -125,14 +125,20 @@ func (a *App) Scan(ctx context.Context, p *Principal, in ScanInput) (ScanResult,
 	if in.Method == "qr" {
 		data.Method = "qr"
 	}
+	return a.commitScan(ctx, p.UserID, se, st, data, stu, func() { a.recordCounter(ctx, t) })
+}
+
+// commitScan applique l'anti-doublon partagé (Redis) puis publie le pointage :
+// le premier passage est l'arrivée, un passage suffisamment plus tard est le
+// départ, les autres sont ignorés (onDup est alors appelé).
+func (a *App) commitScan(ctx context.Context, actor string, se *dirSession, st Settings, data ScanData, stu *ScanStudent, onDup func()) (ScanResult, error) {
+	now := data.At
 	if now.After(se.Starts.Add(minutes(st.LateMinutes))) {
 		data.Status = "retard"
 	}
 	res := ScanResult{Outcome: data.Status, Student: stu, At: now}
 
-	// Anti-doublon partagé (Redis) : le premier passage est l'arrivée, un passage
-	// suffisamment plus tard est le départ, les autres sont ignorés.
-	key := scanKey(se.ID, t.student.ID)
+	key := scanKey(se.ID, data.StudentID)
 	first, err := a.Cache.SetNX(ctx, key, []byte(strconv.FormatInt(now.Unix(), 10)), 18*time.Hour)
 	if err != nil {
 		return ScanResult{}, err
@@ -141,12 +147,12 @@ func (a *App) Scan(ctx context.Context, p *Principal, in ScanInput) (ScanResult,
 		raw, _, _ := a.Cache.Get(ctx, key)
 		arrivedUnix, _ := strconv.ParseInt(string(raw), 10, 64)
 		if now.Sub(time.Unix(arrivedUnix, 0)) < minutes(st.DepartureMinMinutes) {
-			a.recordCounter(ctx, t)
+			onDup()
 			res.Outcome, res.Message = "deja", "déjà pointé à "+time.Unix(arrivedUnix, 0).In(a.Cfg.Location).Format("15:04")
 			return res, nil
 		}
 		if ok, _ := a.Cache.SetNX(ctx, "dep:"+key, []byte("1"), 18*time.Hour); !ok {
-			a.recordCounter(ctx, t)
+			onDup()
 			res.Outcome, res.Message = "deja", "départ déjà enregistré"
 			return res, nil
 		}
@@ -158,7 +164,7 @@ func (a *App) Scan(ctx context.Context, p *Principal, in ScanInput) (ScanResult,
 		res.Message = "présent à " + now.In(a.Cfg.Location).Format("15:04")
 	}
 
-	if err := a.Bus.Publish(ctx, events.New("scan.received", p.UserID, t.student.ID, se.ID, data)); err != nil {
+	if err := a.Bus.Publish(ctx, events.New("scan.received", actor, data.StudentID, se.ID, data)); err != nil {
 		// Le pointage n'est pas enregistré : on libère la clé pour permettre un nouvel essai.
 		if data.Kind == "arrivee" {
 			a.Cache.Del(ctx, key)
