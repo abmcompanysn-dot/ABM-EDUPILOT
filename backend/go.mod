@@ -2,12 +2,14 @@ module edupilot
 
 go 1.26.0
 
+toolchain go1.26.10
+
 require (
 	github.com/coder/websocket v1.8.15
 	github.com/fergusstrange/embedded-postgres v1.34.0
-	github.com/jackc/pgx/v5 v5.7.2
+	github.com/jackc/pgx/v5 v5.9.2
 	github.com/prometheus/client_golang v1.25.0
-	github.com/redis/go-redis/v9 v9.7.0
+	github.com/redis/go-redis/v9 v9.7.3
 	github.com/twmb/franz-go v1.22.1
 	github.com/twmb/franz-go/pkg/kadm v1.19.0
 	golang.org/x/crypto v0.57.0
