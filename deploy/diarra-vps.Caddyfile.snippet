@@ -1,0 +1,22 @@
+# A ajouter dans le Caddyfile existant de diarra-vps (/etc/caddy/Caddyfile),
+# a cote des autres blocs de domaine (br.diarra.app, mail.mahu.cards, etc).
+# Ne pas remplacer le Caddyfile : coller ce bloc a la suite.
+#
+# Le frontend (React) n'est PAS servi ici : il est sur Cloudflare Pages.
+# Ce domaine interne (edu-api.abmcy.com) est appele uniquement par le Worker
+# Cloudflare (cloudflare-worker/worker.js), jamais directement par le
+# navigateur : le public ne voit que edu.abmcy.com.
+
+edu-api.abmcy.com {
+	encode zstd gzip
+	header {
+		Content-Security-Policy "default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' wss://edu.abmcy.com; frame-ancestors 'none'"
+		Permissions-Policy "camera=(self), geolocation=(self), nfc=(self)"
+		-Server
+	}
+	reverse_proxy 127.0.0.1:8088 127.0.0.1:8089 {
+		lb_policy least_conn
+		health_uri /healthz
+		health_interval 10s
+	}
+}

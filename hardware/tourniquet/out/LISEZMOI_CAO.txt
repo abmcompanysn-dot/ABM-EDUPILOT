@@ -1,0 +1,53 @@
+FICHIERS CAO DU TOURNIQUET P1 (unites : mm)
+
+STEP (dossier step) :
+  Tourniquet_P1_assemblage.step : assemblage complet, chaque piece nommee et coloree.
+  SE1_ossature_soudee.step : sous-ensemble soude, coordonnees du caisson.
+  SE2_carter_soude.step : sous-ensemble soude, coordonnees du caisson.
+  SE3_moyeu_et_bras_soudes.step : sous-ensemble soude, coordonnees du caisson.
+  SE4_disque_soude.step : sous-ensemble soude, coordonnees du caisson.
+  SE5_platine_mecanisme.step : sous-ensemble soude, coordonnees du caisson.
+  SE6_cliquet.step : sous-ensemble soude, coordonnees du caisson.
+  NN_nom.step : une piece a fabriquer, dans son propre repere (axe principal = Z).
+
+DXF (dossier dxf) : contours de decoupe laser/plasma a l'echelle 1, calque DECOUPE ; textes calque TEXTE ;
+  capot developpe avec traits de pliage (calque PLIAGE).
+
+Pieces :
+  01_Platine_de_base_120028010.step  x1  (1200 × 280 × 10 mm)  + 01_Platine_de_base_120028010.dxf  - Platine de base 1200×280×10
+  02_Poteau_d_ossature_30302.step  x4  (30 × 30 × 1048 mm)  - Poteau d'ossature 30×30×2
+  03_Lisse_d_ossature_30302.step  x6  (1137 × 30 × 30 mm)  - Lisse d'ossature 30×30×2
+  04_Traverse_d_ossature_30302.step  x4  (30 × 217 × 30 mm)  - Traverse d'ossature 30×30×2
+  05_Carter_70_logements_52_H7.step  x1  (70 × 70 × 161 mm)  - Carter Ø70, logements Ø52 H7
+  06_Bride_de_fixation_du_carter_1301308.step  x1  (130 × 130 × 8 mm)  + 06_Bride_de_fixation_du_carter_1301308.dxf  - Bride de fixation du carter 130×130×8
+  07_Patte_de_fixation_30406_sous_la_lisse_haute_M10.step  x2  (30 × 40 × 6 mm)  + 07_Patte_de_fixation_30406_sous_la_lisse_haute_M10.dxf  - Patte de fixation 30×40×6 (sous la lisse haute, M10)
+  08_Flasque_de_maintien_du_carter_8_mm.step  x2  (48 × 407 × 72 mm)  + 08_Flasque_de_maintien_du_carter_8_mm.dxf  - Flasque de maintien du carter 8 mm
+  09_Axe_25_h7_acier_42CrMo4_traite_L_275_epaulement_30.step  x1  (30 × 30 × 275 mm)  - Axe Ø25 h7 acier 42CrMo4 traité, L 275, épaulement Ø30
+  10_Entretoise_entre_bagues_interieures_32_25_105.step  x1  (32 × 32 × 105 mm)  - Entretoise entre bagues intérieures Ø32 × Ø25 × 105
+  11_Disque_indexeur_140_3_crans_de_verrouillage_3_crans_en_V.step  x1  (139 × 140 × 10 mm)  + 11_Disque_indexeur_140_3_crans_de_verrouillage_3_crans_en_V.dxf  - Disque indexeur Ø140 (3 crans de verrouillage, 3 crans en V)
+  12_Moyeu_du_disque_45_22_5_soude_au_disque.step  x1  (45 × 45 × 22 mm)  - Moyeu du disque Ø45 × 22,5 (soudé au disque)
+  13_Platine_du_mecanisme_8_mm_acier.step  x1  (224 × 125 × 8 mm)  + 13_Platine_du_mecanisme_8_mm_acier.dxf  - Platine du mécanisme 8 mm (acier)
+  14_Colonne_16_taraudee_M8_bride_platine.step  x1  (16 × 16 × 29 mm)  - Colonne Ø16 taraudée M8 (bride → platine)
+  15_Colonne_pivot_14_du_cliquet_taraudee_M8_bride_platine.step  x1  (14 × 14 × 29 mm)  - Colonne-pivot Ø14 du cliquet, taraudée M8 (bride → platine)
+  16_Cliquet_de_verrouillage_acier_trempe.step  x1  (73 × 26 × 19 mm)  + 16_Cliquet_de_verrouillage_acier_trempe.dxf  - Cliquet de verrouillage acier trempé
+  17_Butee_du_ressort_de_cliquet_soudee_sur_la_platine.step  x1  (16 × 8 × 12 mm)  + 17_Butee_du_ressort_de_cliquet_soudee_sur_la_platine.dxf  - Butée du ressort de cliquet (soudée sur la platine)
+  18_Levier_de_crantage.step  x1  (12 × 70 × 6 mm)  + 18_Levier_de_crantage.dxf  - Levier de crantage
+  19_Axe_du_galet_8.step  x1  (8 × 8 × 16 mm)  - Axe du galet Ø8
+  20_Axe_du_levier_10.step  x1  (10 × 10 × 28 mm)  - Axe du levier Ø10
+  21_Goupille_d_appui_du_ressort_de_levier.step  x1  (8 × 8 × 10 mm)  - Goupille d'appui du ressort de levier
+  22_Equerre_du_capteur.step  x1  (6 × 62 × 33 mm)  + 22_Equerre_du_capteur.dxf  - Équerre du capteur
+  23_Plateau_du_moyeu_inox_150_15.step  x1  (150 × 150 × 15 mm)  + 23_Plateau_du_moyeu_inox_150_15.dxf  - Plateau du moyeu inox Ø150 × 15
+  24_Fut_du_moyeu_inox_60_alesage_25_H7.step  x1  (60 × 60 × 45 mm)  - Fût du moyeu inox Ø60, alésage Ø25 H7
+  25_Rondelle_d_arret_32.step  x1  (32 × 32 × 3 mm)  - Rondelle d'arrêt Ø32
+  26_Vis_M8_inox_A4.step  x1  (13 × 11 × 5 mm)  - Vis M8 inox A4
+  27_Bras_tube_inox_316_382.step  x3  (38 × 38 × 455 mm)  - Bras tube inox 316 Ø38×2
+  28_Panneau_cote_passage_lumiere_pour_le_carter.step  x1  (1200 × 2 × 1050 mm)  + 28_Panneau_cote_passage_lumiere_pour_le_carter.dxf  - Panneau côté passage (lumière pour le carter)
+  29_Panneau_arriere.step  x1  (1200 × 2 × 1050 mm)  + 29_Panneau_arriere.dxf  - Panneau arrière
+  30_Joue_d_extremite_entree.step  x1  (2 × 280 × 1050 mm)  + 30_Joue_d_extremite_entree.dxf  - Joue d'extrémité entrée
+  31_Joue_d_extremite_sortie.step  x1  (2 × 280 × 1050 mm)  + 31_Joue_d_extremite_sortie.dxf  - Joue d'extrémité sortie
+  32_Capot_superieur_amovible_1220300.step  x1  (1220 × 300 × 20 mm)  - Capot supérieur amovible 1220×300
+
+Filets : dessines en 3D (helice ISO 60 deg) sur les vis, tiges, axes, capteur, ecrous, rivets-ecrous et trous taraudes.
+Pliages : developpes exacts (rayon interieur et facteur K indiques sur chaque DXF). Les gorges des roulements ne sont pas dessinees (achat).
+Les achats (roulements, electroaimant, capteur, visserie, electronique) sont dans l'assemblage seulement.
+Ces fichiers sont regeneres par : python gen_design.py && python export_cao.py

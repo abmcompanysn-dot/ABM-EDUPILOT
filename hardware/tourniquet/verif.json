@@ -1,0 +1,731 @@
+{
+ "ok": true,
+ "checks": [
+  {
+   "categorie": "Liaisons",
+   "controle": "Arbre ↔ bagues intérieures : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Bagues extérieures ↔ carter : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Roulements : billes ↔ bague intérieure : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 18 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Roulements : billes ↔ bague extérieure : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 18 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Épaulement Ø30 ↔ roulement 1 : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Entretoise ↔ bagues intérieures : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Épaulement du carter ↔ bagues extérieures : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Moyeu du disque ↔ roulement 2 : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Disque ↔ moyeu du disque : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Disque ↔ arbre : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Moyeu des bras ↔ arbre : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Bras ↔ plateau : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 3 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Plateau ↔ fût du moyeu : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Carter ↔ bride : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Bride ↔ pattes : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Pattes ↔ lisse haute : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Carter ↔ flasques : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Flasques ↔ lisse milieu : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Colonnes ↔ bride : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Colonnes ↔ platine du mécanisme : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 2 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Cliquet ↔ colonne-pivot : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Dent du cliquet ↔ disque : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Plongeur ↔ cliquet : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Électroaimant ↔ platine : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Ressort ↔ cliquet : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Levier ↔ axe du levier : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Galet ↔ axe du galet : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Galet ↔ disque : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.3 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Ressort ↔ levier : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Capteur ↔ équerre : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Poteaux ↔ platine de base : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 4 paire(s)"
+  },
+  {
+   "categorie": "Liaisons",
+   "controle": "Platine de base ↔ dalle : pièces en contact",
+   "ok": true,
+   "detail": "écart maxi 0.0 mm sur 1 paire(s)"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Arbre, roulements, carter, entretoise, moyeux, disque, écrou : tous sur le même axe",
+   "ok": true,
+   "detail": "écart maxi 0.0000 mm"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Axe principal incliné à 45° sur la verticale",
+   "ok": true,
+   "detail": "45.00°"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Les 3 bras font 45° avec l'axe",
+   "ok": true,
+   "detail": "45.00°, 45.00°, 45.00°"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Les 3 bras sont à 120° les uns des autres",
+   "ok": true,
+   "detail": "120.00°, 120.00°, 120.00°"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Bras de repos horizontal à 850 mm, vers le passage",
+   "ok": true,
+   "detail": "direction [-0.0, 1.0, 0.0]"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Colonne-pivot du cliquet parallèle à l'axe principal",
+   "ok": true,
+   "detail": "parallèle"
+  },
+  {
+   "categorie": "Axes",
+   "controle": "Axe du levier parallèle à l'axe principal",
+   "ok": true,
+   "detail": "parallèle"
+  },
+  {
+   "categorie": "Arrêts axiaux",
+   "controle": "Empilage serré par l'écrou M25 : épaulement, bague 1, entretoise, bague 2, moyeu du disque, disque, rondelle, écrou",
+   "ok": true,
+   "detail": "épaulement Ø30 → bague int. 1 : 0.00 mm ; bague int. 1 → entretoise : 0.00 mm ; entretoise → bague int. 2 : 0.00 mm ; bague int. 2 → moyeu du disque : 0.00 mm ; disque → rondelle frein : 0.00 mm ; rondelle frein → écrou : 0.00 mm"
+  },
+  {
+   "categorie": "Arrêts axiaux",
+   "controle": "Bagues extérieures arrêtées par l'épaulement intérieur du carter (montage en X)",
+   "ok": true,
+   "detail": "épaulement Ø44 entre les roulements ; jeu radial avec l'entretoise 6.0 mm"
+  },
+  {
+   "categorie": "Arrêts axiaux",
+   "controle": "Moyeu des bras en appui sur l'épaulement Ø30 et serré par la vis M8 de bout",
+   "ok": true,
+   "detail": "face arrière du moyeu à s=15.0, épaulement à s=15.0"
+  },
+  {
+   "categorie": "Arrêts axiaux",
+   "controle": "Clavette du disque entièrement portée (disque + moyeu du disque)",
+   "ok": true,
+   "detail": "clavette s 176.0…204.0, moyeu+disque s 172.5…205.0"
+  },
+  {
+   "categorie": "Interférences",
+   "controle": "Aucune pièce n'en traverse une autre au repos (hors liaisons voulues)",
+   "ok": true,
+   "detail": "100 pièces, aucune interférence"
+  },
+  {
+   "categorie": "Interférences",
+   "controle": "Le carter passe dans la lumière 80 × 110 du panneau",
+   "ok": true,
+   "detail": "section 70 × 99 mm, jeu 5 et 6 mm"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Moyeu et bras tournent sans toucher le panneau côté passage",
+   "ok": true,
+   "detail": "jeu mini 18 mm avec le panneau"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Un tiers de tour complet sans aucune collision (pas de 2°)",
+   "ok": true,
+   "detail": "61 positions contrôlées"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Pendant la rotation, la dent frotte sur le bord du disque sans y pénétrer",
+   "ok": true,
+   "detail": "cliquet levé de 15.2° par le bord"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Au repos (0° et 120°), la dent est dans un cran et le galet dans un V",
+   "ok": true,
+   "detail": "crans à 30°, 150°, 270° ; V à 60°, 180°, 300°"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Périodicité : crans, V et bras se répètent tous les 120°",
+   "ok": true,
+   "detail": "3 positions de repos par tour"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Jeu de la dent dans le cran (sans coincement, sans battement excessif)",
+   "ok": true,
+   "detail": "0.5 mm par côté, soit 0.45° au bras"
+  },
+  {
+   "categorie": "Cinématique",
+   "controle": "Cliquet levé (22°) : la dent dégage complètement le disque",
+   "ok": true,
+   "detail": "dent à 75.6 mm de l'axe pour un disque de 70 mm"
+  },
+  {
+   "categorie": "Actionneurs",
+   "controle": "Course de l'électroaimant suffisante pour lever le cliquet de 22°",
+   "ok": true,
+   "detail": "course utile 7.5 mm pour 10 mm disponibles (déport latéral 5.3 mm repris par la chape)"
+  },
+  {
+   "categorie": "Actionneurs",
+   "controle": "Entrefer du capteur dans sa portée (M12 noyé : 4 mm)",
+   "ok": true,
+   "detail": "2.5 mm face au disque, 16.5 mm face à un cran : signal net"
+  },
+  {
+   "categorie": "Actionneurs",
+   "controle": "Le galet sort franchement du V puis y retombe",
+   "ok": true,
+   "detail": "levée du galet 3.4 mm, rotation du levier 3.5°"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Cliquet auto-bloquant : l'effort de forçage ne peut pas le chasser du cran",
+   "ok": true,
+   "detail": "bras de levier 5.5 mm < frottement 0,15 × 54 = 8.1 mm"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Dent du cliquet au cisaillement (forçage 500 N)",
+   "ok": true,
+   "detail": "F = 3.9 kN, τ = 27 MPa (acier trempé)"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Colonne-pivot Ø14 en flexion (appuyée aux deux bouts)",
+   "ok": true,
+   "detail": "σ = 106 MPa pour S355 (limite 355)"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Arbre Ø25 en torsion (forçage)",
+   "ok": true,
+   "detail": "τ = 81 MPa, × 2 au droit des rainures = 163 MPa ; 42CrMo4 traité : 0,58 × 650 / 1,5 = 251 MPa (en inox 304 : 122 MPa, insuffisant)"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Pression sur la clavette du moyeu (40 mm)",
+   "ok": true,
+   "detail": "usage normal 15 MPa ; forçage 152 MPa (exceptionnel, admissible sur acier jusqu'à ~250 MPa)"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Pression sur la clavette du disque (28 mm)",
+   "ok": true,
+   "detail": "usage normal 22 MPa ; forçage 216 MPa (exceptionnel, admissible sur acier jusqu'à ~250 MPa)"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Roulements 6205 sous l'effort de forçage",
+   "ok": true,
+   "detail": "réaction maxi 875 N pour une charge statique de base de 7 800 N"
+  },
+  {
+   "categorie": "Efforts",
+   "controle": "Chevilles M12 (4) sous le moment de renversement du forçage",
+   "ok": true,
+   "detail": "traction ≈ 1328 N par cheville (résistance usuelle > 15 kN en béton C20/25)"
+  }
+ ],
+ "liaisons": [
+  {
+   "liaison": "Arbre ↔ bagues intérieures",
+   "type": "Encastrement",
+   "realisation": "Ajustement Ø25 k6 + serrage axial par l'écrou M25",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Bagues extérieures ↔ carter",
+   "type": "Encastrement",
+   "realisation": "Logements Ø52 H7 + épaulement intérieur Ø44 (montage en X)",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Roulements : billes ↔ bague intérieure",
+   "type": "Pivot",
+   "realisation": "Roulements à billes 6205-2RS (9 billes)",
+   "mobilite": "1 rotation",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 18
+  },
+  {
+   "liaison": "Roulements : billes ↔ bague extérieure",
+   "type": "Pivot",
+   "realisation": "Gorges des bagues (non dessinées)",
+   "mobilite": "1 rotation",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 18
+  },
+  {
+   "liaison": "Épaulement Ø30 ↔ roulement 1",
+   "type": "Appui plan",
+   "realisation": "Arrêt axial de l'empilage",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Entretoise ↔ bagues intérieures",
+   "type": "Appui plan",
+   "realisation": "Longueur 105 = écart des roulements",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Épaulement du carter ↔ bagues extérieures",
+   "type": "Appui plan",
+   "realisation": "Arrêt axial des bagues extérieures",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Moyeu du disque ↔ roulement 2",
+   "type": "Appui plan",
+   "realisation": "Serré par l'écrou M25",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Disque ↔ moyeu du disque",
+   "type": "Encastrement",
+   "realisation": "Soudure d'angle tout autour",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Disque ↔ arbre",
+   "type": "Encastrement",
+   "realisation": "Clavette 8×7×28 + écrou à encoches + rondelle MB5",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Moyeu des bras ↔ arbre",
+   "type": "Encastrement",
+   "realisation": "Clavette 8×7×40 + vis de pression M8 + vis M8 en bout + épaulement",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Bras ↔ plateau",
+   "type": "Encastrement",
+   "realisation": "Soudure TIG tout autour",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 3
+  },
+  {
+   "liaison": "Plateau ↔ fût du moyeu",
+   "type": "Encastrement",
+   "realisation": "Soudure puis réusinage de l'alésage",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Carter ↔ bride",
+   "type": "Encastrement",
+   "realisation": "Soudure circulaire",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Bride ↔ pattes",
+   "type": "Encastrement",
+   "realisation": "2 vis H M10 + écrous",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Pattes ↔ lisse haute",
+   "type": "Encastrement",
+   "realisation": "Soudure",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Carter ↔ flasques",
+   "type": "Encastrement",
+   "realisation": "Soudure (2 cordons par flasque)",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Flasques ↔ lisse milieu",
+   "type": "Encastrement",
+   "realisation": "4 vis M8 dans rivets-écrous",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Colonnes ↔ bride",
+   "type": "Encastrement",
+   "realisation": "Soudure",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Colonnes ↔ platine du mécanisme",
+   "type": "Encastrement",
+   "realisation": "Vis M8 dans taraudage",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 2
+  },
+  {
+   "liaison": "Cliquet ↔ colonne-pivot",
+   "type": "Pivot",
+   "realisation": "Bague bronze Ø14/Ø18",
+   "mobilite": "1 rotation (0 à 22°)",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Dent du cliquet ↔ disque",
+   "type": "Contact (verrou)",
+   "realisation": "Dent 12 dans cran 13 : jeu 0,5 par côté",
+   "mobilite": "bloque la rotation",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Plongeur ↔ cliquet",
+   "type": "Rotule (chape)",
+   "realisation": "Chape + axe Ø4 (le plongeur suit l'arc)",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Électroaimant ↔ platine",
+   "type": "Encastrement",
+   "realisation": "2 vis M5",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Ressort ↔ cliquet",
+   "type": "Appui",
+   "realisation": "Ressort de compression sur butée soudée",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Levier ↔ axe du levier",
+   "type": "Pivot",
+   "realisation": "Axe Ø10 + écrou Nylstop",
+   "mobilite": "1 rotation",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Galet ↔ axe du galet",
+   "type": "Pivot",
+   "realisation": "Roulement 608",
+   "mobilite": "1 rotation",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Galet ↔ disque",
+   "type": "Contact (crantage)",
+   "realisation": "Galet poussé dans le cran en V",
+   "mobilite": "roule sur le disque",
+   "ecart_mm": 0.3,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Ressort ↔ levier",
+   "type": "Appui",
+   "realisation": "Ressort de compression sur goupille",
+   "mobilite": "—",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Capteur ↔ équerre",
+   "type": "Encastrement",
+   "realisation": "2 écrous M12×1",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  },
+  {
+   "liaison": "Poteaux ↔ platine de base",
+   "type": "Encastrement",
+   "realisation": "Soudure tout autour",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 4
+  },
+  {
+   "liaison": "Platine de base ↔ dalle",
+   "type": "Encastrement",
+   "realisation": "4 chevilles chimiques M12",
+   "mobilite": "0",
+   "ecart_mm": 0.0,
+   "ok": true,
+   "paires": 1
+  }
+ ],
+ "corrections": [
+  {
+   "avant": "Roulements : les bagues extérieures pouvaient glisser dans le carter (alésage Ø52 sur toute la longueur).",
+   "apres": "Épaulement intérieur Ø44 entre les roulements : montage en X."
+  },
+  {
+   "avant": "Arbre : il n'était tenu que par des circlips, qui ne supportent pas le serrage de l'écrou.",
+   "apres": "Épaulement Ø30 sur l'axe ; l'écrou M25 serre tout l'empilage contre lui. Circlips supprimés."
+  },
+  {
+   "avant": "Disque : rien ne l'arrêtait vers le moyeu, l'écrou ne pouvait pas le serrer.",
+   "apres": "Moyeu du disque Ø45 × 22,5 soudé, en appui sur la bague intérieure 2, et rondelle frein MB5."
+  },
+  {
+   "avant": "Clavette du disque : 28 mm de long pour un disque de 10 mm d'épaisseur.",
+   "apres": "La clavette porte maintenant sur le disque et son moyeu (32,5 mm)."
+  },
+  {
+   "avant": "Électroaimant : 17 mm de course nécessaires pour 10 mm disponibles.",
+   "apres": "Attache du plongeur rapprochée du pivot : 7,5 mm de course utile, avec chape."
+  },
+  {
+   "avant": "Cliquet : l'effort de forçage passait à 14 mm de son pivot et pouvait le chasser du cran.",
+   "apres": "Cliquet sur une colonne-pivot Ø14 placée presque sur la ligne de l'effort (5,5 mm) : auto-bloquant."
+  },
+  {
+   "avant": "Capteur : à 6 mm du disque, hors de sa portée de 4 mm.",
+   "apres": "Capteur rapproché à 2,5 mm."
+  },
+  {
+   "avant": "Ressort du levier : il traversait une colonne.",
+   "apres": "Ressort de compression sur une goupille portée par une aile de la platine."
+  },
+  {
+   "avant": "Colonnes Ø12 trop fines pour un taraudage M8 (2,6 mm de paroi).",
+   "apres": "Colonne Ø16 et colonne-pivot Ø14."
+  },
+  {
+   "avant": "Arbre Ø25 en inox 304 : au forçage (500 N en bout de bras), 162 MPa au droit des rainures pour 122 admissibles.",
+   "apres": "Arbre en acier 42CrMo4 traité (admissible 251 MPa), graissé dans le carter."
+  },
+  {
+   "avant": "Ressort du cliquet : il entrait dans la dent.",
+   "apres": "Ressort raccourci : il appuie sous la dent."
+  },
+  {
+   "avant": "Bride dessinée pleine : l'axe et le moyeu du disque la traversaient.",
+   "apres": "Bride percée Ø70 (le carter y est soudé)."
+  },
+  {
+   "avant": "Platine du mécanisme : la seconde colonne gênait le nouveau pivot.",
+   "apres": "La colonne-pivot du cliquet sert aussi de seconde colonne."
+  }
+ ],
+ "efforts": {
+  "forcage_Nm": 250.0,
+  "usage_Nm": 25.0
+ }
+}

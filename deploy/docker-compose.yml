@@ -1,0 +1,106 @@
+# EduPilote v2 — déploiement intégré à un serveur qui héberge déjà d'autres
+# services (Caddy/nginx existant en façade). Ce compose n'ouvre AUCUN port
+# public : l'API écoute uniquement sur 127.0.0.1, et le reverse-proxy déjà en
+# place sur le serveur (ex: Caddy) la relaie vers edu.abmcy.com.
+#   cp .env.example .env      puis remplir les valeurs
+#   docker compose up -d --build
+name: edupilot
+
+x-app: &app
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  image: edupilot:latest
+  restart: unless-stopped
+  env_file: .env
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis: { condition: service_healthy }
+    kafka: { condition: service_healthy }
+
+x-env: &env
+  DATABASE_URL: postgres://edupilot:${POSTGRES_PASSWORD}@postgres:5432/edupilot?sslmode=disable
+  REDIS_URL: redis://redis:6379/0
+  KAFKA_BROKERS: kafka:9092
+  EDUPILOT_PUBLIC_URL: https://${DOMAIN}
+  # Le frontend est servi a part (Cloudflare Pages) : l'API ne sert plus les
+  # fichiers statiques, uniquement /api/* et /healthz, /readyz.
+  EDUPILOT_STATIC_DIR: ""
+
+services:
+  # Deux instances d'API nommées explicitement : "deploy.replicas" ne
+  # s'applique qu'a Docker Swarm et est ignoré par "docker compose up" seul.
+  # Chacune est liée en local sur un port different ; le reverse-proxy du
+  # serveur hote (Caddy, voir deploy/diarra-vps.Caddyfile) repartit entre
+  # les deux, aucun acces direct depuis l'exterieur.
+  api:
+    <<: *app
+    environment:
+      <<: *env
+      EDUPILOT_ROLES: api
+    ports:
+      - "127.0.0.1:${EDUPILOT_LOCAL_PORT_1:-8088}:8080"
+
+  api2:
+    <<: *app
+    environment:
+      <<: *env
+      EDUPILOT_ROLES: api
+    ports:
+      - "127.0.0.1:${EDUPILOT_LOCAL_PORT_2:-8089}:8080"
+
+  worker:
+    <<: *app
+    environment:
+      <<: *env
+      EDUPILOT_ROLES: worker
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: edupilot
+      POSTGRES_USER: edupilot
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U edupilot"]
+      interval: 5s
+      retries: 20
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:3.8.0
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_RETENTION_HOURS: 336
+      KAFKA_HEAP_OPTS: -Xms512m -Xmx768m
+    volumes: [kafkadata:/var/lib/kafka/data]
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
+      interval: 10s
+      retries: 30
+
+volumes:
+  pgdata:
+  redisdata:
+  kafkadata:

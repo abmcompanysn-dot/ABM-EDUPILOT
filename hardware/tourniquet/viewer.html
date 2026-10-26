@@ -1,0 +1,690 @@
+<title>Tourniquet EduPilote P1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Atelier de chaudronnerie : fond gris acier, accent jaune de traçage, cotes en chasse fixe. */
+:root {
+  --bg: #eef0f2; --panel: #ffffff; --ink: #1d232b; --muted: #5f6a76; --line: #d7dce2;
+  --accent: #e3a400; --steel: #1c2b5a; --sel: #2f6fed; --scene: #e6e9ed;
+  --font-ui: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif; --font-mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #12161b; --panel: #1a1f26; --ink: #e8ebef; --muted: #9aa5b1; --line: #2b323b; --accent: #f2b81c; --steel: #8fa7e6; --sel: #6f9bff; --scene: #161b21; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #12161b; --panel: #1a1f26; --ink: #e8ebef; --muted: #9aa5b1; --line: #2b323b; --accent: #f2b81c; --steel: #8fa7e6; --sel: #6f9bff; --scene: #161b21; color-scheme: dark }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); }
+.app { height: 100%; display: grid; grid-template-columns: minmax(0, 1fr) 330px; grid-template-rows: auto minmax(0, 1fr); padding-inline: 16px; padding-block: 12px; gap: 12px; box-sizing: border-box; }
+header { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+h1 { font-size: 20px; font-weight: 700; margin: 0; text-wrap: balance; }
+.ref { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: .04em; }
+.warn { margin-left: auto; font-size: 12px; color: var(--muted); border: 1px dashed var(--accent); padding: 3px 8px; border-radius: 4px; }
+.stage { position: relative; min-height: 420px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--scene); }
+#c { width: 100%; height: 100%; display: block; touch-action: none; }
+.tools { position: absolute; left: 10px; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; }
+.row { display: flex; flex-wrap: wrap; gap: 6px; }
+.row > * { pointer-events: auto; }
+.sep { width: 1px; background: var(--line); margin: 2px 2px; }
+button, select { font: 500 13px var(--font-ui); color: var(--ink); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+button:hover, select:hover { border-color: var(--muted); }
+button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+button.go { background: var(--accent); border-color: var(--accent); color: #1d232b; font-weight: 600; }
+button:focus-visible, select:focus-visible { outline: 2px solid var(--sel); outline-offset: 2px; }
+.hint { position: absolute; left: 10px; bottom: 10px; font-size: 12px; color: var(--muted); background: color-mix(in srgb, var(--panel) 85%, transparent); padding: 4px 8px; border-radius: 4px; }
+.caption { position: absolute; left: 50%; bottom: 16px; transform: translateX(-50%); width: min(760px, calc(100% - 32px)); background: color-mix(in srgb, var(--panel) 94%, transparent); border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 8px; padding: 10px 14px; box-shadow: 0 4px 18px rgba(0,0,0,.12); display: none; }
+.caption.on { display: block; }
+.caption.on ~ .hint { display: none; }
+.caption .k { font: 500 12px var(--font-mono); color: var(--muted); letter-spacing: .05em; text-transform: uppercase; }
+.caption .t { font-size: 17px; font-weight: 700; margin: 2px 0; text-wrap: balance; }
+.caption .x { font-size: 14px; line-height: 1.45; color: var(--ink); }
+.caption .nav { display: flex; gap: 6px; margin-top: 8px; align-items: center; flex-wrap: wrap; }
+.caption .dots { display: flex; gap: 4px; margin-left: auto; }
+.caption .dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); }
+.caption .dots i.on { background: var(--accent); }
+aside { min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+.card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+dl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; margin: 0; font-size: 13px; }
+dd { margin: 0; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.groups { display: flex; flex-wrap: wrap; gap: 6px; }
+.groups label { font-size: 13px; display: flex; align-items: center; gap: 5px; border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; cursor: pointer; }
+ul.parts { list-style: none; margin: 0; padding: 0; font-size: 13px; }
+ul.parts li { display: grid; grid-template-columns: 12px minmax(0, 1fr); gap: 8px; align-items: center; padding: 5px 4px; border-radius: 4px; cursor: pointer; }
+ul.parts li:hover { background: color-mix(in srgb, var(--sel) 10%, transparent); }
+ul.parts li.on { background: color-mix(in srgb, var(--sel) 18%, transparent); }
+.sw { width: 12px; height: 12px; border-radius: 2px; border: 1px solid var(--line); }
+.sel { font-size: 13px; min-height: 2.6em; }
+.sel b { display: block; }
+body.film .tools, body.film .hint { display: none; }
+body.film .app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr); padding: 0; }
+body.film header, body.film aside { display: none; }
+body.film .stage { border: 0; border-radius: 0; }
+body.film .caption { bottom: 28px; width: min(980px, calc(100% - 80px)); padding: 14px 20px; }
+body.film .caption .t { font-size: 26px; }
+body.film .caption .x { font-size: 19px; }
+body.film .caption .k { font-size: 15px; }
+@media (max-width: 760px) {
+  .app { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 70vh auto; height: auto; }
+  .warn { margin-left: 0; }
+  .caption .x { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="app">
+  <header>
+    <h1>Tourniquet tripode semi-automatique</h1>
+    <span class="ref">EDUPILOTE · PROTOTYPE P1 · COTES EN MM</span>
+    <span class="warn">Conception à faire valider par un mécanicien avant fabrication</span>
+  </header>
+  <div class="stage">
+    <canvas id="c" aria-label="Vue 3D du tourniquet"></canvas>
+    <div class="tools">
+      <div class="row">
+        <button data-view="iso">Perspective</button>
+        <button data-view="face">Face passage</button>
+        <button data-view="cote">Bout</button>
+        <button data-view="dessus">Dessus</button>
+        <button data-view="meca">Mécanisme</button>
+        <button data-view="bras">Moyeu</button>
+        <span class="sep"></span>
+        <button id="b-explode" aria-pressed="false">Vue éclatée</button>
+        <button id="b-skin" aria-pressed="false">Voir à travers l'inox</button>
+        <button id="b-cut" aria-pressed="false">Coupe (roulements)</button>
+        <button id="b-fix" aria-pressed="false">Fixations</button>
+        <button id="b-thr" aria-pressed="false">Filetages</button>
+      </div>
+      <div class="row">
+        <button class="go" id="b-montage">Montage pas à pas</button>
+        <button class="go" id="b-pass">Simuler un passage</button>
+        <button id="b-refus">Carte refusée</button>
+        <select id="speed" aria-label="Vitesse de la simulation">
+          <option value="1">Vitesse normale</option>
+          <option value="0.5">Ralenti × 0,5</option>
+          <option value="0.25">Ralenti × 0,25</option>
+        </select>
+      </div>
+    </div>
+    <div class="caption" id="cap" aria-live="polite">
+      <div class="k" id="cap-k"></div>
+      <div class="t" id="cap-t"></div>
+      <div class="x" id="cap-x"></div>
+      <div class="nav" id="cap-nav">
+        <button id="m-prev">◀ Étape précédente</button>
+        <button id="m-next" class="go">Étape suivante ▶</button>
+        <button id="m-play">Lecture automatique</button>
+        <button id="m-quit">Quitter</button>
+        <span class="dots" id="m-dots"></span>
+      </div>
+    </div>
+    <div class="hint">Glisser pour tourner · molette ou pincer pour zoomer · clic sur une pièce pour l'identifier</div>
+  </div>
+  <aside>
+    <section class="card">
+      <h2>Pièce sélectionnée</h2>
+      <div class="sel" id="sel">Cliquez une pièce dans la vue ou dans la liste.</div>
+    </section>
+    <section class="card">
+      <h2>Cotes principales</h2>
+      <dl id="dims"></dl>
+    </section>
+    <section class="card">
+      <h2>Groupes</h2>
+      <div class="groups" id="groups"></div>
+    </section>
+    <section class="card">
+      <h2>Pièces</h2>
+      <ul class="parts" id="parts"></ul>
+    </section>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const DESIGN = /*DESIGN*/null
+const P = DESIGN.params, K = DESIGN.kin, STEPS = DESIGN.steps
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim()
+const v3 = (a) => new THREE.Vector3(a[0], a[1], a[2])
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x))
+const ease = (x) => { x = clamp(x); return x * x * (3 - 2 * x) }
+const lerp = (a, b, t) => a + (b - a) * t
+const deg = Math.PI / 180
+
+const canvas = document.getElementById('c')
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true })
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+renderer.localClippingEnabled = true
+const scene = new THREE.Scene()
+THREE.Object3D.DefaultUp.set(0, 0, 1)
+const camera = new THREE.PerspectiveCamera(35, 1, 60, 20000)
+camera.up.set(0, 0, 1)
+const controls = new THREE.OrbitControls(camera, canvas)
+controls.enableDamping = true
+controls.minDistance = 250
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f96, 0.85))
+const sun = new THREE.DirectionalLight(0xffffff, 0.75)
+sun.position.set(1800, 2400, 3000)
+scene.add(sun)
+const fill = new THREE.DirectionalLight(0xffffff, 0.4)
+fill.position.set(-1500, -1800, 1600)
+scene.add(fill)
+
+const grid = new THREE.GridHelper(3000, 30, 0x9aa3ad, 0xc7cdd4)
+grid.rotation.x = Math.PI / 2
+grid.position.set(P.L / 2, 200, 0)
+scene.add(grid)
+const lane = new THREE.Mesh(new THREE.PlaneGeometry(P.L, P.passage), new THREE.MeshBasicMaterial({ color: 0xe3a400, transparent: true, opacity: 0.16 }))
+lane.position.set(P.L / 2, P.passage / 2, 0.5)
+scene.add(lane)
+
+// ---------------------------------------------------------------- pièces
+const C = v3(K.center), AX = v3(K.axis), AIN = v3(K.a_in), E1 = v3(K.e1), E2 = v3(K.e2)
+const cutPlanes = []
+const meshes = []
+const skinGroups = new Set(['Habillage'])
+const Z = new THREE.Vector3(0, 0, 1)
+
+function basisQuat(b) {
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(v3(b[0]), v3(b[1]), v3(b[2])))
+}
+function circleShape(r, rIn) {
+  const s = new THREE.Shape()
+  s.absarc(0, 0, r, 0, Math.PI * 2, false)
+  if (rIn) { const h = new THREE.Path(); h.absarc(0, 0, rIn, 0, Math.PI * 2, true); s.holes.push(h) }
+  return s
+}
+function build(p) {
+  let geo, pos, quat = new THREE.Quaternion()
+  if (p.type === 'box') {
+    geo = new THREE.BoxGeometry(p.size[0], p.size[1], p.size[2])
+    quat = basisQuat(p.basis); pos = v3(p.center)
+  } else if (p.type === 'sphere') {
+    geo = new THREE.SphereGeometry(p.r, 16, 12); pos = v3(p.center)
+  } else if (p.type === 'prism') {
+    const s = new THREE.Shape(p.outline.map(([x, y]) => new THREE.Vector2(x, y)))
+    if (p.hole > 0) { const h = new THREE.Path(); h.absarc(0, 0, p.hole, 0, Math.PI * 2, true); s.holes.push(h) }
+    geo = new THREE.ExtrudeGeometry(s, { depth: p.depth, bevelEnabled: false, curveSegments: 32 })
+    quat = basisQuat(p.basis); pos = v3(p.origin)
+  } else {
+    const p1 = v3(p.p1), p2 = v3(p.p2), len = p1.distanceTo(p2)
+    if (p.type === 'tube') {
+      geo = new THREE.ExtrudeGeometry(circleShape(p.r, p.r_in), { depth: len, bevelEnabled: false, curveSegments: p.seg || 40 })
+      geo.translate(0, 0, -len / 2)
+    } else {
+      geo = new THREE.CylinderGeometry(p.r, p.r, len, p.seg || 40); geo.rotateX(Math.PI / 2)
+    }
+    quat.setFromUnitVectors(Z, p2.clone().sub(p1).normalize()); pos = p1.clone().add(p2).multiplyScalar(0.5)
+  }
+  return { geo, pos, quat }
+}
+// Texture des filets : un sillon par pas, répétée sur la longueur filetée.
+const threadTex = (() => {
+  const c = document.createElement('canvas'); c.width = 8; c.height = 32
+  const g = c.getContext('2d')
+  for (let y = 0; y < 32; y++) { const v = Math.round(150 + 105 * Math.sin((y / 32) * Math.PI * 2)); g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(0, y, 8, 1) }
+  return new THREE.CanvasTexture(c)
+})()
+for (const p of DESIGN.parts) {
+  const { geo, pos, quat } = build(p)
+  const steel = p.color === '#c3c9d1' || p.color === '#e8ecf0'
+  const mat = new THREE.MeshStandardMaterial({ color: p.color, metalness: steel ? 0.25 : 0.12, roughness: steel ? 0.35 : 0.6, clippingPlanes: cutPlanes })
+  const m = new THREE.Mesh(geo, mat)
+  // face de coupe : les faces arrière vues à travers le plan de coupe sont peintes en aplat
+  const capMat = new THREE.MeshBasicMaterial({ color: new THREE.Color(p.color).multiplyScalar(0.55), side: THREE.BackSide, clippingPlanes: cutPlanes })
+  const capMesh = new THREE.Mesh(geo, capMat)
+  capMesh.visible = false
+  capMesh.userData.cap = true
+  m.add(capMesh)
+  if (p.type !== 'sphere') m.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo, 25), new THREE.LineBasicMaterial({ color: 0x1d232b, transparent: true, opacity: 0.2, clippingPlanes: cutPlanes })))
+  m.userData = { part: p, home: pos, homeQ: quat, explode: v3(p.explode), approach: v3(p.approach).lengthSq() ? v3(p.approach) : new THREE.Vector3(0, 0, 600), pivot: p.pivot ? v3(p.pivot) : null }
+  if (p.thread && p.type === 'cyl' && !p.thread.int) {
+    // filet en relief : hélice ISO autour d'un noyau au diamètre de fond
+    const len = v3(p.p1).distanceTo(v3(p.p2)), d = p.thread.d, pitch = p.thread.p
+    const hTh = 0.6134 * pitch, rCore = d / 2 - hTh
+    m.geometry = new THREE.CylinderGeometry(rCore, rCore, len, 24).rotateX(Math.PI / 2)
+    class Helix extends THREE.Curve {
+      getPoint(t, o = new THREE.Vector3()) { const a = t * (len / pitch) * Math.PI * 2; return o.set((rCore + hTh * 0.35) * Math.cos(a), (rCore + hTh * 0.35) * Math.sin(a), -len / 2 + pitch / 2 + t * (len - pitch)) }
+    }
+    const turns = Math.max(1, len / pitch)
+    m.add(new THREE.Mesh(new THREE.TubeGeometry(new Helix(), Math.ceil(turns * 14), hTh * 0.6, 5, false), mat))
+  } else if (p.thread && p.type === 'cyl') {
+    const t = threadTex.clone(); t.needsUpdate = true
+    t.wrapS = t.wrapT = THREE.RepeatWrapping
+    t.repeat.set(1, Math.max(1, v3(p.p1).distanceTo(v3(p.p2)) / p.thread.p))
+    mat.map = t
+  }
+  if (p.group === 'Taraudages') { mat.transparent = true; mat.opacity = 0.9 }
+  if (p.id === 'platine-meca') { mat.transparent = true; mat.opacity = 0.35; mat.depthWrite = false }
+  if (p.id === 'dalle') { mat.transparent = true; mat.opacity = 0.45; mat.depthWrite = false }
+  m.quaternion.copy(quat); m.position.copy(pos)
+  scene.add(m)
+  meshes.push(m)
+}
+const byId = Object.fromEntries(meshes.map((m) => [m.userData.part.id, m]))
+
+// ---------------------------------------------------------------- interface
+const dims = [
+  ['Longueur du caisson', P.L], ['Largeur du caisson', P.W], ['Hauteur', P.H],
+  ['Hauteur du bras horizontal', P.arm_height], ['Longueur des bras', P.arm_len], ['Largeur de passage', P.passage], ["Inclinaison de l'axe", P.tilt + ' °'],
+]
+document.getElementById('dims').innerHTML = dims.map(([k, v]) => `<dt>${k}</dt><dd>${v}${typeof v === 'number' ? ' mm' : ''}</dd>`).join('')
+
+const groups = [...new Set(DESIGN.parts.map((p) => p.group))]
+const hidden = new Set(['Taraudages'])
+document.getElementById('groups').innerHTML = groups.map((g, i) => `<label for="g${i}"><input type="checkbox" id="g${i}" data-group="${g}"${hidden.has(g) ? '' : ' checked'}> ${g}</label>`).join('')
+document.getElementById('groups').addEventListener('change', (e) => {
+  const g = e.target.dataset.group
+  e.target.checked ? hidden.delete(g) : hidden.add(g)
+})
+
+const seen = new Map()
+for (const p of DESIGN.parts) if (!seen.has(p.name)) seen.set(p.name, p)
+const list = document.getElementById('parts')
+list.innerHTML = [...seen.values()].map((p) => `<li data-name="${p.name}"><span class="sw" style="background:${p.color}"></span><span>${p.name}</span></li>`).join('')
+list.addEventListener('click', (e) => { const li = e.target.closest('li'); if (li) select(li.dataset.name) })
+
+let selected = null
+function select(name) {
+  selected = name
+  list.querySelectorAll('li').forEach((li) => li.classList.toggle('on', li.dataset.name === name))
+  const p = seen.get(name)
+  const count = DESIGN.parts.filter((x) => x.name === name).length
+  document.getElementById('sel').innerHTML = p ? `<b>${p.name}</b>${p.group} · ${count} pièce${count > 1 ? 's' : ''}` : 'Cliquez une pièce dans la vue ou dans la liste.'
+}
+
+const ray = new THREE.Raycaster()
+let down = null
+canvas.addEventListener('pointerdown', (e) => (down = [e.clientX, e.clientY]))
+canvas.addEventListener('pointerup', (e) => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return
+  const r = canvas.getBoundingClientRect()
+  ray.setFromCamera({ x: ((e.clientX - r.left) / r.width) * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 }, camera)
+  const hit = ray.intersectObjects(meshes.filter((m) => m.visible && !(skinOn && skinGroups.has(m.userData.part.group))), false)[0]
+  select(hit ? hit.object.userData.part.name : null)
+})
+
+// ---------------------------------------------------------------- état : éclaté, habillage, coupe
+let exploded = 0, explodeTarget = 0
+const bExplode = document.getElementById('b-explode')
+bExplode.addEventListener('click', () => { stopModes(); setExploded(explodeTarget === 0) })
+function setExploded(on, instant) {
+  explodeTarget = on ? 1 : 0
+  if (instant) exploded = explodeTarget
+  bExplode.setAttribute('aria-pressed', String(on))
+}
+let skinOn = false
+const bSkin = document.getElementById('b-skin')
+bSkin.addEventListener('click', () => setSkin(!skinOn))
+function setSkin(on) {
+  skinOn = on
+  bSkin.setAttribute('aria-pressed', String(on))
+  meshes.forEach((m) => {
+    if (!skinGroups.has(m.userData.part.group)) return
+    m.material.transparent = on
+    m.material.opacity = on ? 0.16 : 1
+    m.material.depthWrite = !on
+  })
+}
+let fixOn = false
+const bFix = document.getElementById('b-fix')
+bFix.addEventListener('click', () => setFix(!fixOn))
+function setFix(on) {
+  fixOn = on
+  bFix.setAttribute('aria-pressed', String(on))
+  if (on) { hidden.delete('Fixations'); document.querySelectorAll('[data-group="Fixations"]').forEach((c) => (c.checked = true)); setSkin(true) }
+}
+let thrOn = false
+const bThr = document.getElementById('b-thr')
+bThr.addEventListener('click', () => setThr(!thrOn))
+function setThr(on) {
+  thrOn = on
+  bThr.setAttribute('aria-pressed', String(on))
+  on ? hidden.delete('Taraudages') : hidden.add('Taraudages')
+  document.querySelectorAll('[data-group="Taraudages"]').forEach((c) => (c.checked = on))
+  if (on) setSkin(true)
+}
+let cutOn = false
+const bCut = document.getElementById('b-cut')
+bCut.addEventListener('click', () => { setCut(!cutOn); if (cutOn) camTo('coupe') })
+const cutPlane = new THREE.Plane(new THREE.Vector3(-1, 0, 0), K.center[0])
+function setCut(on) {
+  cutOn = on
+  cutPlanes.length = 0
+  if (on) cutPlanes.push(cutPlane)
+  meshes.forEach((m) => { m.material.needsUpdate = true; m.children.forEach((c) => { c.material.needsUpdate = true; if (c.userData.cap) c.visible = on && !skinGroups.has(m.userData.part.group) }) })
+  bCut.setAttribute('aria-pressed', String(on))
+}
+
+// ---------------------------------------------------------------- caméra
+const mech = v3(K.mech)
+const disc = C.clone().addScaledVector(AIN, K.disc_s), carter = C.clone().addScaledVector(AIN, 105)
+const views = {
+  iso: [[P.L / 2 + 1250, 2700, 1650], [P.L / 2, 100, 520]],
+  face: [[P.L / 2, 3000, 650], [P.L / 2, 100, 520]],
+  cote: [[-2600, 150, 750], [P.L / 2, 100, 520]],
+  dessus: [[P.L / 2, 160, 3600], [P.L / 2, 160, 0]],
+  meca: [disc.clone().addScaledVector(AIN, 620).addScaledVector(E1, 260).toArray(), disc.clone().addScaledVector(AIN, -40).toArray()],
+  bras: [C.clone().add(new THREE.Vector3(780, 1150, 260)).toArray(), C.clone().add(new THREE.Vector3(0, 120, -80)).toArray()],
+  coupe: [carter.clone().add(new THREE.Vector3(520, 40, 40)).toArray(), carter.toArray()],
+  fixcarter: [carter.clone().add(new THREE.Vector3(560, 430, 60)).toArray(), carter.clone().add(new THREE.Vector3(0, -45, -30)).toArray()],
+  fixcarter2: [carter.clone().add(new THREE.Vector3(-520, -520, 160)).toArray(), carter.clone().add(new THREE.Vector3(0, -45, -40)).toArray()],
+  socle: [[-350, 650, 420], [180, -140, 60]],
+  filetage: [disc.clone().addScaledVector(AIN, 300).addScaledVector(E1, 170).addScaledVector(E2, -60).toArray(), disc.clone().addScaledVector(AIN, 18).addScaledVector(E2, -25).toArray()],
+  ensemble: [[P.L / 2 + 1500, 2100, 1900], [P.L / 2, -60, 480]],
+  proche: [[P.L / 2 + 950, 1850, 1350], [P.L / 2, 120, 640]],
+}
+let camGoal = null
+function camTo(v, instant) {
+  const [p, t] = views[v] || v
+  if (instant || reduce) { camera.position.set(...p); controls.target.set(...t); camGoal = null } else camGoal = { p: v3(p), t: v3(t) }
+  controls.update()
+}
+document.querySelectorAll('[data-view]').forEach((b) => b.addEventListener('click', () => {
+  const v = b.dataset.view
+  if (v === 'meca' && !mode) setSkin(true)
+  camTo(v)
+}))
+
+// ---------------------------------------------------------------- cinématique
+const kin = { base: 0, phi: 0, alpha: 0, read: 0, light: 'idle', step: null }
+function angDist(a, b) { return Math.abs(((a - b) % 360 + 540) % 360 - 180) }
+function galetLift(total) {
+  // les crans tournent de -total dans le repère local ; le galet est à 180°
+  const d = Math.min(...K.vs.map((v) => angDist(v - total, 180)))
+  const arc = K.disc_r * d * deg
+  return K.galet_lift * ease(arc / 12)
+}
+function sensorOn(total) { return Math.min(...K.locks.map((v) => angDist(v - total, 0))) < 7 }
+
+const qTmp = new THREE.Quaternion(), vTmp = new THREE.Vector3()
+function rotateAbout(m, origin, axis, ang) {
+  qTmp.setFromAxisAngle(axis, ang)
+  vTmp.copy(m.position).sub(origin).applyQuaternion(qTmp)
+  m.position.copy(origin).add(vTmp)
+  m.quaternion.premultiply(qTmp)
+}
+const colors = { idle: new THREE.Color('#2c6e49'), ok: new THREE.Color('#18e070'), no: new THREE.Color('#ff3b3b') }
+const blue = new THREE.Color(0x2f6fed), black = new THREE.Color(0)
+
+function pose() {
+  const total = kin.base + kin.phi
+  const beta = galetLift(total) / K.lever_len
+  const sOn = sensorOn(total)
+  const st = kin.step
+  for (const m of meshes) {
+    const u = m.userData, p = u.part
+    let vis = !hidden.has(p.group), appr = 0
+    if (st !== null) {
+      const done = Math.floor(st), frac = st - done
+      if (p.step <= done) appr = 0
+      else if (p.step === done + 1) appr = 1 - ease(frac / 0.8)
+      else vis = false
+      if (p.step === done + 1 && frac <= 0) vis = false
+    }
+    m.visible = vis
+    m.position.copy(u.home).addScaledVector(u.explode, exploded).addScaledVector(u.approach, appr)
+    m.quaternion.copy(u.homeQ)
+    if (p.motion === 'rot') rotateAbout(m, C, AX, total * deg)
+    else if (p.motion === 'balls') rotateAbout(m, C, AX, (total / 3) * deg)
+    else if (p.motion === 'cliquet') rotateAbout(m, u.pivot.clone().addScaledVector(u.explode, exploded).addScaledVector(u.approach, appr), AIN, kin.alpha * deg)
+    else if (p.motion === 'crantage') rotateAbout(m, u.pivot.clone().addScaledVector(u.explode, exploded).addScaledVector(u.approach, appr), AIN, beta)
+    let em = black, ei = 0
+    if (p.id === 'capteur' && sOn && kin.phi > 0.5) { em = blue; ei = 1 }
+    if (p.id === 'lecteur' && kin.read > 0) { em = blue; ei = kin.read }
+    if (p.id.startsWith('voyant')) { m.material.color.copy(colors[kin.light]); if (kin.light !== 'idle') { em = colors[kin.light]; ei = 0.7 } }
+    if (p.id === 'electroaimant' && kin.alpha > 15 && kin.light === 'ok') { em = new THREE.Color('#ff6a00'); ei = 0.5 }
+    if (thrOn && p.thread) { em = new THREE.Color(p.thread.int ? '#ff7a00' : '#ffc400'); ei = 0.6 }
+    if (fixOn && p.group === 'Fixations' && !(thrOn && p.thread)) { em = new THREE.Color(p.color === '#b8862b' ? '#ff9a1f' : '#ff5a1f'); ei = 0.55 }
+    if (selected && p.name === selected) { em = new THREE.Color(0x2f6fed); ei = 0.45 }
+    m.material.emissive.copy(em); m.material.emissiveIntensity = ei
+  }
+}
+
+// Déroulé d'un passage (secondes) : renvoie l'état et la légende.
+const PASS_T = 11, REFUS_T = 6.5
+const PASS_CAP = [
+  [0, '1 · Lecture', "L'étudiant présente sa carte NFC ou le QR code de son application."],
+  [1.4, '2 · Autorisation', "Il a cours en ce moment : le serveur (ou la liste gardée hors ligne) autorise. Voyant vert."],
+  [2.2, '3 · Déverrouillage', "L'électroaimant soulève le cliquet hors du cran : le tripode est libre."],
+  [3.3, '4 · Rotation', "L'étudiant pousse le bras : le tripode tourne de 120°. Le galet sort d'un cran en V et roule jusqu'au suivant."],
+  [7.0, '5 · Reverrouillage', "Le cliquet retombe dans le cran suivant : un seul passage. Le capteur a compté le passage."],
+  [9.0, '6 · Présence', "La présence « porte » est enregistrée dans EduPilote à l'heure exacte du passage."],
+]
+const REFUS_CAP = [
+  [0, 'Carte refusée', "Carte inconnue, perdue, ou pas de cours en ce moment : voyant rouge."],
+  [1.6, 'Rotation bloquée', "L'étudiant pousse quand même : la dent du cliquet reste dans le cran, le bras ne tourne pas."],
+  [4.6, 'Retour au repos', "Le galet maintient un bras horizontal ; le tourniquet attend la carte suivante."],
+]
+function capAt(list, t) { let c = list[0]; for (const x of list) if (t >= x[0]) c = x; return c }
+function passState(t) {
+  const s = { phi: 0, alpha: 0, read: 0, light: 'idle' }
+  s.read = t > 0.4 && t < 1.8 ? 0.6 + 0.4 * Math.sin((t - 0.4) * 9) : 0
+  if (t > 1.5 && t < 8) s.light = 'ok'
+  s.phi = 120 * ease((t - 3.3) / 3.6)
+  if (t < 2.2) s.alpha = 0
+  else if (t < 3.0) s.alpha = K.lift_deg * ease((t - 2.2) / 0.8)
+  else if (t < 4.2) s.alpha = lerp(K.lift_deg, K.ride_deg, ease((t - 3.6) / 0.6))
+  else s.alpha = K.ride_deg
+  if (s.phi > 113) s.alpha = K.ride_deg * (1 - ease((s.phi - 113) / 6))
+  if (t >= 6.95) s.alpha = 0
+  return s
+}
+function refusState(t) {
+  const s = { phi: 0, alpha: 0, read: t > 0.3 && t < 1.2 ? 0.8 : 0, light: t > 0.9 && t < 4.6 ? 'no' : 'idle' }
+  s.phi = t > 1.8 && t < 4.4 ? 1.4 * Math.sin(((t - 1.8) / 2.6) * Math.PI) * (0.6 + 0.4 * Math.sin((t - 1.8) * 6)) : 0
+  return s
+}
+
+// ---------------------------------------------------------------- légende et modes
+const cap = document.getElementById('cap'), capK = document.getElementById('cap-k'), capT = document.getElementById('cap-t'), capX = document.getElementById('cap-x'), capNav = document.getElementById('cap-nav')
+const dots = document.getElementById('m-dots')
+dots.innerHTML = STEPS.map(() => '<i></i>').join('')
+function caption(k, t, x, nav) {
+  if (!t) { cap.classList.remove('on'); return }
+  cap.classList.add('on')
+  capK.textContent = k || ''; capT.textContent = t; capX.textContent = x || ''
+  capNav.style.display = nav ? 'flex' : 'none'
+}
+
+let mode = null, clock = 0, autoPlay = false
+const speed = document.getElementById('speed')
+const stepCam = (i) => (i <= 2 ? 'ensemble' : i === 4 ? 'coupe' : i <= 6 ? 'meca' : i === 7 ? 'bras' : 'iso')
+const stepCut = (i) => i === 4
+function showStep(i) {
+  const n = STEPS.length
+  i = clamp(i, 1, n)
+  mode = { kind: 'montage', step: i, t0: clock }
+  setExploded(false, true); setCut(stepCut(i)); setSkin(false)
+  camTo(stepCam(i))
+  caption(`Montage · étape ${i} / ${n}`, STEPS[i - 1].title, STEPS[i - 1].text, true)
+  ;[...dots.children].forEach((d, k) => d.classList.toggle('on', k < i))
+  document.getElementById('m-play').setAttribute('aria-pressed', String(autoPlay))
+}
+document.getElementById('b-montage').addEventListener('click', () => { autoPlay = false; showStep(1) })
+document.getElementById('m-next').addEventListener('click', () => { autoPlay = false; mode && mode.step < STEPS.length ? showStep(mode.step + 1) : stopModes() })
+document.getElementById('m-prev').addEventListener('click', () => { autoPlay = false; showStep(mode ? mode.step - 1 : 1) })
+document.getElementById('m-play').addEventListener('click', () => { autoPlay = !autoPlay; if (!mode || mode.step >= STEPS.length) showStep(1); else showStep(mode.step) })
+document.getElementById('m-quit').addEventListener('click', () => stopModes())
+function startCycle(kind) {
+  setExploded(false, true); setCut(false)
+  kin.step = null
+  mode = { kind, t0: clock }
+  if (kind === 'pass' || kind === 'refus') { setSkin(true); camTo('meca') }
+}
+document.getElementById('b-pass').addEventListener('click', () => startCycle('pass'))
+document.getElementById('b-refus').addEventListener('click', () => startCycle('refus'))
+function stopModes() {
+  mode = null; autoPlay = false; kin.step = null
+  Object.assign(kin, { phi: 0, alpha: 0, read: 0, light: 'idle' })
+  caption(null)
+}
+addEventListener('keydown', (e) => {
+  if (!mode || mode.kind !== 'montage') return
+  if (e.key === 'ArrowRight') document.getElementById('m-next').click()
+  if (e.key === 'ArrowLeft') document.getElementById('m-prev').click()
+  if (e.key === 'Escape') stopModes()
+})
+
+function updateMode(dt) {
+  if (!mode) return
+  const t = (clock - mode.t0)
+  if (mode.kind === 'montage') {
+    kin.step = mode.step - 1 + clamp(t / 1.6)
+    if (autoPlay && t > 6) mode.step < STEPS.length ? showStep(mode.step + 1) : (autoPlay = false)
+  } else if (mode.kind === 'pass') {
+    const tt = t * Number(speed.value)
+    Object.assign(kin, passState(Math.min(tt, PASS_T)))
+    const c = capAt(PASS_CAP, tt)
+    caption('Simulation · passage autorisé', c[1], c[2])
+    if (tt >= PASS_T) { kin.base += 120; stopModes() }
+  } else if (mode.kind === 'refus') {
+    const tt = t * Number(speed.value)
+    Object.assign(kin, refusState(Math.min(tt, REFUS_T)))
+    const c = capAt(REFUS_CAP, tt)
+    caption('Simulation · passage refusé', c[1], c[2])
+    if (tt >= REFUS_T) stopModes()
+  }
+}
+
+// ---------------------------------------------------------------- film (vidéo du dossier) : t en secondes sur une liste de segments
+let film = null
+function filmSetup(segments) {
+  document.body.classList.add('film')
+  let t = 0
+  film = segments.map((s) => { const o = { ...s, t0: t }; t += s.dur; return o })
+  resize()
+  return t
+}
+// Pièce isolée : les autres pièces deviennent un fantôme transparent, la caméra cadre la pièce.
+let focusSet = null
+function setFocus(ids) {
+  const key = ids ? ids.join(',') : null
+  if ((focusSet && focusSet.key) === key) return
+  focusSet = ids ? { key, set: new Set(ids) } : null
+  meshes.forEach((m) => {
+    const u = m.userData
+    if (!u.orig) u.orig = { t: m.material.transparent, o: m.material.opacity, d: m.material.depthWrite }
+    const ghost = focusSet && !focusSet.set.has(u.part.id)
+    m.material.transparent = ghost ? true : u.orig.t
+    m.material.opacity = ghost ? 0.05 : u.orig.o
+    m.material.depthWrite = ghost ? false : u.orig.d
+    m.children.forEach((c) => { if (c.isLineSegments) c.material.opacity = ghost ? 0.03 : 0.2 })
+  })
+  if (!focusSet) setSkin(skinOn)
+}
+function pieceCam(seg) {
+  if (!seg._cam) {
+    const box = new THREE.Box3()
+    meshes.forEach((m) => { if (seg.ids.includes(m.userData.part.id)) box.expandByObject(m) })
+    const c = box.getCenter(new THREE.Vector3()), sz = box.getSize(new THREE.Vector3())
+    const dist = clamp(Math.max(sz.x, sz.y, sz.z) * 2.6 + 140, 260, 3600)
+    const dir = new THREE.Vector3(0.62, 1.0, 0.5).normalize()
+    c.z -= Math.max(sz.x, sz.y, sz.z) * 0.22   // la pièce un peu au-dessus de la légende
+    seg._cam = [c.clone().addScaledVector(dir, dist).toArray(), c.toArray()]
+  }
+  return seg._cam
+}
+function camFor(seg) {
+  if (seg.kind === 'piece') return pieceCam(seg)
+  const v = seg.cam || (seg.kind === 'step' ? stepCam(seg.i) : 'iso')
+  return views[v]
+}
+function filmAt(t) {
+  let k = film.findIndex((s) => t < s.t0 + s.dur)
+  if (k < 0) k = film.length - 1
+  const seg = film[k], lt = t - seg.t0
+  // caméra : transition depuis le segment précédent puis lent mouvement orbital
+  const [p1, t1] = camFor(seg)
+  const [p0, t0] = k > 0 ? camFor(film[k - 1]) : camFor(seg)
+  const tr = ease(lt / 1.6)
+  const tgt = v3(t0).lerp(v3(t1), tr), pos = v3(p0).lerp(v3(p1), tr)
+  const orbit = (seg.orbit ?? 10) * deg * (lt / seg.dur - 0.5)
+  pos.sub(tgt).applyAxisAngle(Z, orbit).add(tgt)
+  camera.position.copy(pos); controls.target.copy(tgt); camera.lookAt(tgt)
+  setExploded(false, true)
+  Object.assign(kin, { phi: 0, alpha: 0, read: 0, light: 'idle' })
+  kin.step = null
+  if (!!seg.fix !== fixOn) setFix(!!seg.fix)
+  if (!!seg.thr !== thrOn) setThr(!!seg.thr)
+  const skin = !!seg.skin
+  if (skin !== skinOn) setSkin(skin)
+  const cut = !!seg.cut || (seg.kind === 'step' && stepCut(seg.i))
+  if (cut !== cutOn) setCut(cut)
+  setFocus(seg.kind === 'piece' ? seg.ids : null)
+  if (seg.kind === 'piece') {
+    caption(seg.k, seg.title, seg.text)
+  } else if (seg.kind === 'intro' || seg.kind === 'outro') {
+    caption(seg.k, seg.title, seg.text)
+  } else if (seg.kind === 'step') {
+    kin.step = seg.i - 1 + clamp(lt / Math.min(3.2, seg.dur * 0.55))
+    caption(`Montage · étape ${seg.i} / ${STEPS.length}`, STEPS[seg.i - 1].title, STEPS[seg.i - 1].text)
+  } else if (seg.kind === 'cut') {
+    caption(seg.k || 'Vue en coupe', seg.title, seg.text)
+  } else if (seg.kind === 'pass') {
+    const tt = clamp((lt - 0.4) * PASS_T / Math.max(PASS_T, seg.dur - 0.8), 0, PASS_T)
+    Object.assign(kin, passState(tt))
+    kin.base = seg.base || 0
+    const c = capAt(PASS_CAP, tt)
+    caption('Simulation · passage autorisé', c[1], c[2])
+  } else if (seg.kind === 'refus') {
+    const tt = clamp((lt - 0.3) * REFUS_T / Math.max(REFUS_T, seg.dur - 0.6), 0, REFUS_T)
+    Object.assign(kin, refusState(tt))
+    const c = capAt(REFUS_CAP, tt)
+    caption('Simulation · passage refusé', c[1], c[2])
+  }
+  if (!(seg.kind === 'pass')) kin.base = seg.base || 0
+  pose()
+  renderer.render(scene, camera)
+}
+
+// ---------------------------------------------------------------- boucle
+function resize() {
+  const r = canvas.parentElement.getBoundingClientRect()
+  renderer.setSize(r.width, r.height, false)
+  camera.aspect = r.width / Math.max(1, r.height)
+  camera.updateProjectionMatrix()
+}
+new ResizeObserver(resize).observe(canvas.parentElement)
+resize()
+camTo('iso', true)
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
+let last = performance.now(), manual = false
+function frame(now) {
+  const dt = Math.min(0.1, (now - last) / 1000); last = now
+  if (!manual) {
+    clock += dt
+    exploded += reduce ? explodeTarget - exploded : (explodeTarget - exploded) * 0.12
+    updateMode(dt)
+    if (camGoal) {
+      camera.position.lerp(camGoal.p, 0.08); controls.target.lerp(camGoal.t, 0.08)
+      if (camera.position.distanceTo(camGoal.p) < 2) camGoal = null
+    }
+    scene.background = new THREE.Color(css('--scene') || '#e6e9ed')
+    controls.update()
+    pose()
+    renderer.render(scene, camera)
+  }
+  requestAnimationFrame(frame)
+}
+requestAnimationFrame(frame)
+
+// Liens directs depuis le site : #passage, #refus, #montage
+function startFromHash() {
+  const h = location.hash.slice(1)
+  if (h === 'passage') startCycle('pass')
+  else if (h === 'refus') startCycle('refus')
+  else if (h === 'montage') { autoPlay = true; showStep(1) }
+}
+setTimeout(startFromHash, 700)
+addEventListener('hashchange', startFromHash)
+
+// Pour la génération automatique des images et de la vidéo du dossier.
+window.tourniquet = {
+  setView: (v) => camTo(v, true), setExploded, setSkin, setCut, setFix, setThr, select, showStep,
+  montage: (f) => { kin.step = f },
+  film: (segments) => { manual = true; scene.background = new THREE.Color('#e6e9ed'); return filmSetup(segments) },
+  filmAt,
+}
+</script>

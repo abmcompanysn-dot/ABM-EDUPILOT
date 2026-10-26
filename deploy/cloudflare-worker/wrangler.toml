@@ -1,0 +1,13 @@
+name = "edupilote-proxy"
+main = "worker.js"
+compatibility_date = "2026-10-26"
+
+# Branche ce Worker sur le projet Cloudflare Pages du frontend (le build
+# React) pour servir le reste des routes via env.ASSETS.
+[assets]
+directory = "../../frontend/dist"
+binding = "ASSETS"
+
+[routes]
+pattern = "edu.abmcy.com/*"
+zone_name = "abmcy.com"
